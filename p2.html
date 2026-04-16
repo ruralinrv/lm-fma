@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fazenda Monte Alegre — Parte 2: Análise de Custos</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        :root {
+            --primary:#1a5632;--primary-light:#2d8a4e;--primary-dark:#0e3b20;
+            --accent:#d4a017;--accent-light:#f0c940;
+            --danger:#c0392b;--danger-light:#e74c3c;
+            --warning:#e67e22;--warning-light:#f39c12;
+            --success:#27ae60;--success-light:#2ecc71;
+            --info:#2980b9;--info-light:#3498db;
+            --bg-dark:#0f1923;--bg-card:#1a2634;--bg-card-hover:#223344;--bg-section:#15202d;
+            --text-primary:#ecf0f1;--text-secondary:#95a5a6;--text-muted:#7f8c8d;
+            --border:#2c3e50;--border-light:#34495e;
+            --shadow:0 4px 24px rgba(0,0,0,0.3);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg-dark);color:var(--text-primary);line-height:1.6;overflow-x:hidden;}
+
+        .header{background:linear-gradient(135deg,var(--primary-dark) 0%,var(--primary) 50%,var(--primary-light) 100%);padding:1.5rem 2rem;position:relative;overflow:hidden;}
+        .header::before{content:'';position:absolute;top:-50%;right:-10%;width:400px;height:400px;background:radial-gradient(circle,rgba(212,160,23,0.12) 0%,transparent 70%);border-radius:50%;}
+        .header h1{font-size:1.5rem;font-weight:800;color:#fff;position:relative;z-index:1;}
+        .header h1 span{color:var(--accent-light);}
+        .header p{color:rgba(255,255,255,0.6);font-size:0.85rem;position:relative;z-index:1;}
+
+        .nav-parts{display:flex;gap:0.5rem;padding:0.75rem 2rem;background:var(--bg-section);border-bottom:1px solid var(--border);flex-wrap:wrap;position:sticky;top:0;z-index:100;}
+        .nav-parts a{padding:0.45rem 0.9rem;border-radius:8px;text-decoration:none;font-size:0.78rem;font-weight:600;color:var(--text-secondary);background:var(--bg-card);border:1px solid var(--border);transition:all 0.2s;}
+        .nav-parts a:hover,.nav-parts a.active{background:var(--primary);color:#fff;border-color:var(--primary-light);}
+
+        .container{max-width:1400px;margin:0 auto;padding:1.5rem;}
+
+        .section-title{display:flex;align-items:center;gap:0.75rem;margin:2rem 0 1.25rem;padding-bottom:0.75rem;border-bottom:2px solid var(--border);}
+        .section-title .icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+        .section-title h2{font-size:1.3rem;font-weight:700;}
+        .section-title h2 small{display:block;font-size:0.75rem;font-weight:400;color:var(--text-secondary);margin-top:0.15rem;}
+
+        .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:1.5rem;margin-bottom:1.5rem;}
+        .chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+        .chart-card h3{font-size:0.92rem;font-weight:700;color:var(--text-primary);margin-bottom:0.25rem;}
+        .chart-card p.chart-sub{font-size:0.73rem;color:var(--text-muted);margin-bottom:1rem;}
+        .chart-card-full{grid-column:1/-1;}
+
+        .table-wrapper{overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-bottom:1.5rem;}
+        table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+        thead th{background:var(--bg-section);color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;font-size:0.7rem;padding:0.8rem 0.9rem;text-align:left;border-bottom:2px solid var(--border);position:sticky;top:0;}
+        tbody td{padding:0.7rem 0.9rem;border-bottom:1px solid var(--border);color:var(--text-primary);}
+        tbody tr:hover{background:var(--bg-card-hover);}
+        tbody tr:last-child td{border-bottom:none;}
+        .text-right{text-align:right;}.text-center{text-align:center;}.font-bold{font-weight:700;}.font-mono{font-family:'Cascadia Code','Fira Code',monospace;}
+
+        .badge{display:inline-flex;align-items:center;gap:0.25rem;padding:0.2rem 0.55rem;border-radius:6px;font-size:0.7rem;font-weight:600;white-space:nowrap;}
+        .badge-success{background:rgba(39,174,96,0.15);color:var(--success-light);}
+        .badge-warning{background:rgba(243,156,18,0.15);color:var(--warning-light);}
+        .badge-danger{background:rgba(231,76,60,0.15);color:var(--danger-light);}
+        .badge-info{background:rgba(52,152,219,0.15);color:var(--info-light);}
+
+        .info-box{background:var(--bg-card);border-left:4px solid var(--info);border-radius:0 12px 12px 0;padding:1rem 1.25rem;margin-bottom:1.5rem;}
+        .info-box.warning{border-left-color:var(--warning);}
+        .info-box.danger{border-left-color:var(--danger);}
+        .info-box.success{border-left-color:var(--success);}
+        .info-box h4{font-size:0.88rem;font-weight:700;margin-bottom:0.35rem;}
+        .info-box p{font-size:0.8rem;color:var(--text-secondary);line-height:1.6;}
+
+        .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;}
+        .kpi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.1rem;position:relative;overflow:hidden;transition:transform 0.2s;}
+        .kpi-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+        .kpi-card .kpi-label{font-size:0.73rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.4rem;}
+        .kpi-card .kpi-value{font-size:1.5rem;font-weight:800;line-height:1.2;}
+        .kpi-card .kpi-sub{font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem;}
+        .kpi-card .kpi-bar{position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
+
+        .waterfall-legend{display:flex;gap:1.5rem;margin-top:0.5rem;font-size:0.72rem;color:var(--text-muted);flex-wrap:wrap;justify-content:center;}
+
+        .heatmap-container{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;overflow-x:auto;}
+        .heatmap-grid{display:grid;gap:3px;}
+        .heatmap-cell{padding:0.45rem 0.35rem;text-align:center;font-size:0.7rem;font-weight:600;border-radius:5px;transition:transform 0.15s;}
+        .heatmap-cell:hover{transform:scale(1.06);z-index:2;}
+        .heatmap-header{background:var(--bg-section);color:var(--text-secondary);font-weight:700;font-size:0.68rem;}
+
+        .compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:1.5rem;}
+        .compare-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.15rem;text-align:center;}
+        .compare-card .cc-title{font-size:0.78rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem;}
+        .compare-card .cc-value{font-size:1.8rem;font-weight:800;}
+        .compare-card .cc-sub{font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;}
+        .compare-card .cc-bar{height:6px;border-radius:3px;margin-top:0.75rem;}
+
+        .footer{text-align:center;padding:2rem;border-top:1px solid var(--border);margin-top:2rem;color:var(--text-muted);font-size:0.75rem;}
+
+        @media(max-width:768px){
+            .header{padding:1rem;}.container{padding:1rem;}.chart-grid{grid-template-columns:1fr;}.kpi-grid{grid-template-columns:repeat(2,1fr);}
+            .nav-parts{padding:0.5rem 0.75rem;}.nav-parts a{font-size:0.7rem;padding:0.35rem 0.6rem;}
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>📉 Parte 2 — Análise de <span>Custos Detalhada</span></h1>
+    <p>Decomposição completa por talhão · Radar comparativo · Waterfall · Heatmap de insumos · Matriz de dispersão</p>
+</div>
+
+<div class="nav-parts">
+    <a href="#">📊 Parte 1 — Dashboard</a>
+    <a href="#" class="active">📉 Parte 2 — Custos</a>
+    <a href="#">🌱 Parte 3 — Variedades</a>
+    <a href="#">📐 Parte 4 — Indicadores</a>
+    <a href="#">🔬 Parte 5 — Econometria</a>
+    <a href="#">🎯 Parte 6 — Scorecard</a>
+    <a href="#">📄 Parte 7 — Relatório Final</a>
+</div>
+
+<div class="container">
+
+    <!-- ===== KPIs DE CUSTOS ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#c0392b,#e74c3c);">💸</div>
+        <h2>Panorama de Custos — Safra 25/26 <small>Indicadores-chave de eficiência e composição de custos</small></h2>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#e74c3c,#c0392b);"></div>
+            <div class="kpi-label">Custo Total / ha</div>
+            <div class="kpi-value" style="color:var(--danger-light);">R$ 7.237</div>
+            <div class="kpi-sub">Total: R$ 3.966.078</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#f39c12,#e67e22);"></div>
+            <div class="kpi-label">Custo Insumos / ha</div>
+            <div class="kpi-value" style="color:var(--warning-light);">R$ 3.495</div>
+            <div class="kpi-sub">45,3% da receita</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#c0392b,#8b0000);"></div>
+            <div class="kpi-label">Custo Fitossanitário / ha</div>
+            <div class="kpi-value" style="color:var(--danger-light);">R$ 765</div>
+            <div class="kpi-sub">CV = 55,53% entre talhões ⚠️</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#d4a017,#f0c940);"></div>
+            <div class="kpi-label">Custo Adubo / ha</div>
+            <div class="kpi-value" style="color:var(--accent-light);">R$ 1.872</div>
+            <div class="kpi-sub">53,6% dos insumos · CV=1,4%</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#2980b9,#3498db);"></div>
+            <div class="kpi-label">Custo Semente / ha</div>
+            <div class="kpi-value" style="color:var(--info-light);">R$ 652</div>
+            <div class="kpi-sub">18,7% dos insumos · CV=41%</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#27ae60,#2ecc71);"></div>
+            <div class="kpi-label">Custos Fixos / ha</div>
+            <div class="kpi-value" style="color:var(--success-light);">R$ 3.377</div>
+            <div class="kpi-sub">ADM+Fin+Man+Dep+Arrendo</div>
+        </div>
+    </div>
+
+    <!-- ===== TABELA COMPLETA DE INSUMOS POR TALHÃO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#e67e22,#f39c12);">📋</div>
+        <h2>Custo de Insumos por Talhão (R$/ha) <small>Decomposição de 9 categorias de insumos — 5 talhões + média fazenda</small></h2>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Insumo</th>
+                    <th class="text-right">T-01</th>
+                    <th class="text-right">T-02 🏆</th>
+                    <th class="text-right">T-03 ⚠️</th>
+                    <th class="text-right">T-04</th>
+                    <th class="text-right">T-05</th>
+                    <th class="text-right">Fazenda</th>
+                    <th class="text-right">CV (%)</th>
+                    <th class="text-center">Dispersão</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="font-bold">Adubo</td>
+                    <td class="text-right font-mono">1.884</td>
+                    <td class="text-right font-mono">1.865</td>
+                    <td class="text-right font-mono">1.869</td>
+                    <td class="text-right font-mono">1.855</td>
+                    <td class="text-right font-mono">1.923</td>
+                    <td class="text-right font-mono font-bold">1.872</td>
+                    <td class="text-right font-mono">1,4%</td>
+                    <td class="text-center"><span class="badge badge-success">Baixa ✅</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold">Semente</td>
+                    <td class="text-right font-mono">600</td>
+                    <td class="text-right font-mono" style="color:var(--info-light);">751</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">420</td>
+                    <td class="text-right font-mono" style="color:var(--warning-light);">1.253</td>
+                    <td class="text-right font-mono">712</td>
+                    <td class="text-right font-mono font-bold">652</td>
+                    <td class="text-right font-mono" style="color:var(--warning-light);">41,0%</td>
+                    <td class="text-center"><span class="badge badge-warning">Alta ⚠️</span></td>
+                </tr>
+                <tr style="background:rgba(231,76,60,0.05);">
+                    <td class="font-bold" style="color:var(--danger-light);">Fungicida</td>
+                    <td class="text-right font-mono">388</td>
+                    <td class="text-right font-mono" style="color:var(--success-light);">131</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">580</td>
+                    <td class="text-right font-mono">133</td>
+                    <td class="text-right font-mono">293</td>
+                    <td class="text-right font-mono font-bold">371</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">55,9%</td>
+                    <td class="text-center"><span class="badge badge-danger">Muito Alta 🔴</span></td>
+                </tr>
+                <tr style="background:rgba(231,76,60,0.05);">
+                    <td class="font-bold" style="color:var(--danger-light);">Inseticida</td>
+                    <td class="text-right font-mono">201</td>
+                    <td class="text-right font-mono" style="color:var(--success-light);">45</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">378</td>
+                    <td class="text-right font-mono">84</td>
+                    <td class="text-right font-mono">167</td>
+                    <td class="text-right font-mono font-bold">198</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">63,8%</td>
+                    <td class="text-center"><span class="badge badge-danger">Muito Alta 🔴</span></td>
+                </tr>
+                <tr style="background:rgba(231,76,60,0.05);">
+                    <td class="font-bold" style="color:var(--danger-light);">Biológico</td>
+                    <td class="text-right font-mono">341</td>
+                    <td class="text-right font-mono" style="color:var(--success-light);">54</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">285</td>
+                    <td class="text-right font-mono">111</td>
+                    <td class="text-right font-mono">195</td>
+                    <td class="text-right font-mono font-bold">196</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">57,7%</td>
+                    <td class="text-center"><span class="badge badge-danger">Muito Alta 🔴</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold">Herbicida</td>
+                    <td class="text-right font-mono">118</td>
+                    <td class="text-right font-mono">75</td>
+                    <td class="text-right font-mono">88</td>
+                    <td class="text-right font-mono">111</td>
+                    <td class="text-right font-mono">175</td>
+                    <td class="text-right font-mono font-bold">104</td>
+                    <td class="text-right font-mono">35,2%</td>
+                    <td class="text-center"><span class="badge badge-warning">Moderada</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold">Foliar</td>
+                    <td class="text-right font-mono">80</td>
+                    <td class="text-right font-mono" style="color:var(--success-light);">31</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">110</td>
+                    <td class="text-right font-mono">54</td>
+                    <td class="text-right font-mono">81</td>
+                    <td class="text-right font-mono font-bold">67</td>
+                    <td class="text-right font-mono" style="color:var(--warning-light);">44,5%</td>
+                    <td class="text-center"><span class="badge badge-warning">Alta ⚠️</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold">Adjuvante</td>
+                    <td class="text-right font-mono">26</td>
+                    <td class="text-right font-mono">16</td>
+                    <td class="text-right font-mono">46</td>
+                    <td class="text-right font-mono">16</td>
+                    <td class="text-right font-mono">44</td>
+                    <td class="text-right font-mono font-bold">23</td>
+                    <td class="text-right font-mono">51,2%</td>
+                    <td class="text-center"><span class="badge badge-danger">Muito Alta 🔴</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold">Protetor/Indutor</td>
+                    <td class="text-right font-mono">0</td>
+                    <td class="text-right font-mono">0</td>
+                    <td class="text-right font-mono">14</td>
+                    <td class="text-right font-mono">14</td>
+                    <td class="text-right font-mono">51</td>
+                    <td class="text-right font-mono font-bold">11</td>
+                    <td class="text-right font-mono">—</td>
+                    <td class="text-center"><span class="badge badge-info">Variável</span></td>
+                </tr>
+                <tr style="background:var(--bg-section);font-weight:700;">
+                    <td>TOTAL INSUMOS</td>
+                    <td class="text-right font-mono">3.639</td>
+                    <td class="text-right font-mono" style="color:var(--success-light);">2.968</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">3.790</td>
+                    <td class="text-right font-mono">3.631</td>
+                    <td class="text-right font-mono">3.642</td>
+                    <td class="text-right font-mono" style="color:var(--accent-light);">3.495</td>
+                    <td class="text-right font-mono">8,8%</td>
+                    <td class="text-center"><span class="badge badge-warning">Moderada</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ===== HEATMAP DE INSUMOS POR TALHÃO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#c0392b,#e74c3c);">🔥</div>
+        <h2>Heatmap — Custo de Insumos por Talhão <small>Escala de cores: verde (menor custo) → vermelho (maior custo) por categoria</small></h2>
+    </div>
+
+    <div class="heatmap-container">
+        <div class="heatmap-grid" style="grid-template-columns:130px repeat(5,1fr);min-width:550px;" id="heatmapInsumos">
+            <!-- Populated by JS -->
+        </div>
+        <div style="display:flex;gap:1.5rem;margin-top:0.75rem;font-size:0.7rem;color:var(--text-muted);flex-wrap:wrap;justify-content:center;">
+            <span>🟢 Verde = Menor custo na categoria</span>
+            <span>🔴 Vermelho = Maior custo na categoria</span>
+            <span>📌 Intensidade proporcional ao desvio da média</span>
+        </div>
+    </div>
+
+    <!-- ===== GRÁFICO RADAR ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);">🕸️</div>
+        <h2>Radar Comparativo de Custos de Insumos <small>Perfil de gasto de cada talhão — normalizado (0-100) por categoria</small></h2>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card chart-card-full">
+            <h3>Perfil de Custo por Talhão — Radar (Normalizado 0-100)</h3>
+            <p class="chart-sub">Quanto mais externo o ponto, maior o custo relativo naquela categoria. T-02 (verde) tem o perfil mais enxuto.</p>
+            <div class="chart-wrap" style="max-width:650px;margin:0 auto;"><canvas id="chartRadar"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ===== CUSTO FITOSSANITÁRIO DETALHADO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#e74c3c,#c0392b);">🦠</div>
+        <h2>Custo Fitossanitário — O Fator Crítico <small>Fungicida + Inseticida + Biológico: correlação de -0,92 com o resultado</small></h2>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Custo Fitossanitário por Talhão (R$/ha)</h3>
+            <p class="chart-sub">T-03 gasta 5,4× mais que T-02 — amplitude de R$ 1.013,67</p>
+            <div class="chart-wrap"><canvas id="chartFitossStacked"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Fitossanitário vs. Resultado — Dispersão</h3>
+            <p class="chart-sub">r = -0,92 · Quanto mais gasta em fitoss., menor o resultado</p>
+            <div class="chart-wrap"><canvas id="chartScatterFitoss"></canvas></div>
+        </div>
+    </div>
+
+    <!-- COMPARATIVO T-02 vs T-03 -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#2980b9,#3498db);">⚖️</div>
+        <h2>Duelo: T-02 🏆 vs. T-03 ⚠️ <small>Comparação direta dos extremos — maior e menor performance da fazenda</small></h2>
+    </div>
+
+    <div class="compare-grid">
+        <div class="compare-card">
+            <div class="cc-title">Custo Insumos/ha</div>
+            <div style="display:flex;justify-content:center;gap:1.5rem;align-items:baseline;">
+                <div><div style="font-size:0.7rem;color:var(--success-light);">T-02</div><div class="cc-value" style="color:var(--success-light);">R$ 2.968</div></div>
+                <div style="font-size:1.2rem;color:var(--text-muted);">vs</div>
+                <div><div style="font-size:0.7rem;color:var(--danger-light);">T-03</div><div class="cc-value" style="color:var(--danger-light);">R$ 3.790</div></div>
+            </div>
+            <div class="cc-sub">Diferença: R$ 822/ha (+27,7%)</div>
+            <div class="cc-bar" style="background:linear-gradient(90deg,var(--success-light) 44%,var(--danger-light) 56%);"></div>
+        </div>
+        <div class="compare-card">
+            <div class="cc-title">Custo Fitossanitário/ha</div>
+            <div style="display:flex;justify-content:center;gap:1.5rem;align-items:baseline;">
+                <div><div style="font-size:0.7rem;color:var(--success-light);">T-02</div><div class="cc-value" style="color:var(--success-light);">R$ 230</div></div>
+                <div style="font-size:1.2rem;color:var(--text-muted);">vs</div>
+                <div><div style="font-size:0.7rem;color:var(--danger-light);">T-03</div><div class="cc-value" style="color:var(--danger-light);">R$ 1.244</div></div>
+            </div>
+            <div class="cc-sub">T-03 gasta <strong>5,4× mais</strong></div>
+            <div class="cc-bar" style="background:linear-gradient(90deg,var(--success-light) 16%,var(--danger-light) 84%);"></div>
+        </div>
+        <div class="compare-card">
+            <div class="cc-title">Custo Semente/ha</div>
+            <div style="display:flex;justify-content:center;gap:1.5rem;align-items:baseline;">
+                <div><div style="font-size:0.7rem;color:var(--success-light);">T-02</div><div class="cc-value" style="color:var(--success-light);">R$ 751</div></div>
+                <div style="font-size:1.2rem;color:var(--text-muted);">vs</div>
+                <div><div style="font-size:0.7rem;color:var(--danger-light);">T-03</div><div class="cc-value" style="color:var(--danger-light);">R$ 420</div></div>
+            </div>
+            <div class="cc-sub">T-02 investe <strong>79% a mais</strong> em semente</div>
+            <div class="cc-bar" style="background:linear-gradient(90deg,var(--success-light) 64%,var(--danger-light) 36%);"></div>
+        </div>
+        <div class="compare-card">
+            <div class="cc-title">Resultado/ha</div>
+            <div style="display:flex;justify-content:center;gap:1.5rem;align-items:baseline;">
+                <div><div style="font-size:0.7rem;color:var(--success-light);">T-02</div><div class="cc-value" style="color:var(--success-light);">R$ 1.041</div></div>
+                <div style="font-size:1.2rem;color:var(--text-muted);">vs</div>
+                <div><div style="font-size:0.7rem;color:var(--danger-light);">T-03</div><div class="cc-value" style="color:var(--danger-light);">R$ 162</div></div>
+            </div>
+            <div class="cc-sub">T-02 lucra <strong>6,4× mais</strong></div>
+            <div class="cc-bar" style="background:linear-gradient(90deg,var(--success-light) 87%,var(--danger-light) 13%);"></div>
+        </div>
+        <div class="compare-card">
+            <div class="cc-title">Nº de Cultivares</div>
+            <div style="display:flex;justify-content:center;gap:1.5rem;align-items:baseline;">
+                <div><div style="font-size:0.7rem;color:var(--success-light);">T-02</div><div class="cc-value" style="color:var(--success-light);">2</div></div>
+                <div style="font-size:1.2rem;color:var(--text-muted);">vs</div>
+                <div><div style="font-size:0.7rem;color:var(--danger-light);">T-03</div><div class="cc-value" style="color:var(--danger-light);">4</div></div>
+            </div>
+            <div class="cc-sub">T-03 mistura GMs de 5.7 a 7.5</div>
+            <div class="cc-bar" style="background:linear-gradient(90deg,var(--success-light) 33%,var(--danger-light) 67%);"></div>
+        </div>
+        <div class="compare-card">
+            <div class="cc-title">Rentabilidade</div>
+            <div style="display:flex;justify-content:center;gap:1.5rem;align-items:baseline;">
+                <div><div style="font-size:0.7rem;color:var(--success-light);">T-02</div><div class="cc-value" style="color:var(--success-light);">13,5%</div></div>
+                <div style="font-size:1.2rem;color:var(--text-muted);">vs</div>
+                <div><div style="font-size:0.7rem;color:var(--danger-light);">T-03</div><div class="cc-value" style="color:var(--danger-light);">2,1%</div></div>
+            </div>
+            <div class="cc-sub">Diferença de 11,4 pontos percentuais</div>
+            <div class="cc-bar" style="background:linear-gradient(90deg,var(--success-light) 87%,var(--danger-light) 13%);"></div>
+        </div>
+    </div>
+
+    <div class="info-box danger">
+        <h4>🔴 Diagnóstico: O Paradoxo do Custo Reativo no T-03</h4>
+        <p>O T-03 apresenta um padrão clássico de <strong>custo reativo</strong>: economizou em semente (R$ 420/ha, o menor da fazenda), mas gastou 5,4 vezes mais em fitossanitário que o T-02. A mistura de 4 cultivares com ciclos divergentes (GM 5.7 a 7.5) impossibilita a otimização das janelas de aplicação. O resultado? <strong>A "economia" de R$ 331 em semente gerou R$ 1.014 a mais em fitossanitário</strong> — uma relação de 1:3,06 de custo incremental. Investir em semente de qualidade com TSI premium é, comprovadamente, a decisão mais rentável da fazenda.</p>
+    </div>
+
+    <!-- ===== WATERFALL: DECOMPOSIÇÃO DO CUSTO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#2980b9,#3498db);">📊</div>
+        <h2>Waterfall — Da Receita ao Resultado <small>Cascata de custos mostrando como a receita é consumida até o resultado final</small></h2>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card chart-card-full">
+            <h3>Cascata Receita → Resultado (R$/ha) — Média da Fazenda</h3>
+            <p class="chart-sub">Cada barra mostra quanto cada categoria de custo consome da receita até chegar ao resultado de R$ 477,80/ha</p>
+            <div class="chart-wrap" style="max-height:450px;"><canvas id="chartWaterfall"></canvas></div>
+            <div class="waterfall-legend">
+                <span>🟢 Verde = Receita / Resultado</span>
+                <span>🔴 Vermelho = Custos consumindo receita</span>
+                <span>📊 Valores em R$/ha (média fazenda)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== COMPOSIÇÃO POR TALHÃO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);">📊</div>
+        <h2>Composição de Insumos por Talhão (Empilhado) <small>Visualização da distribuição de cada categoria de insumo por talhão</small></h2>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card chart-card-full">
+            <h3>Custo de Insumos por Talhão — Empilhado (R$/ha)</h3>
+            <p class="chart-sub">O peso relativo de cada insumo difere significativamente entre talhões — especialmente fungicida, inseticida e biológico</p>
+            <div class="chart-wrap" style="max-height:420px;"><canvas id="chartStackedInsumos"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ===== ESTATÍSTICAS DESCRITIVAS ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#1abc9c,#16a085);">📐</div>
+        <h2>Estatísticas Descritivas <small>Medidas de tendência central e dispersão das variáveis-chave de custos</small></h2>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Variável</th>
+                    <th class="text-right">Média</th>
+                    <th class="text-right">Mediana</th>
+                    <th class="text-right">Desvio Padrão</th>
+                    <th class="text-right">CV (%)</th>
+                    <th class="text-right">Mínimo</th>
+                    <th class="text-right">Máximo</th>
+                    <th class="text-right">Amplitude</th>
+                    <th class="text-center">Avaliação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="font-bold">Custo Insumos/ha</td>
+                    <td class="text-right font-mono">R$ 3.534</td>
+                    <td class="text-right font-mono">R$ 3.639</td>
+                    <td class="text-right font-mono">R$ 312</td>
+                    <td class="text-right font-mono">8,82%</td>
+                    <td class="text-right font-mono" style="color:var(--success-light);">R$ 2.968</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">R$ 3.790</td>
+                    <td class="text-right font-mono">R$ 822</td>
+                    <td class="text-center"><span class="badge badge-warning">CV Moderado</span></td>
+                </tr>
+                <tr style="background:rgba(231,76,60,0.05);">
+                    <td class="font-bold" style="color:var(--danger-light);">Custo Fitossanitário/ha</td>
+                    <td class="text-right font-mono">R$ 678</td>
+                    <td class="text-right font-mono">R$ 655</td>
+                    <td class="text-right font-mono">R$ 393</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--danger-light);">55,53%</td>
+                    <td class="text-right font-mono" style="color:var(--success-light);">R$ 230</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">R$ 1.244</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">R$ 1.014</td>
+                    <td class="text-center"><span class="badge badge-danger">CV Muito Alto 🔴</span></td>
+                </tr>
+                <tr style="background:rgba(231,76,60,0.05);">
+                    <td class="font-bold">Resultado/ha</td>
+                    <td class="text-right font-mono">R$ 437</td>
+                    <td class="text-right font-mono">R$ 324</td>
+                    <td class="text-right font-mono">R$ 348</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--danger-light);">79,59%</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">R$ 162</td>
+                    <td class="text-right font-mono" style="color:var(--success-light);">R$ 1.041</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">R$ 879</td>
+                    <td class="text-center"><span class="badge badge-danger">CV Extremo 🔴</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold">Custo Adubo/ha</td>
+                    <td class="text-right font-mono">R$ 1.879</td>
+                    <td class="text-right font-mono">R$ 1.869</td>
+                    <td class="text-right font-mono">R$ 27</td>
+                    <td class="text-right font-mono" style="color:var(--success-light);">1,43%</td>
+                    <td class="text-right font-mono">R$ 1.855</td>
+                    <td class="text-right font-mono">R$ 1.923</td>
+                    <td class="text-right font-mono">R$ 68</td>
+                    <td class="text-center"><span class="badge badge-success">CV Baixo ✅</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold">Custo Semente/ha</td>
+                    <td class="text-right font-mono">R$ 747</td>
+                    <td class="text-right font-mono">R$ 712</td>
+                    <td class="text-right font-mono">R$ 307</td>
+                    <td class="text-right font-mono" style="color:var(--warning-light);">41,04%</td>
+                    <td class="text-right font-mono">R$ 420</td>
+                    <td class="text-right font-mono">R$ 1.253</td>
+                    <td class="text-right font-mono">R$ 833</td>
+                    <td class="text-center"><span class="badge badge-warning">CV Alto ⚠️</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold">Custo Herbicida/ha</td>
+                    <td class="text-right font-mono">R$ 113</td>
+                    <td class="text-right font-mono">R$ 111</td>
+                    <td class="text-right font-mono">R$ 38</td>
+                    <td class="text-right font-mono">35,24%</td>
+                    <td class="text-right font-mono">R$ 75</td>
+                    <td class="text-right font-mono">R$ 175</td>
+                    <td class="text-right font-mono">R$ 100</td>
+                    <td class="text-center"><span class="badge badge-warning">CV Moderado-Alto</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold">Foliar+Adj+Prot/ha</td>
+                    <td class="text-right font-mono">R$ 106</td>
+                    <td class="text-right font-mono">R$ 98</td>
+                    <td class="text-right font-mono">R$ 50</td>
+                    <td class="text-right font-mono">47,33%</td>
+                    <td class="text-right font-mono" style="color:var(--success-light);">R$ 47</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">R$ 176</td>
+                    <td class="text-right font-mono">R$ 129</td>
+                    <td class="text-center"><span class="badge badge-warning">CV Alto ⚠️</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="info-box warning">
+        <h4>⚠️ Interpretação: Heterogeneidade = Oportunidade</h4>
+        <p>A dispersão elevada nos custos entre talhões (CV de 8,82% nos insumos totais, 55,53% no fitossanitário e 79,59% no resultado) não é apenas um problema — <strong>é a maior oportunidade da fazenda</strong>. Se o T-03 e demais talhões convergirem para o padrão de eficiência do T-02, o resultado total pode triplicar. O benchmarking interno é mais poderoso que o externo: o "melhor produtor da região" já está dentro da própria fazenda — é o T-02.</p>
+    </div>
+
+    <!-- ===== MATRIZ DE CORRELAÇÃO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#2c3e50,#34495e);">🔗</div>
+        <h2>Matriz de Correlação <small>Coeficiente de Pearson (r) entre variáveis de custo e resultado financeiro</small></h2>
+    </div>
+
+    <div class="heatmap-container">
+        <div class="heatmap-grid" style="grid-template-columns:130px repeat(6,1fr);min-width:650px;" id="heatmapCorr">
+            <!-- Populated by JS -->
+        </div>
+        <div style="display:flex;gap:1.5rem;margin-top:0.75rem;font-size:0.7rem;color:var(--text-muted);flex-wrap:wrap;justify-content:center;">
+            <span>🔴 Vermelho forte = Correlação negativa forte</span>
+            <span>🟢 Verde forte = Correlação positiva forte</span>
+            <span>⬜ Neutro = Correlação fraca</span>
+            <span>📌 Quanto maior |r|, mais forte a relação linear</span>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h4>🔍 Leitura da Matriz de Correlação</h4>
+        <p><strong>r = -0,92 (Fitoss. × Resultado):</strong> Relação inversa fortíssima. Talhões que mais gastaram em fitossanitário tiveram piores resultados — indica gasto reativo, não preventivo.<br>
+        <strong>r = +0,82 (Fitoss. × Foliar):</strong> Custos andam juntos — talhões "problemáticos" gastam muito em ambos.<br>
+        <strong>r = -0,67 (Foliar × Resultado):</strong> Segunda variável mais correlacionada negativamente com o resultado.<br>
+        <strong>r ≈ -0,18 (Adubo × Resultado):</strong> Adubo varia muito pouco entre talhões (CV=1,4%), logo não discrimina performance.</p>
+    </div>
+
+</div><!-- /container -->
+
+<div class="footer">
+    <p><strong>Fazenda Monte Alegre</strong> · Leandro Martins · Montividiu-GO · Safra 2025/2026</p>
+    <p>Relatório gerado em 16 de abril de 2026 · Documento confidencial · Parte 2 de 7</p>
+</div>
+
+<!-- ======================== SCRIPTS ======================== -->
+<script>
+    Chart.register(ChartDataLabels);
+    const C = {
+        green:'#2ecc71',greenD:'#27ae60',red:'#e74c3c',redD:'#c0392b',
+        gold:'#f0c940',goldD:'#d4a017',blue:'#3498db',blueD:'#2980b9',
+        orange:'#f39c12',purple:'#9b59b6',teal:'#1abc9c',gray:'#95a5a6',
+        pink:'#e91e63',cyan:'#00bcd4'
+    };
+
+    // ===== HEATMAP INSUMOS =====
+    (function(){
+        const talhoes = ['T-01','T-02 🏆','T-03 ⚠️','T-04','T-05'];
+        const insumos = [
+            {name:'Adubo',vals:[1884,1865,1869,1855,1923]},
+            {name:'Semente',vals:[600,751,420,1253,712]},
+            {name:'Fungicida',vals:[388,131,580,133,293]},
+            {name:'Inseticida',vals:[201,45,378,84,167]},
+            {name:'Biológico',vals:[341,54,285,111,195]},
+            {name:'Herbicida',vals:[118,75,88,111,175]},
+            {name:'Foliar',vals:[80,31,110,54,81]},
+            {name:'Adjuvante',vals:[26,16,46,16,44]},
+            {name:'TOTAL',vals:[3639,2968,3790,3631,3642]}
+        ];
+        const grid = document.getElementById('heatmapInsumos');
+        // Header
+        grid.innerHTML = '<div class="heatmap-cell heatmap-header">Insumo</div>';
+        talhoes.forEach(t => grid.innerHTML += `<div class="heatmap-cell heatmap-header">${t}</div>`);
+        // Rows
+        insumos.forEach(ins => {
+            const mn = Math.min(...ins.vals), mx = Math.max(...ins.vals);
+            grid.innerHTML += `<div class="heatmap-cell heatmap-header">${ins.name}</div>`;
+            ins.vals.forEach(v => {
+                const ratio = mx === mn ? 0.5 : (v - mn) / (mx - mn);
+                const r = Math.round(40 + ratio * 160);
+                const g = Math.round(200 - ratio * 160);
+                const bg = `rgba(${r},${g},50,0.7)`;
+                grid.innerHTML += `<div class="heatmap-cell" style="background:${bg};color:#fff;">R$ ${v.toLocaleString('pt-BR')}</div>`;
+            });
+        });
+    })();
+
+    // ===== RADAR =====
+    new Chart(document.getElementById('chartRadar'), {
+        type: 'radar',
+        data: {
+            labels: ['Adubo','Semente','Fungicida','Inseticida','Biológico','Herbicida','Foliar+Adj+Prot'],
+            datasets: [
+                {label:'T-01',data:[43,27,82,52,97,50,51],borderColor:C.orange,backgroundColor:'rgba(243,156,18,0.08)',borderWidth:2,pointRadius:3,pointBackgroundColor:C.orange},
+                {label:'T-02 🏆',data:[15,50,0,0,0,0,0],borderColor:C.green,backgroundColor:'rgba(46,204,113,0.1)',borderWidth:3,pointRadius:4,pointBackgroundColor:C.green},
+                {label:'T-03 ⚠️',data:[21,0,100,100,78,15,100],borderColor:C.red,backgroundColor:'rgba(231,76,60,0.08)',borderWidth:3,pointRadius:4,pointBackgroundColor:C.red},
+                {label:'T-04',data:[0,100,0.5,12,19,42,37],borderColor:C.blue,backgroundColor:'rgba(52,152,219,0.06)',borderWidth:2,pointRadius:3,pointBackgroundColor:C.blue},
+                {label:'T-05',data:[100,44,36,37,48,100,75],borderColor:C.purple,backgroundColor:'rgba(155,89,182,0.06)',borderWidth:2,pointRadius:3,pointBackgroundColor:C.purple}
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                r: {
+                    beginAtZero: true, max: 100,
+                    grid: { color:'rgba(44,62,80,0.5)' },
+                    pointLabels: { color:'#95a5a6', font:{size:11,weight:'bold'} },
+                    ticks: { display:false }
+                }
+            },
+            plugins: {
+                legend: { labels:{color:'#95a5a6',font:{size:11},padding:12,usePointStyle:true} },
+                datalabels: { display: false }
+            }
+        }
+    });
+
+    // ===== FITOSS STACKED =====
+    new Chart(document.getElementById('chartFitossStacked'), {
+        type: 'bar',
+        data: {
+            labels: ['T-01','T-02 🏆','T-03 ⚠️','T-04','T-05'],
+            datasets: [
+                {label:'Fungicida',data:[388,131,580,133,293],backgroundColor:C.red,borderRadius:0},
+                {label:'Inseticida',data:[201,45,378,84,167],backgroundColor:C.orange,borderRadius:0},
+                {label:'Biológico',data:[341,54,285,111,195],backgroundColor:C.teal,borderRadius:{topLeft:4,topRight:4}}
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true,pointStyle:'rectRounded'}},
+                datalabels:{display:false}
+            },
+            scales: {
+                x:{stacked:true,ticks:{color:'#95a5a6'},grid:{color:'rgba(44,62,80,0.3)'}},
+                y:{stacked:true,ticks:{color:'#95a5a6',callback:v=>'R$ '+v},grid:{color:'rgba(44,62,80,0.3)'},title:{display:true,text:'R$/ha',color:'#7f8c8d'}}
+            }
+        }
+    });
+
+    // ===== SCATTER FITOSS vs RESULTADO =====
+    new Chart(document.getElementById('chartScatterFitoss'), {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Talhões',
+                data: [
+                    {x:931,y:324},{x:230,y:1041},{x:1244,y:162},{x:328,y:334},{x:655,y:322}
+                ],
+                backgroundColor: [C.orange,C.green,C.red,C.blue,C.purple],
+                borderColor: [C.orange,C.green,C.red,C.blue,C.purple],
+                pointRadius: 10,
+                pointHoverRadius: 14
+            },{
+                label: 'Linha de Tendência',
+                data: [{x:150,y:755},{x:1300,y:61}],
+                type: 'line',
+                borderColor: 'rgba(236,240,241,0.3)',
+                borderWidth: 2,
+                borderDash: [8,4],
+                pointRadius: 0,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend:{display:false},
+                datalabels:{
+                    formatter:(v,ctx)=>{
+                        if(ctx.datasetIndex===1) return '';
+                        const labels=['T-01','T-02','T-03','T-04','T-05'];
+                        return labels[ctx.dataIndex];
+                    },
+                    color:'#ecf0f1',font:{size:10,weight:'bold'},
+                    anchor:'top',align:'top',offset:4
+                }
+            },
+            scales: {
+                x:{title:{display:true,text:'Custo Fitossanitário (R$/ha)',color:'#7f8c8d',font:{size:11}},ticks:{color:'#95a5a6',callback:v=>'R$'+v},grid:{color:'rgba(44,62,80,0.4)'}},
+                y:{title:{display:true,text:'Resultado (R$/ha)',color:'#7f8c8d',font:{size:11}},ticks:{color:'#95a5a6',callback:v=>'R$'+v},grid:{color:'rgba(44,62,80,0.4)'},beginAtZero:true}
+            }
+        }
+    });
+
+    // ===== WATERFALL =====
+    (function(){
+        const labels = ['Receita','Insumos','Op.Mecan.','ADM','Financeiro','Manutenção','Depreciação','Arrendo','RESULTADO'];
+        const values = [7715.17, -3495.39, -365.42, -1399.34, -383.25, -334.90, -337.48, -921.59, 477.80];
+        let running = 0;
+        const bases = [], bars = [], colors = [];
+        for(let i=0;i<values.length;i++){
+            if(i===0){bases.push(0);bars.push(values[i]);colors.push(C.green);running=values[i];}
+            else if(i===values.length-1){bases.push(0);bars.push(values[i]);colors.push(C.gold);}
+            else{running+=values[i];bases.push(running);bars.push(Math.abs(values[i]));colors.push(C.red);}
+        }
+        new Chart(document.getElementById('chartWaterfall'),{
+            type:'bar',
+            data:{
+                labels:labels,
+                datasets:[
+                    {label:'Base',data:bases,backgroundColor:'transparent',borderWidth:0,barPercentage:0.6},
+                    {label:'Valor',data:bars,backgroundColor:colors,borderRadius:4,barPercentage:0.6}
+                ]
+            },
+            options:{
+                responsive:true,
+                plugins:{
+                    legend:{display:false},
+                    datalabels:{
+                        display:function(ctx){return ctx.datasetIndex===1;},
+                        anchor:'end',align:'top',
+                        formatter:(v,ctx)=>{
+                            const i=ctx.dataIndex;
+                            if(i===0) return 'R$ '+v.toFixed(0);
+                            if(i===labels.length-1) return 'R$ '+v.toFixed(0);
+                            return '-R$ '+v.toFixed(0);
+                        },
+                        color:'#ecf0f1',font:{size:10,weight:'bold'}
+                    }
+                },
+                scales:{
+                    x:{stacked:true,ticks:{color:'#95a5a6',font:{size:10},maxRotation:45},grid:{display:false}},
+                    y:{stacked:true,ticks:{color:'#95a5a6',callback:v=>'R$ '+v.toLocaleString('pt-BR')},grid:{color:'rgba(44,62,80,0.4)'},max:8500}
+                }
+            }
+        });
+    })();
+
+    // ===== STACKED INSUMOS POR TALHÃO =====
+    new Chart(document.getElementById('chartStackedInsumos'),{
+        type:'bar',
+        data:{
+            labels:['T-01','T-02 🏆','T-03 ⚠️','T-04','T-05','FAZENDA'],
+            datasets:[
+                {label:'Adubo',data:[1884,1865,1869,1855,1923,1872],backgroundColor:C.goldD},
+                {label:'Semente',data:[600,751,420,1253,712,652],backgroundColor:C.green},
+                {label:'Fungicida',data:[388,131,580,133,293,371],backgroundColor:C.red},
+                {label:'Inseticida',data:[201,45,378,84,167,198],backgroundColor:C.orange},
+                {label:'Biológico',data:[341,54,285,111,195,196],backgroundColor:C.teal},
+                {label:'Herbicida',data:[118,75,88,111,175,104],backgroundColor:C.blue},
+                {label:'Foliar+Adj+Prot',data:[106,47,170,84,176,101],backgroundColor:C.purple}
+            ]
+        },
+        options:{
+            responsive:true,
+            plugins:{
+                legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true,pointStyle:'rectRounded',padding:10}},
+                datalabels:{display:false}
+            },
+            scales:{
+                x:{stacked:true,ticks:{color:'#95a5a6'},grid:{display:false}},
+                y:{stacked:true,ticks:{color:'#95a5a6',callback:v=>'R$ '+v.toLocaleString('pt-BR')},grid:{color:'rgba(44,62,80,0.3)'},title:{display:true,text:'R$/ha',color:'#7f8c8d'}}
+            }
+        }
+    });
+
+    // ===== HEATMAP CORRELAÇÃO =====
+    (function(){
+        const vars = ['Resultado','Fitoss.','Foliar+','Semente','Adubo','Herbicida'];
+        const matrix = [
+            [ 1.00, -0.92, -0.67,  0.15, -0.18, -0.30],
+            [-0.92,  1.00,  0.82, -0.37,  0.06,  0.09],
+            [-0.67,  0.82,  1.00, -0.65,  0.35,  0.36],
+            [ 0.15, -0.37, -0.65,  1.00, -0.15, -0.05],
+            [-0.18,  0.06,  0.35, -0.15,  1.00,  0.28],
+            [-0.30,  0.09,  0.36, -0.05,  0.28,  1.00]
+        ];
+        const grid = document.getElementById('heatmapCorr');
+        grid.innerHTML = '<div class="heatmap-cell heatmap-header"></div>';
+        vars.forEach(v => grid.innerHTML += `<div class="heatmap-cell heatmap-header">${v}</div>`);
+        for(let i=0;i<vars.length;i++){
+            grid.innerHTML += `<div class="heatmap-cell heatmap-header">${vars[i]}</div>`;
+            for(let j=0;j<vars.length;j++){
+                const val = matrix[i][j];
+                let bg, color;
+                if(i===j){ bg='rgba(52,152,219,0.3)'; color='#3498db'; }
+                else if(val >= 0.7){ bg='rgba(39,174,96,0.6)'; color='#fff'; }
+                else if(val >= 0.3){ bg='rgba(39,174,96,0.25)'; color='#2ecc71'; }
+                else if(val > -0.3){ bg='rgba(127,140,141,0.15)'; color='#95a5a6'; }
+                else if(val > -0.7){ bg='rgba(231,76,60,0.25)'; color='#e74c3c'; }
+                else{ bg='rgba(231,76,60,0.6)'; color='#fff'; }
+                grid.innerHTML += `<div class="heatmap-cell" style="background:${bg};color:${color};">${val.toFixed(2)}</div>`;
+            }
+        }
+    })();
+</script>
+
+</body>
+</html>

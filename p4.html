@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fazenda Monte Alegre — Parte 4: Indicadores Financeiros e Econômicos</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        :root{--primary:#1a5632;--primary-light:#2d8a4e;--primary-dark:#0e3b20;--accent:#d4a017;--accent-light:#f0c940;--danger:#c0392b;--danger-light:#e74c3c;--warning:#e67e22;--warning-light:#f39c12;--success:#27ae60;--success-light:#2ecc71;--info:#2980b9;--info-light:#3498db;--bg-dark:#0f1923;--bg-card:#1a2634;--bg-card-hover:#223344;--bg-section:#15202d;--text-primary:#ecf0f1;--text-secondary:#95a5a6;--text-muted:#7f8c8d;--border:#2c3e50;--shadow:0 4px 24px rgba(0,0,0,0.3);}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg-dark);color:var(--text-primary);line-height:1.6;overflow-x:hidden;}
+        .header{background:linear-gradient(135deg,var(--primary-dark) 0%,var(--primary) 50%,var(--primary-light) 100%);padding:1.5rem 2rem;position:relative;overflow:hidden;}
+        .header::before{content:'';position:absolute;top:-50%;right:-10%;width:400px;height:400px;background:radial-gradient(circle,rgba(212,160,23,0.12) 0%,transparent 70%);border-radius:50%;}
+        .header h1{font-size:1.5rem;font-weight:800;color:#fff;position:relative;z-index:1;}.header h1 span{color:var(--accent-light);}
+        .header p{color:rgba(255,255,255,0.6);font-size:0.85rem;position:relative;z-index:1;}
+        .nav-parts{display:flex;gap:0.5rem;padding:0.75rem 2rem;background:var(--bg-section);border-bottom:1px solid var(--border);flex-wrap:wrap;position:sticky;top:0;z-index:100;}
+        .nav-parts a{padding:0.45rem 0.9rem;border-radius:8px;text-decoration:none;font-size:0.78rem;font-weight:600;color:var(--text-secondary);background:var(--bg-card);border:1px solid var(--border);transition:all 0.2s;}
+        .nav-parts a:hover,.nav-parts a.active{background:var(--primary);color:#fff;border-color:var(--primary-light);}
+        .container{max-width:1440px;margin:0 auto;padding:1.5rem;}
+        .section-title{display:flex;align-items:center;gap:0.75rem;margin:2.25rem 0 1.25rem;padding-bottom:0.75rem;border-bottom:2px solid var(--border);}
+        .section-title .icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;}
+        .section-title h2{font-size:1.3rem;font-weight:700;}
+        .section-title h2 small{display:block;font-size:0.75rem;font-weight:400;color:var(--text-secondary);margin-top:0.15rem;}
+        .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:1.5rem;margin-bottom:1.5rem;}
+        .chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+        .chart-card h3{font-size:0.92rem;font-weight:700;margin-bottom:0.25rem;}
+        .chart-card p.chart-sub{font-size:0.73rem;color:var(--text-muted);margin-bottom:1rem;}
+        .chart-card-full{grid-column:1/-1;}
+        .table-wrapper{overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-bottom:1.5rem;}
+        table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+        thead th{background:var(--bg-section);color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;font-size:0.7rem;padding:0.8rem 0.75rem;text-align:left;border-bottom:2px solid var(--border);}
+        tbody td{padding:0.7rem 0.75rem;border-bottom:1px solid var(--border);}
+        tbody tr:hover{background:var(--bg-card-hover);}
+        tbody tr:last-child td{border-bottom:none;}
+        .text-right{text-align:right;}.text-center{text-align:center;}.font-bold{font-weight:700;}.font-mono{font-family:'Cascadia Code','Fira Code',monospace;font-size:0.8rem;}
+        .badge{display:inline-flex;align-items:center;gap:0.25rem;padding:0.18rem 0.5rem;border-radius:6px;font-size:0.68rem;font-weight:600;white-space:nowrap;}
+        .badge-success{background:rgba(39,174,96,0.15);color:var(--success-light);}
+        .badge-warning{background:rgba(243,156,18,0.15);color:var(--warning-light);}
+        .badge-danger{background:rgba(231,76,60,0.15);color:var(--danger-light);}
+        .badge-info{background:rgba(52,152,219,0.15);color:var(--info-light);}
+        .info-box{background:var(--bg-card);border-left:4px solid var(--info);border-radius:0 12px 12px 0;padding:1rem 1.25rem;margin-bottom:1.5rem;}
+        .info-box.warning{border-left-color:var(--warning);}.info-box.danger{border-left-color:var(--danger);}.info-box.success{border-left-color:var(--success);}
+        .info-box h4{font-size:0.88rem;font-weight:700;margin-bottom:0.35rem;}
+        .info-box p,.info-box ul{font-size:0.8rem;color:var(--text-secondary);line-height:1.65;}
+        .info-box ul{margin-left:1.2rem;margin-top:0.35rem;}
+        .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:1rem;margin-bottom:1.5rem;}
+        .kpi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.05rem;position:relative;overflow:hidden;transition:transform 0.2s;}
+        .kpi-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+        .kpi-card .kpi-label{font-size:0.72rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.35rem;}
+        .kpi-card .kpi-value{font-size:1.45rem;font-weight:800;line-height:1.2;}
+        .kpi-card .kpi-sub{font-size:0.73rem;color:var(--text-muted);margin-top:0.25rem;}
+        .kpi-card .kpi-bar{position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
+        .gauge-row{display:flex;align-items:center;gap:1rem;margin-bottom:0.85rem;}
+        .gauge-label{width:65px;font-size:0.8rem;font-weight:600;color:var(--text-secondary);text-align:right;flex-shrink:0;}
+        .gauge-track{flex:1;height:26px;background:var(--bg-section);border-radius:13px;overflow:hidden;position:relative;}
+        .gauge-fill{height:100%;border-radius:13px;display:flex;align-items:center;justify-content:flex-end;padding-right:0.5rem;font-size:0.7rem;font-weight:700;color:#fff;transition:width 0.8s ease;}
+        .gauge-val{width:95px;text-align:left;font-size:0.8rem;font-weight:700;font-family:'Cascadia Code',monospace;flex-shrink:0;}
+        .formula-box{background:var(--bg-section);border:1px solid var(--border);border-radius:10px;padding:0.8rem 1.1rem;margin-bottom:1rem;font-family:'Cascadia Code','Fira Code',monospace;font-size:0.82rem;color:var(--accent-light);text-align:center;letter-spacing:0.3px;}
+        .heatmap-container{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;overflow-x:auto;}
+        .heatmap-grid{display:grid;gap:3px;}
+        .heatmap-cell{padding:0.45rem 0.3rem;text-align:center;font-size:0.7rem;font-weight:600;border-radius:5px;transition:transform 0.15s;}
+        .heatmap-cell:hover{transform:scale(1.06);z-index:2;}
+        .heatmap-header{background:var(--bg-section);color:var(--text-secondary);font-weight:700;font-size:0.67rem;}
+        .footer{text-align:center;padding:2rem;border-top:1px solid var(--border);margin-top:2rem;color:var(--text-muted);font-size:0.75rem;}
+        @media(max-width:768px){.header{padding:1rem;}.container{padding:1rem;}.chart-grid{grid-template-columns:1fr;}.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>📐 Parte 4 — Indicadores <span>Financeiros e Econômicos</span></h1>
+    <p>MC · IEO · GAO · BER · ROIC · EVA · TIR · RBC · Sharpe Agrícola · Pontos de Equilíbrio · Elasticidades · Risco</p>
+</div>
+
+<div class="nav-parts">
+    <a href="#">📊 Parte 1 — Dashboard</a>
+    <a href="#">📉 Parte 2 — Custos</a>
+    <a href="#">🌱 Parte 3 — Variedades</a>
+    <a href="#" class="active">📐 Parte 4 — Indicadores</a>
+    <a href="#">🔬 Parte 5 — Econometria</a>
+    <a href="#">🎯 Parte 6 — Scorecard</a>
+    <a href="#">📄 Parte 7 — Relatório Final</a>
+</div>
+
+<div class="container">
+
+    <!-- ============================================ -->
+    <!--  BLOCO 1: MARGEM DE CONTRIBUIÇÃO             -->
+    <!-- ============================================ -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#27ae60,#2ecc71);">💚</div>
+        <h2>Margem de Contribuição (MC) <small>Receita menos custos variáveis — indica quanto cada talhão contribui para cobrir custos fixos</small></h2>
+    </div>
+
+    <div class="formula-box">MC = Receita/ha − Custo Variável/ha (Insumos) &nbsp;&nbsp;|&nbsp;&nbsp; MC% = MC / Receita × 100</div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Talhão</th><th class="text-right">Receita/ha</th><th class="text-right">CV/ha (Insumos)</th><th class="text-right">MC/ha</th><th class="text-right">MC %</th><th class="text-center">Status</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="font-bold">T-01</td><td class="text-right font-mono">7.715</td><td class="text-right font-mono">3.639</td><td class="text-right font-mono font-bold" style="color:var(--warning-light);">4.076</td><td class="text-right font-mono">52,8%</td><td class="text-center"><span class="badge badge-warning">Moderada</span></td></tr>
+                <tr style="background:rgba(39,174,96,0.07);"><td class="font-bold" style="color:var(--success-light);">T-02 🏆</td><td class="text-right font-mono">7.715</td><td class="text-right font-mono" style="color:var(--success-light);">2.968</td><td class="text-right font-mono font-bold" style="color:var(--success-light);">4.747</td><td class="text-right font-mono font-bold" style="color:var(--success-light);">61,5%</td><td class="text-center"><span class="badge badge-success">Excelente ✅</span></td></tr>
+                <tr style="background:rgba(231,76,60,0.05);"><td class="font-bold" style="color:var(--danger-light);">T-03 ⚠️</td><td class="text-right font-mono">7.715</td><td class="text-right font-mono" style="color:var(--danger-light);">3.790</td><td class="text-right font-mono font-bold" style="color:var(--danger-light);">3.925</td><td class="text-right font-mono" style="color:var(--danger-light);">50,9%</td><td class="text-center"><span class="badge badge-danger">Baixa 🔴</span></td></tr>
+                <tr><td class="font-bold">T-04</td><td class="text-right font-mono">7.715</td><td class="text-right font-mono">3.631</td><td class="text-right font-mono font-bold" style="color:var(--warning-light);">4.084</td><td class="text-right font-mono">52,9%</td><td class="text-center"><span class="badge badge-warning">Moderada</span></td></tr>
+                <tr><td class="font-bold">T-05</td><td class="text-right font-mono">7.715</td><td class="text-right font-mono">3.642</td><td class="text-right font-mono font-bold" style="color:var(--warning-light);">4.074</td><td class="text-right font-mono">52,8%</td><td class="text-center"><span class="badge badge-warning">Moderada</span></td></tr>
+                <tr style="background:var(--bg-section);font-weight:700;"><td>FAZENDA</td><td class="text-right font-mono">7.715</td><td class="text-right font-mono">3.495</td><td class="text-right font-mono" style="color:var(--accent-light);">4.220</td><td class="text-right font-mono" style="color:var(--accent-light);">54,7%</td><td class="text-center"><span class="badge badge-info">Referência</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Margem de Contribuição por Talhão (R$/ha)</h3>
+            <p class="chart-sub">T-02 lidera com MC de R$ 4.747/ha — R$ 822 acima do T-03</p>
+            <div class="chart-wrap"><canvas id="chartMC"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Composição: CV vs. CF vs. Resultado</h3>
+            <p class="chart-sub">Receita dividida em custo variável, custos fixos e resultado final</p>
+            <div class="chart-wrap"><canvas id="chartCVCFResult"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!--  BLOCO 2: IEO + BER + ROIC                  -->
+    <!-- ============================================ -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#2980b9,#3498db);">📊</div>
+        <h2>Eficiência Operacional — IEO, BER e ROIC <small>Três indicadores complementares que medem a relação custo-benefício da operação</small></h2>
+    </div>
+
+    <div class="formula-box">IEO = Receita / C.T. &nbsp;&nbsp;|&nbsp;&nbsp; BER = C.T. / Receita × 100 &nbsp;&nbsp;|&nbsp;&nbsp; ROIC = Resultado / C.T. × 100</div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Talhão</th><th class="text-right">IEO</th><th class="text-center">Class. IEO</th><th class="text-right">BER (%)</th><th class="text-right">Folga</th><th class="text-center">Class. BER</th><th class="text-right">ROIC</th><th class="text-center">vs. Selic (14,75%)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="font-bold">T-01</td><td class="text-right font-mono">1,044</td><td class="text-center"><span class="badge badge-warning">Apertado</span></td><td class="text-right font-mono">95,8%</td><td class="text-right font-mono">4,2%</td><td class="text-center"><span class="badge badge-danger">Alto risco</span></td><td class="text-right font-mono">4,38%</td><td class="text-center"><span class="badge badge-danger">Perde 🔴</span></td></tr>
+                <tr style="background:rgba(39,174,96,0.07);"><td class="font-bold" style="color:var(--success-light);">T-02 🏆</td><td class="text-right font-mono font-bold" style="color:var(--success-light);">1,156</td><td class="text-center"><span class="badge badge-success">Eficiente ✅</span></td><td class="text-right font-mono font-bold" style="color:var(--success-light);">86,5%</td><td class="text-right font-mono" style="color:var(--success-light);">13,5%</td><td class="text-center"><span class="badge badge-success">Moderado ✅</span></td><td class="text-right font-mono font-bold" style="color:var(--success-light);">15,60%</td><td class="text-center"><span class="badge badge-success">Supera ✅</span></td></tr>
+                <tr style="background:rgba(231,76,60,0.05);"><td class="font-bold" style="color:var(--danger-light);">T-03 ⚠️</td><td class="text-right font-mono" style="color:var(--danger-light);">1,021</td><td class="text-center"><span class="badge badge-danger">Marginal 🔴</span></td><td class="text-right font-mono font-bold" style="color:var(--danger-light);">97,9%</td><td class="text-right font-mono" style="color:var(--danger-light);">2,1%</td><td class="text-center"><span class="badge badge-danger">Crítico 🔴</span></td><td class="text-right font-mono" style="color:var(--danger-light);">2,15%</td><td class="text-center"><span class="badge badge-danger">Perde 🔴</span></td></tr>
+                <tr><td class="font-bold">T-04</td><td class="text-right font-mono">1,045</td><td class="text-center"><span class="badge badge-warning">Apertado</span></td><td class="text-right font-mono">95,7%</td><td class="text-right font-mono">4,3%</td><td class="text-center"><span class="badge badge-danger">Alto risco</span></td><td class="text-right font-mono">4,52%</td><td class="text-center"><span class="badge badge-danger">Perde 🔴</span></td></tr>
+                <tr><td class="font-bold">T-05</td><td class="text-right font-mono">1,044</td><td class="text-center"><span class="badge badge-warning">Apertado</span></td><td class="text-right font-mono">95,8%</td><td class="text-right font-mono">4,2%</td><td class="text-center"><span class="badge badge-danger">Alto risco</span></td><td class="text-right font-mono">4,36%</td><td class="text-center"><span class="badge badge-danger">Perde 🔴</span></td></tr>
+                <tr style="background:var(--bg-section);font-weight:700;"><td>FAZENDA</td><td class="text-right font-mono" style="color:var(--accent-light);">1,066</td><td class="text-center"><span class="badge badge-warning">Apertado</span></td><td class="text-right font-mono" style="color:var(--accent-light);">93,8%</td><td class="text-right font-mono">6,2%</td><td class="text-center"><span class="badge badge-danger">Alto risco</span></td><td class="text-right font-mono" style="color:var(--accent-light);">6,60%</td><td class="text-center"><span class="badge badge-danger">Perde 🔴</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Break-Even Ratio por Talhão (%)</h3>
+            <p class="chart-sub">Quanto menor, melhor. Linha vermelha = 93% (zona de perigo). T-03 a 97,9%.</p>
+            <div class="chart-wrap"><canvas id="chartBER"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>ROIC por Talhão vs. Selic (14,75% a.a.)</h3>
+            <p class="chart-sub">Apenas o T-02 supera a Selic. Linha amarela = custo de oportunidade.</p>
+            <div class="chart-wrap"><canvas id="chartROIC"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!--  BLOCO 3: GAO + ICCF                        -->
+    <!-- ============================================ -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#e67e22,#f39c12);">⚡</div>
+        <h2>Alavancagem e Cobertura — GAO e ICCF <small>Grau de Alavancagem Operacional e Índice de Cobertura de Custos Fixos</small></h2>
+    </div>
+
+    <div class="formula-box">GAO = MC / Resultado Operacional &nbsp;&nbsp;|&nbsp;&nbsp; ICCF = MC / Custos Fixos &nbsp;&nbsp;(CF = R$ 3.376,56/ha)</div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Talhão</th><th class="text-right">MC/ha</th><th class="text-right">Resultado/ha</th><th class="text-right">GAO</th><th class="text-center">Significado GAO</th><th class="text-right">ICCF</th><th class="text-center">Class. ICCF</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="font-bold">T-01</td><td class="text-right font-mono">4.076</td><td class="text-right font-mono">324</td><td class="text-right font-mono font-bold" style="color:var(--warning-light);">12,59</td><td class="text-center" style="font-size:0.72rem;color:var(--text-muted);">1% queda receita = -12,6% resultado</td><td class="text-right font-mono">1,21</td><td class="text-center"><span class="badge badge-warning">Apertado</span></td></tr>
+                <tr style="background:rgba(39,174,96,0.07);"><td class="font-bold" style="color:var(--success-light);">T-02 🏆</td><td class="text-right font-mono">4.747</td><td class="text-right font-mono" style="color:var(--success-light);">1.041</td><td class="text-right font-mono font-bold" style="color:var(--success-light);">4,56</td><td class="text-center" style="font-size:0.72rem;color:var(--success-light);">Risco controlado ✅</td><td class="text-right font-mono font-bold" style="color:var(--success-light);">1,41</td><td class="text-center"><span class="badge badge-success">Confortável ✅</span></td></tr>
+                <tr style="background:rgba(231,76,60,0.05);"><td class="font-bold" style="color:var(--danger-light);">T-03 ⚠️</td><td class="text-right font-mono">3.925</td><td class="text-right font-mono" style="color:var(--danger-light);">162</td><td class="text-right font-mono font-bold" style="color:var(--danger-light);">24,17</td><td class="text-center" style="font-size:0.72rem;color:var(--danger-light);">1% queda = -24,2% resultado ⚠️</td><td class="text-right font-mono" style="color:var(--danger-light);">1,16</td><td class="text-center"><span class="badge badge-danger">Marginal 🔴</span></td></tr>
+                <tr><td class="font-bold">T-04</td><td class="text-right font-mono">4.084</td><td class="text-right font-mono">334</td><td class="text-right font-mono font-bold" style="color:var(--warning-light);">12,24</td><td class="text-center" style="font-size:0.72rem;color:var(--text-muted);">Alto risco</td><td class="text-right font-mono">1,21</td><td class="text-center"><span class="badge badge-warning">Apertado</span></td></tr>
+                <tr><td class="font-bold">T-05</td><td class="text-right font-mono">4.074</td><td class="text-right font-mono">322</td><td class="text-right font-mono font-bold" style="color:var(--warning-light);">12,64</td><td class="text-center" style="font-size:0.72rem;color:var(--text-muted);">Alto risco</td><td class="text-right font-mono">1,21</td><td class="text-center"><span class="badge badge-warning">Apertado</span></td></tr>
+                <tr style="background:var(--bg-section);font-weight:700;"><td>FAZENDA</td><td class="text-right font-mono">4.220</td><td class="text-right font-mono">478</td><td class="text-right font-mono" style="color:var(--accent-light);">8,83</td><td class="text-center" style="font-size:0.72rem;">Elevado</td><td class="text-right font-mono" style="color:var(--accent-light);">1,25</td><td class="text-center"><span class="badge badge-warning">Apertado</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Termômetro GAO -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
+        <h3 style="font-size:0.92rem;margin-bottom:0.3rem;">🌡️ Termômetro de Risco Operacional (GAO)</h3>
+        <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:1rem;">Quanto maior o GAO, mais alavancado e arriscado. Meta ≤ 6,0.</p>
+        <div class="gauge-row"><div class="gauge-label">T-02 🏆</div><div class="gauge-track"><div class="gauge-fill" style="width:19%;background:linear-gradient(90deg,#27ae60,#2ecc71);">4,56</div></div><div class="gauge-val" style="color:var(--success-light);">4,56 ✅</div></div>
+        <div class="gauge-row"><div class="gauge-label">Fazenda</div><div class="gauge-track"><div class="gauge-fill" style="width:37%;background:linear-gradient(90deg,#e67e22,#f39c12);">8,83</div></div><div class="gauge-val" style="color:var(--warning-light);">8,83 ⚠️</div></div>
+        <div class="gauge-row"><div class="gauge-label">T-04</div><div class="gauge-track"><div class="gauge-fill" style="width:51%;background:linear-gradient(90deg,#e67e22,#f39c12);">12,24</div></div><div class="gauge-val" style="color:var(--warning-light);">12,24</div></div>
+        <div class="gauge-row"><div class="gauge-label">T-01</div><div class="gauge-track"><div class="gauge-fill" style="width:52%;background:linear-gradient(90deg,#e67e22,#f39c12);">12,59</div></div><div class="gauge-val" style="color:var(--warning-light);">12,59</div></div>
+        <div class="gauge-row"><div class="gauge-label">T-05</div><div class="gauge-track"><div class="gauge-fill" style="width:53%;background:linear-gradient(90deg,#e67e22,#f39c12);">12,64</div></div><div class="gauge-val" style="color:var(--warning-light);">12,64</div></div>
+        <div class="gauge-row"><div class="gauge-label" style="color:var(--danger-light);">T-03 ⚠️</div><div class="gauge-track"><div class="gauge-fill" style="width:100%;background:linear-gradient(90deg,#c0392b,#e74c3c);">24,17</div></div><div class="gauge-val" style="color:var(--danger-light);">24,17 🔴</div></div>
+    </div>
+
+    <!-- ============================================ -->
+    <!--  BLOCO 4: EVA + TIR                         -->
+    <!-- ============================================ -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#c0392b,#e74c3c);">🏦</div>
+        <h2>Valor Econômico — EVA e TIR <small>A operação remunera o capital investido acima do custo de oportunidade?</small></h2>
+    </div>
+
+    <div class="formula-box">EVA = Resultado − (C.T. × Selic/2) &nbsp;&nbsp;|&nbsp;&nbsp; TIR anualizada = (1 + TIR safra)² − 1 &nbsp;&nbsp;|&nbsp;&nbsp; Selic semestral = 7,375%</div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Talhão</th><th class="text-right">C.T. Total</th><th class="text-right">Custo Oport. (7,375%)</th><th class="text-right">Resultado</th><th class="text-right">EVA (R$)</th><th class="text-center">EVA Status</th><th class="text-right">TIR Safra</th><th class="text-right">TIR Anual.</th><th class="text-center">vs. Selic</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="font-bold">T-01</td><td class="text-right font-mono">500.399</td><td class="text-right font-mono">36.904</td><td class="text-right font-mono">21.918</td><td class="text-right font-mono font-bold" style="color:var(--danger-light);">-14.986</td><td class="text-center"><span class="badge badge-danger">🔴 Destrói</span></td><td class="text-right font-mono">4,38%</td><td class="text-right font-mono">8,95%</td><td class="text-center"><span class="badge badge-danger">Perde</span></td></tr>
+                <tr style="background:rgba(39,174,96,0.07);"><td class="font-bold" style="color:var(--success-light);">T-02 🏆</td><td class="text-right font-mono">1.107.871</td><td class="text-right font-mono">81.705</td><td class="text-right font-mono font-bold" style="color:var(--success-light);">172.848</td><td class="text-right font-mono font-bold" style="color:var(--success-light);">+91.142</td><td class="text-center"><span class="badge badge-success">🟢 Cria valor</span></td><td class="text-right font-mono" style="color:var(--success-light);">15,60%</td><td class="text-right font-mono font-bold" style="color:var(--success-light);">33,63%</td><td class="text-center"><span class="badge badge-success">Ganha ✅</span></td></tr>
+                <tr style="background:rgba(231,76,60,0.05);"><td class="font-bold" style="color:var(--danger-light);">T-03 ⚠️</td><td class="text-right font-mono">1.646.504</td><td class="text-right font-mono">121.430</td><td class="text-right font-mono" style="color:var(--danger-light);">35.404</td><td class="text-right font-mono font-bold" style="color:var(--danger-light);">-86.026</td><td class="text-center"><span class="badge badge-danger">🔴 Destrói</span></td><td class="text-right font-mono">2,15%</td><td class="text-right font-mono" style="color:var(--danger-light);">4,35%</td><td class="text-center"><span class="badge badge-danger">Perde</span></td></tr>
+                <tr><td class="font-bold">T-04</td><td class="text-right font-mono">415.583</td><td class="text-right font-mono">30.649</td><td class="text-right font-mono">18.782</td><td class="text-right font-mono font-bold" style="color:var(--danger-light);">-11.867</td><td class="text-center"><span class="badge badge-danger">🔴 Destrói</span></td><td class="text-right font-mono">4,52%</td><td class="text-right font-mono">9,25%</td><td class="text-center"><span class="badge badge-danger">Perde</span></td></tr>
+                <tr><td class="font-bold">T-05</td><td class="text-right font-mono">295.721</td><td class="text-right font-mono">21.809</td><td class="text-right font-mono">12.886</td><td class="text-right font-mono font-bold" style="color:var(--danger-light);">-8.924</td><td class="text-center"><span class="badge badge-danger">🔴 Destrói</span></td><td class="text-right font-mono">4,36%</td><td class="text-right font-mono">8,91%</td><td class="text-center"><span class="badge badge-danger">Perde</span></td></tr>
+                <tr style="background:var(--bg-section);font-weight:700;"><td>FAZENDA</td><td class="text-right font-mono">3.966.078</td><td class="text-right font-mono">292.498</td><td class="text-right font-mono">261.837</td><td class="text-right font-mono" style="color:var(--danger-light);">-30.661</td><td class="text-center"><span class="badge badge-danger">🔴 Destrói</span></td><td class="text-right font-mono">6,60%</td><td class="text-right font-mono" style="color:var(--accent-light);">13,64%</td><td class="text-center"><span class="badge badge-danger">Perde (por 1,1pp)</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>EVA por Talhão (R$)</h3>
+            <p class="chart-sub">Apenas o T-02 gera valor econômico positivo. Fazenda destrói R$ 30,7k.</p>
+            <div class="chart-wrap"><canvas id="chartEVA"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>TIR Anualizada vs. Selic (14,75%)</h3>
+            <p class="chart-sub">T-02 supera amplamente. Fazenda fica 1,1 p.p. abaixo.</p>
+            <div class="chart-wrap"><canvas id="chartTIR"></canvas></div>
+        </div>
+    </div>
+
+    <div class="info-box danger">
+        <h4>🔴 Resultado Crítico: A Fazenda Destrói Valor Econômico</h4>
+        <p>Com EVA de <strong>-R$ 30.661</strong>, a fazenda entrega resultado contábil positivo (R$ 261.837), mas <strong>não remunera o capital acima da Selic (14,75%)</strong>. Em termos práticos: o Leandro teria obtido R$ 30,7 mil a mais simplesmente deixando o dinheiro investido em CDB/Selic.<br><br>
+        <strong>Porém, o T-02 mostra que é possível:</strong> com EVA de +R$ 91.142 e TIR anualizada de 33,63%, prova que a atividade agrícola pode superar o custo de oportunidade — desde que com gestão eficiente de custos.<br><br>
+        <strong>O T-03 é o vilão:</strong> sozinho destrói R$ 86 mil de valor econômico, neutralizando quase todo o EVA positivo do T-02.</p>
+    </div>
+
+    <!-- ============================================ -->
+    <!--  BLOCO 5: PONTOS DE EQUILÍBRIO               -->
+    <!-- ============================================ -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);">⚖️</div>
+        <h2>Pontos de Equilíbrio <small>Break-even de quantidade e preço por diferentes bases de custo</small></h2>
+    </div>
+
+    <div class="formula-box">P.E. Quantidade = Custo/ha ÷ PMV (R$/sc) &nbsp;&nbsp;|&nbsp;&nbsp; P.E. Preço = Custo/ha ÷ Produtividade (sc/ha)</div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Break-Even de Quantidade (sc/ha)</h3>
+            <p class="chart-sub">Sacas necessárias por hectare para cobrir cada nível de custo. Linha = realizado (66,47 sc).</p>
+            <div class="chart-wrap"><canvas id="chartBEQtd"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Break-Even de Preço (R$/sc)</h3>
+            <p class="chart-sub">Preço mínimo para cobrir cada nível de custo. Linha = PMV realizado (R$ 116,07).</p>
+            <div class="chart-wrap"><canvas id="chartBEPreco"></canvas></div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Base de Custo</th><th class="text-right">Custo/ha</th><th class="text-right">P.E. Qtd (sc/ha)</th><th class="text-right">Folga vs. 66,47 sc</th><th class="text-right">P.E. Preço (R$/sc)</th><th class="text-right">Folga vs. R$ 116</th><th class="text-center">Status</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="font-bold">Custo de Insumos</td><td class="text-right font-mono">3.495</td><td class="text-right font-mono" style="color:var(--success-light);">30,12</td><td class="text-right font-mono" style="color:var(--success-light);">+36,35</td><td class="text-right font-mono" style="color:var(--success-light);">R$ 52,59</td><td class="text-right font-mono" style="color:var(--success-light);">+R$ 63,48</td><td class="text-center"><span class="badge badge-success">Confortável ✅</span></td></tr>
+                <tr><td class="font-bold">COT</td><td class="text-right font-mono">6.534</td><td class="text-right font-mono">56,30</td><td class="text-right font-mono" style="color:var(--success-light);">+10,17</td><td class="text-right font-mono">R$ 98,31</td><td class="text-right font-mono" style="color:var(--success-light);">+R$ 17,76</td><td class="text-center"><span class="badge badge-success">OK ✅</span></td></tr>
+                <tr><td class="font-bold">Custo Total (C.T.)</td><td class="text-right font-mono">7.237</td><td class="text-right font-mono" style="color:var(--warning-light);">62,36</td><td class="text-right font-mono" style="color:var(--warning-light);">+4,11</td><td class="text-right font-mono">R$ 108,89</td><td class="text-right font-mono" style="color:var(--warning-light);">+R$ 7,18</td><td class="text-center"><span class="badge badge-warning">Apertado ⚠️</span></td></tr>
+                <tr style="background:rgba(231,76,60,0.05);"><td class="font-bold" style="color:var(--danger-light);">C.T. + Custo de Oportunidade</td><td class="text-right font-mono">7.771</td><td class="text-right font-mono font-bold" style="color:var(--danger-light);">66,95</td><td class="text-right font-mono font-bold" style="color:var(--danger-light);">-0,48</td><td class="text-right font-mono font-bold" style="color:var(--danger-light);">R$ 116,91</td><td class="text-right font-mono font-bold" style="color:var(--danger-light);">-R$ 0,84</td><td class="text-center"><span class="badge badge-danger">Déficit 🔴</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="info-box warning">
+        <h4>⚠️ Resultado: A Produtividade Atual Não Cobre o Custo de Oportunidade</h4>
+        <p>Quando se adiciona o custo de oportunidade da Selic, o break-even de quantidade sobe para <strong>66,95 sc/ha</strong> — <strong>acima dos 66,47 sc/ha realizados</strong>. Da mesma forma, o break-even de preço sobe para <strong>R$ 116,91/sc — acima do PMV de R$ 116,07</strong>. Isso confirma o EVA negativo: a operação gera lucro contábil, mas não lucro econômico real.</p>
+    </div>
+
+    <!-- ============================================ -->
+    <!--  BLOCO 6: ELASTICIDADES E RISCO              -->
+    <!-- ============================================ -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#e74c3c,#c0392b);">⚡</div>
+        <h2>Elasticidades e Indicadores de Risco <small>Sensibilidade do resultado a variações de preço e produtividade + Índice de Sharpe Agrícola</small></h2>
+    </div>
+
+    <div class="formula-box">ε_Preço = Receita/ha ÷ Resultado/ha &nbsp;&nbsp;|&nbsp;&nbsp; Sharpe = (R̄ resultado − R_f) / σ resultado</div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Elasticidade-Preço do Resultado</h3>
+            <p class="chart-sub">Multiplicador: % queda no preço × elasticidade = % queda no resultado</p>
+            <div class="chart-wrap"><canvas id="chartElast"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Impacto de +1 sc/ha no Resultado (%)</h3>
+            <p class="chart-sub">Cada saca adicional por hectare impacta exponencialmente talhões de margem apertada</p>
+            <div class="chart-wrap"><canvas id="chartImpact1sc"></canvas></div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Talhão</th><th class="text-right">ε Preço</th><th class="text-center">Interpretação</th><th class="text-right">Δ% por +1sc/ha</th><th class="text-center">Interpretação</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="font-bold">T-01</td><td class="text-right font-mono" style="color:var(--warning-light);">23,83</td><td class="text-center" style="font-size:0.72rem;">1% queda preço → -23,8% resultado</td><td class="text-right font-mono" style="color:var(--success-light);">+35,8%</td><td class="text-center" style="font-size:0.72rem;">Alto retorno do ganho de produtividade</td></tr>
+                <tr style="background:rgba(39,174,96,0.07);"><td class="font-bold" style="color:var(--success-light);">T-02 🏆</td><td class="text-right font-mono font-bold" style="color:var(--success-light);">7,41</td><td class="text-center" style="font-size:0.72rem;color:var(--success-light);">Menor sensibilidade ✅</td><td class="text-right font-mono">+11,1%</td><td class="text-center" style="font-size:0.72rem;">Impacto moderado (já é eficiente)</td></tr>
+                <tr style="background:rgba(231,76,60,0.05);"><td class="font-bold" style="color:var(--danger-light);">T-03 ⚠️</td><td class="text-right font-mono font-bold" style="color:var(--danger-light);">47,51</td><td class="text-center" style="font-size:0.72rem;color:var(--danger-light);">1% queda → -47,5% resultado ⚠️</td><td class="text-right font-mono font-bold" style="color:var(--success-light);">+71,5%</td><td class="text-center" style="font-size:0.72rem;color:var(--success-light);">Retorno exponencial da produtividade!</td></tr>
+                <tr><td class="font-bold">T-04</td><td class="text-right font-mono" style="color:var(--warning-light);">23,13</td><td class="text-center" style="font-size:0.72rem;">Alta sensibilidade</td><td class="text-right font-mono">+34,8%</td><td class="text-center" style="font-size:0.72rem;">Alto retorno</td></tr>
+                <tr><td class="font-bold">T-05</td><td class="text-right font-mono" style="color:var(--warning-light);">23,95</td><td class="text-center" style="font-size:0.72rem;">Alta sensibilidade</td><td class="text-right font-mono">+36,0%</td><td class="text-center" style="font-size:0.72rem;">Alto retorno</td></tr>
+                <tr style="background:var(--bg-section);font-weight:700;"><td>FAZENDA</td><td class="text-right font-mono" style="color:var(--accent-light);">16,15</td><td class="text-center" style="font-size:0.72rem;">Elevada</td><td class="text-right font-mono" style="color:var(--accent-light);">+24,3%</td><td class="text-center" style="font-size:0.72rem;">Cada sc vale R$ 63.568 para a fazenda</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Sharpe Agrícola -->
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#c0392b,#e74c3c);"></div>
+            <div class="kpi-label">Índice de Sharpe Agrícola</div>
+            <div class="kpi-value" style="color:var(--danger-light);">-0,28</div>
+            <div class="kpi-sub">Negativo → não remunera o risco vs. Selic</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#e67e22,#f39c12);"></div>
+            <div class="kpi-label">Índice de Gini (Resultado)</div>
+            <div class="kpi-value" style="color:var(--warning-light);">0,41</div>
+            <div class="kpi-sub">Concentração moderada-alta · T-02 = 66% do resultado</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#e74c3c,#c0392b);"></div>
+            <div class="kpi-label">CV do Resultado</div>
+            <div class="kpi-value" style="color:var(--danger-light);">79,6%</div>
+            <div class="kpi-sub">Heterogeneidade extrema entre talhões</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#e67e22,#f39c12);"></div>
+            <div class="kpi-label">Prob. Estimada de Prejuízo (26/27)</div>
+            <div class="kpi-value" style="color:var(--warning-light);">35-40%</div>
+            <div class="kpi-sub">Sem otimizações · Cai para 15-20% com melhorias</div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!--  BLOCO 7: ICPT + RBC CONSOLIDADO             -->
+    <!-- ============================================ -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#d4a017,#f0c940);">🏆</div>
+        <h2>ICPT — Índice Composto de Performance + RBC <small>Nota final sintética (0-100) combinando 5 dimensões + Relação Benefício-Custo</small></h2>
+    </div>
+
+    <div class="formula-box">ICPT = 0,25×N_MC + 0,20×N_IEO + 0,20×N_BER_inv + 0,20×N_ROIC + 0,15×N_GAO_inv &nbsp;&nbsp;|&nbsp;&nbsp; RBC = Receita / Custo Total</div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>ICPT — Índice Composto de Performance do Talhão</h3>
+            <p class="chart-sub">Nota de 0 a 100 combinando MC, IEO, BER, ROIC e GAO. T-02 é o benchmark.</p>
+            <div class="chart-wrap"><canvas id="chartICPT"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Relação Benefício-Custo (RBC) por Talhão</h3>
+            <p class="chart-sub">Linha vermelha = break-even (RBC=1,0). Acima = lucro. Abaixo = prejuízo.</p>
+            <div class="chart-wrap"><canvas id="chartRBC"></canvas></div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Talhão</th><th class="text-right">N_MC</th><th class="text-right">N_IEO</th><th class="text-right">N_BER</th><th class="text-right">N_ROIC</th><th class="text-right">N_GAO</th><th class="text-right font-bold">ICPT</th><th class="text-center">Classificação</th><th class="text-right">RBC</th></tr>
+            </thead>
+            <tbody>
+                <tr style="background:rgba(39,174,96,0.07);"><td class="font-bold" style="color:var(--success-light);">T-02 🏆</td><td class="text-right font-mono">100,0</td><td class="text-right font-mono">100,0</td><td class="text-right font-mono">100,0</td><td class="text-right font-mono">100,0</td><td class="text-right font-mono">100,0</td><td class="text-right font-mono font-bold" style="color:var(--success-light);font-size:1.1rem;">100,0</td><td class="text-center"><span class="badge badge-success">🏆 Excelência</span></td><td class="text-right font-mono font-bold" style="color:var(--success-light);">1,156</td></tr>
+                <tr><td class="font-bold">T-04</td><td class="text-right font-mono">19,4</td><td class="text-right font-mono">17,8</td><td class="text-right font-mono">19,3</td><td class="text-right font-mono">17,6</td><td class="text-right font-mono">60,8</td><td class="text-right font-mono font-bold" style="color:var(--warning-light);">26,0</td><td class="text-center"><span class="badge badge-warning">⚠ Atenção</span></td><td class="text-right font-mono">1,045</td></tr>
+                <tr><td class="font-bold">T-01</td><td class="text-right font-mono">18,5</td><td class="text-right font-mono">17,1</td><td class="text-right font-mono">18,4</td><td class="text-right font-mono">16,6</td><td class="text-right font-mono">59,0</td><td class="text-right font-mono font-bold" style="color:var(--warning-light);">25,3</td><td class="text-center"><span class="badge badge-warning">⚠ Atenção</span></td><td class="text-right font-mono">1,044</td></tr>
+                <tr><td class="font-bold">T-05</td><td class="text-right font-mono">18,1</td><td class="text-right font-mono">16,7</td><td class="text-right font-mono">18,4</td><td class="text-right font-mono">16,4</td><td class="text-right font-mono">58,8</td><td class="text-right font-mono font-bold" style="color:var(--warning-light);">24,9</td><td class="text-center"><span class="badge badge-warning">⚠ Atenção</span></td><td class="text-right font-mono">1,044</td></tr>
+                <tr style="background:rgba(231,76,60,0.05);"><td class="font-bold" style="color:var(--danger-light);">T-03 ⚠️</td><td class="text-right font-mono">0,0</td><td class="text-right font-mono">0,0</td><td class="text-right font-mono">0,0</td><td class="text-right font-mono">0,0</td><td class="text-right font-mono">0,0</td><td class="text-right font-mono font-bold" style="color:var(--danger-light);font-size:1.1rem;">0,0</td><td class="text-center"><span class="badge badge-danger">🔴 Crítico</span></td><td class="text-right font-mono" style="color:var(--danger-light);">1,022</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ============================================ -->
+    <!--  BLOCO 8: PAINEL CONSOLIDADO                 -->
+    <!-- ============================================ -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#1abc9c,#16a085);">📋</div>
+        <h2>Painel Consolidado — Todos os Indicadores por Talhão <small>Visão 360° da performance financeira, econômica e de risco de cada unidade produtiva</small></h2>
+    </div>
+
+    <div class="heatmap-container">
+        <div class="heatmap-grid" style="grid-template-columns:140px repeat(6,1fr);min-width:700px;" id="heatmapPainel"></div>
+        <div style="display:flex;gap:1.5rem;margin-top:0.75rem;font-size:0.7rem;color:var(--text-muted);flex-wrap:wrap;justify-content:center;">
+            <span>🟢 Verde = Favorável</span>
+            <span>🟡 Amarelo = Atenção</span>
+            <span>🔴 Vermelho = Crítico</span>
+            <span>📌 Cores relativas ao posicionamento dentro do grupo</span>
+        </div>
+    </div>
+
+    <div class="info-box success">
+        <h4>✅ Síntese dos Indicadores Financeiros e Econômicos</h4>
+        <p>A análise consolidada de 12+ indicadores confirma o diagnóstico em três pontos centrais:</p>
+        <ul>
+            <li><strong>T-02 é a referência absoluta:</strong> ICPT 100, EVA +R$ 91k, TIR 33,6%, BER 86,5%, GAO 4,56, RBC 1,156.</li>
+            <li><strong>T-03 é o gargalo:</strong> ICPT 0, EVA -R$ 86k, TIR 4,4%, BER 97,9%, GAO 24,2, RBC 1,022.</li>
+            <li><strong>A fazenda opera em zona de risco:</strong> BER 93,8%, GAO 8,83, Sharpe -0,28, EVA -R$ 30,7k. Margem insuficiente para absorver choques. A probabilidade estimada de prejuízo na safra 26/27, sem mudanças, é de 35-40%.</li>
+        </ul>
+    </div>
+
+</div>
+
+<div class="footer">
+    <p><strong>Fazenda Monte Alegre</strong> · Leandro Martins · Montividiu-GO · Safra 2025/2026</p>
+    <p>Relatório gerado em 16 de abril de 2026 · Documento confidencial · Parte 4 de 7</p>
+</div>
+
+<script>
+    Chart.register(ChartDataLabels);
+    const CL={green:'#2ecc71',greenD:'#27ae60',red:'#e74c3c',redD:'#c0392b',gold:'#f0c940',goldD:'#d4a017',blue:'#3498db',orange:'#f39c12',purple:'#9b59b6',teal:'#1abc9c',gray:'#95a5a6'};
+    const tLabels=['T-01','T-02 🏆','T-03 ⚠️','T-04','T-05'];
+    const tColors=[CL.orange,CL.green,CL.red,CL.blue,CL.purple];
+
+    // MC Bar
+    new Chart(document.getElementById('chartMC'),{type:'bar',data:{labels:tLabels,datasets:[{label:'MC/ha (R$)',data:[4076,4747,3925,4084,4074],backgroundColor:tColors,borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false},datalabels:{anchor:'end',align:'top',formatter:v=>'R$ '+v.toLocaleString('pt-BR'),color:'#ecf0f1',font:{size:11,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6'},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>'R$ '+v.toLocaleString('pt-BR')},grid:{color:'rgba(44,62,80,0.3)'},beginAtZero:true,max:5500}}}});
+
+    // CV vs CF vs Resultado (stacked)
+    new Chart(document.getElementById('chartCVCFResult'),{type:'bar',data:{labels:tLabels,datasets:[
+        {label:'CV (Insumos)',data:[3639,2968,3790,3631,3642],backgroundColor:CL.red},
+        {label:'Custos Fixos',data:[3753,3706,3763,3751,3751],backgroundColor:CL.orange},
+        {label:'Resultado',data:[324,1041,162,334,322],backgroundColor:CL.green}
+    ]},options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},datalabels:{display:false}},scales:{x:{stacked:true,ticks:{color:'#95a5a6'},grid:{display:false}},y:{stacked:true,ticks:{color:'#95a5a6',callback:v=>'R$ '+v.toLocaleString('pt-BR')},grid:{color:'rgba(44,62,80,0.3)'}}}}});
+
+    // BER Bar + line
+    new Chart(document.getElementById('chartBER'),{type:'bar',data:{labels:tLabels,datasets:[
+        {label:'BER (%)',data:[95.8,86.5,97.9,95.7,95.8],backgroundColor:tColors.map(c=>c+'cc'),borderColor:tColors,borderWidth:2,borderRadius:6},
+        {label:'Zona de Perigo (93%)',data:[93,93,93,93,93],type:'line',borderColor:'rgba(231,76,60,0.5)',borderDash:[6,4],borderWidth:2,pointRadius:0,fill:false}
+    ]},options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},datalabels:{display:ctx=>ctx.datasetIndex===0,anchor:'end',align:'top',formatter:v=>v.toFixed(1)+'%',color:'#ecf0f1',font:{size:11,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6'},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>v+'%'},grid:{color:'rgba(44,62,80,0.3)'},min:82,max:100}}}});
+
+    // ROIC + Selic line
+    new Chart(document.getElementById('chartROIC'),{type:'bar',data:{labels:tLabels,datasets:[
+        {label:'ROIC (%)',data:[4.38,15.60,2.15,4.52,4.36],backgroundColor:tColors.map(c=>c+'cc'),borderColor:tColors,borderWidth:2,borderRadius:6},
+        {label:'Selic Anual (14,75%)',data:[14.75,14.75,14.75,14.75,14.75],type:'line',borderColor:CL.gold,borderDash:[6,4],borderWidth:2,pointRadius:0,fill:false}
+    ]},options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},datalabels:{display:ctx=>ctx.datasetIndex===0,anchor:'end',align:'top',formatter:v=>v.toFixed(1)+'%',color:'#ecf0f1',font:{size:11,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6'},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>v+'%'},grid:{color:'rgba(44,62,80,0.3)'},beginAtZero:true,max:20}}}});
+
+    // EVA
+    new Chart(document.getElementById('chartEVA'),{type:'bar',data:{labels:[...tLabels,'FAZENDA'],datasets:[{label:'EVA (R$ mil)',data:[-14.99,91.14,-86.03,-11.87,-8.92,-30.66],backgroundColor:[-14.99>0?CL.green:CL.red,CL.green,CL.red,CL.red,CL.red,CL.red],borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false},datalabels:{anchor:ctx=>ctx.dataset.data[ctx.dataIndex]>=0?'end':'start',align:ctx=>ctx.dataset.data[ctx.dataIndex]>=0?'top':'bottom',formatter:v=>(v>=0?'+':'')+v.toFixed(0)+'k',color:'#ecf0f1',font:{size:10,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6',font:{size:10}},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>'R$ '+v+'k'},grid:{color:'rgba(44,62,80,0.3)'}}}}});
+
+    // TIR vs Selic
+    new Chart(document.getElementById('chartTIR'),{type:'bar',data:{labels:[...tLabels,'FAZENDA'],datasets:[
+        {label:'TIR Anualizada (%)',data:[8.95,33.63,4.35,9.25,8.91,13.64],backgroundColor:[CL.orange,CL.green,CL.red,CL.blue,CL.purple,CL.gold],borderRadius:6},
+        {label:'Selic (14,75%)',data:[14.75,14.75,14.75,14.75,14.75,14.75],type:'line',borderColor:'rgba(231,76,60,0.6)',borderDash:[6,4],borderWidth:2,pointRadius:0,fill:false}
+    ]},options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},datalabels:{display:ctx=>ctx.datasetIndex===0,anchor:'end',align:'top',formatter:v=>v.toFixed(1)+'%',color:'#ecf0f1',font:{size:10,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6',font:{size:10}},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>v+'%'},grid:{color:'rgba(44,62,80,0.3)'},beginAtZero:true,max:38}}}});
+
+    // BE Quantidade
+    new Chart(document.getElementById('chartBEQtd'),{type:'bar',data:{labels:['Insumos','COT','C.T.','C.T.+Oport.'],datasets:[
+        {label:'B.E. (sc/ha)',data:[30.12,56.30,62.36,66.95],backgroundColor:[CL.green,CL.blue,CL.orange,CL.red],borderRadius:6},
+        {label:'Realizado (66,47 sc)',data:[66.47,66.47,66.47,66.47],type:'line',borderColor:CL.gold,borderDash:[6,4],borderWidth:2,pointRadius:0,fill:false}
+    ]},options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},datalabels:{display:ctx=>ctx.datasetIndex===0,anchor:'end',align:'top',formatter:v=>v.toFixed(1)+' sc',color:'#ecf0f1',font:{size:11,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6'},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>v+' sc'},grid:{color:'rgba(44,62,80,0.3)'},beginAtZero:true,max:75}}}});
+
+    // BE Preço
+    new Chart(document.getElementById('chartBEPreco'),{type:'bar',data:{labels:['Insumos','COT','C.T.','C.T.+Oport.'],datasets:[
+        {label:'B.E. Preço (R$/sc)',data:[52.59,98.31,108.89,116.91],backgroundColor:[CL.green,CL.blue,CL.orange,CL.red],borderRadius:6},
+        {label:'PMV Realizado (R$ 116)',data:[116.07,116.07,116.07,116.07],type:'line',borderColor:CL.gold,borderDash:[6,4],borderWidth:2,pointRadius:0,fill:false}
+    ]},options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},datalabels:{display:ctx=>ctx.datasetIndex===0,anchor:'end',align:'top',formatter:v=>'R$'+v.toFixed(0),color:'#ecf0f1',font:{size:11,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6'},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>'R$ '+v},grid:{color:'rgba(44,62,80,0.3)'},beginAtZero:true,max:130}}}});
+
+    // Elasticidade-Preço
+    new Chart(document.getElementById('chartElast'),{type:'bar',data:{labels:tLabels,datasets:[{label:'ε Preço',data:[23.83,7.41,47.51,23.13,23.95],backgroundColor:tColors,borderRadius:6}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},datalabels:{anchor:'end',align:'right',formatter:v=>v.toFixed(1)+'×',color:'#ecf0f1',font:{size:11,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6'},grid:{color:'rgba(44,62,80,0.3)'},max:55},y:{ticks:{color:'#95a5a6'},grid:{display:false}}}}});
+
+    // Impacto +1sc
+    new Chart(document.getElementById('chartImpact1sc'),{type:'bar',data:{labels:tLabels,datasets:[{label:'Δ% no resultado por +1sc/ha',data:[35.8,11.1,71.5,34.8,36.0],backgroundColor:tColors,borderRadius:6}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},datalabels:{anchor:'end',align:'right',formatter:v=>'+'+v.toFixed(1)+'%',color:'#ecf0f1',font:{size:11,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6',callback:v=>v+'%'},grid:{color:'rgba(44,62,80,0.3)'},max:80},y:{ticks:{color:'#95a5a6'},grid:{display:false}}}}});
+
+    // ICPT Polar Area
+    new Chart(document.getElementById('chartICPT'),{type:'polarArea',data:{labels:tLabels,datasets:[{data:[25.3,100,0,26.0,24.9],backgroundColor:[CL.orange+'99',CL.green+'99',CL.red+'99',CL.blue+'99',CL.purple+'99'],borderColor:[CL.orange,CL.green,CL.red,CL.blue,CL.purple],borderWidth:2}]},options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},datalabels:{formatter:v=>v.toFixed(0),color:'#fff',font:{size:12,weight:'bold'}}},scales:{r:{ticks:{display:false},grid:{color:'rgba(44,62,80,0.4)'},max:110}}}});
+
+    // RBC
+    new Chart(document.getElementById('chartRBC'),{type:'bar',data:{labels:[...tLabels,'FAZENDA'],datasets:[
+        {label:'RBC',data:[1.044,1.156,1.022,1.045,1.044,1.066],backgroundColor:[CL.orange,CL.green,CL.red,CL.blue,CL.purple,CL.gold],borderRadius:6},
+        {label:'Break-even (1,0)',data:[1,1,1,1,1,1],type:'line',borderColor:'rgba(231,76,60,0.5)',borderDash:[6,4],borderWidth:2,pointRadius:0,fill:false}
+    ]},options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},datalabels:{display:ctx=>ctx.datasetIndex===0,anchor:'end',align:'top',formatter:v=>v.toFixed(3),color:'#ecf0f1',font:{size:10,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6',font:{size:10}},grid:{display:false}},y:{ticks:{color:'#95a5a6'},grid:{color:'rgba(44,62,80,0.3)'},min:0.95,max:1.20}}}});
+
+    // HEATMAP PAINEL CONSOLIDADO
+    (function(){
+        const ind=['MC/ha','MC %','IEO','BER','ROIC','GAO','ICCF','EVA (R$k)','TIR Anual.','RBC','ε Preço','ICPT'];
+        const cols=['T-01','T-02 🏆','T-03 ⚠️','T-04','T-05','FAZENDA'];
+        const data=[
+            [4076,4747,3925,4084,4074,4220],
+            [52.8,61.5,50.9,52.9,52.8,54.7],
+            [1.044,1.156,1.021,1.045,1.044,1.066],
+            [95.8,86.5,97.9,95.7,95.8,93.8],
+            [4.38,15.60,2.15,4.52,4.36,6.60],
+            [12.59,4.56,24.17,12.24,12.64,8.83],
+            [1.21,1.41,1.16,1.21,1.21,1.25],
+            [-15,91,-86,-12,-9,-31],
+            [8.95,33.63,4.35,9.25,8.91,13.64],
+            [1.044,1.156,1.022,1.045,1.044,1.066],
+            [23.83,7.41,47.51,23.13,23.95,16.15],
+            [25.3,100,0,26,24.9,0]
+        ];
+        const higher=[true,true,true,false,true,false,true,true,true,true,false,true];
+        const fmt=[v=>'R$'+v.toLocaleString('pt-BR'),v=>v.toFixed(1)+'%',v=>v.toFixed(3),v=>v.toFixed(1)+'%',v=>v.toFixed(1)+'%',v=>v.toFixed(1),v=>v.toFixed(2),v=>(v>=0?'+':'')+v+'k',v=>v.toFixed(1)+'%',v=>v.toFixed(3),v=>v.toFixed(1)+'×',v=>v.toFixed(0)];
+        const grid=document.getElementById('heatmapPainel');
+        grid.innerHTML='<div class="heatmap-cell heatmap-header">Indicador</div>';
+        cols.forEach(c=>grid.innerHTML+=`<div class="heatmap-cell heatmap-header">${c}</div>`);
+        data.forEach((row,i)=>{
+            const mn=Math.min(...row.slice(0,5)),mx=Math.max(...row.slice(0,5));
+            grid.innerHTML+=`<div class="heatmap-cell heatmap-header" style="text-align:left;padding-left:8px;">${ind[i]}</div>`;
+            row.forEach((v,j)=>{
+                let ratio=mx===mn?0.5:(v-mn)/(mx-mn);
+                if(!higher[i]) ratio=1-ratio;
+                const r=Math.round(220-ratio*180);
+                const g=Math.round(60+ratio*140);
+                const bg=`rgba(${r},${g},60,${j<5?0.55:0.35})`;
+                grid.innerHTML+=`<div class="heatmap-cell" style="background:${bg};color:#fff;${j===5?'border-left:2px solid #f0c940;':''}">${fmt[i](v)}</div>`;
+            });
+        });
+    })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fazenda Monte Alegre — EXTRA: Benchmarking Soja vs. Milho Verão 26/27</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        :root{--primary:#1a5632;--primary-light:#2d8a4e;--primary-dark:#0e3b20;--accent:#d4a017;--accent-light:#f0c940;--danger:#c0392b;--danger-light:#e74c3c;--warning:#e67e22;--warning-light:#f39c12;--success:#27ae60;--success-light:#2ecc71;--info:#2980b9;--info-light:#3498db;--soja:#2ecc71;--milho:#f1c40f;--bg-dark:#0f1923;--bg-card:#1a2634;--bg-card-hover:#223344;--bg-section:#15202d;--text-primary:#ecf0f1;--text-secondary:#95a5a6;--text-muted:#7f8c8d;--border:#2c3e50;--shadow:0 4px 24px rgba(0,0,0,0.3);}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-dark);color:var(--text-primary);line-height:1.6;}
+        .header{background:linear-gradient(135deg,#0a1a0f,var(--primary-dark),var(--primary),#d4a017);padding:1.8rem 2rem;position:relative;overflow:hidden;}
+        .header::before{content:'';position:absolute;top:-80px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(241,196,15,0.12),transparent 70%);border-radius:50%;}
+        .header h1{font-size:1.5rem;font-weight:900;color:#fff;position:relative;z-index:2;}.header h1 .sj{color:var(--soja);}.header h1 .ml{color:var(--milho);}
+        .header p{color:rgba(255,255,255,0.6);font-size:0.85rem;position:relative;z-index:2;}
+        .container{max-width:1440px;margin:0 auto;padding:1.5rem;}
+        .section-title{display:flex;align-items:center;gap:0.75rem;margin:2.25rem 0 1.25rem;padding-bottom:0.75rem;border-bottom:2px solid var(--border);}
+        .section-title .icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;}
+        .section-title h2{font-size:1.3rem;font-weight:700;}
+        .section-title h2 small{display:block;font-size:0.75rem;font-weight:400;color:var(--text-secondary);margin-top:0.15rem;}
+        .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:1.5rem;margin-bottom:1.5rem;}
+        .chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+        .chart-card h3{font-size:0.92rem;font-weight:700;margin-bottom:0.25rem;}
+        .chart-card p.cs{font-size:0.73rem;color:var(--text-muted);margin-bottom:1rem;}
+        .chart-card-full{grid-column:1/-1;}
+        .table-wrapper{overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-bottom:1.5rem;}
+        table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+        thead th{background:var(--bg-section);color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;font-size:0.7rem;padding:0.8rem;text-align:left;border-bottom:2px solid var(--border);}
+        tbody td{padding:0.7rem 0.8rem;border-bottom:1px solid var(--border);}
+        tbody tr:hover{background:var(--bg-card-hover);}
+        tbody tr:last-child td{border-bottom:none;}
+        .tr{text-align:right}.tc{text-align:center}.fb{font-weight:700}.fm{font-family:'Cascadia Code','Fira Code',monospace;font-size:0.8rem;}
+        .badge{display:inline-flex;align-items:center;gap:0.2rem;padding:0.18rem 0.5rem;border-radius:6px;font-size:0.68rem;font-weight:600;white-space:nowrap;}
+        .bg{background:rgba(39,174,96,0.15);color:var(--success-light);}
+        .bw{background:rgba(243,156,18,0.15);color:var(--warning-light);}
+        .bd{background:rgba(231,76,60,0.15);color:var(--danger-light);}
+        .bi{background:rgba(52,152,219,0.15);color:var(--info-light);}
+        .bsj{background:rgba(46,204,113,0.15);color:var(--soja);}
+        .bml{background:rgba(241,196,15,0.15);color:var(--milho);}
+        .info-box{background:var(--bg-card);border-left:4px solid var(--info);border-radius:0 12px 12px 0;padding:1rem 1.25rem;margin-bottom:1.5rem;}
+        .info-box.warning{border-left-color:var(--warning);}.info-box.danger{border-left-color:var(--danger);}.info-box.success{border-left-color:var(--success);}
+        .info-box h4{font-size:0.88rem;font-weight:700;margin-bottom:0.35rem;}
+        .info-box p,.info-box ul,.info-box ol{font-size:0.8rem;color:var(--text-secondary);line-height:1.65;}
+        .info-box ul,.info-box ol{margin-left:1.2rem;margin-top:0.3rem;}
+        .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:1rem;margin-bottom:1.5rem;}
+        .kpi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.05rem;position:relative;overflow:hidden;}
+        .kpi-card .kb{position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
+        .kpi-card .kl{font-size:0.72rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.35rem;}
+        .kpi-card .kv{font-size:1.4rem;font-weight:800;line-height:1.2;}
+        .kpi-card .ks{font-size:0.73rem;color:var(--text-muted);margin-top:0.25rem;}
+        .formula{background:var(--bg-section);border:1px solid var(--border);border-radius:10px;padding:0.8rem 1.1rem;margin-bottom:1rem;font-family:'Cascadia Code',monospace;font-size:0.82rem;color:var(--accent-light);text-align:center;}
+        .vs-card{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:center;margin-bottom:1.5rem;}
+        .vs-side{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;text-align:center;}
+        .vs-side h3{font-size:1.1rem;font-weight:800;margin-bottom:0.3rem;}
+        .vs-center{font-size:2rem;font-weight:900;color:var(--text-muted);}
+        .gauge-row{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.65rem;}
+        .gauge-label{width:120px;font-size:0.75rem;font-weight:600;color:var(--text-secondary);text-align:right;flex-shrink:0;}
+        .gauge-track{flex:1;height:24px;background:var(--bg-section);border-radius:12px;overflow:hidden;}
+        .gauge-fill{height:100%;border-radius:12px;display:flex;align-items:center;justify-content:flex-end;padding-right:0.4rem;font-size:0.68rem;font-weight:700;color:#fff;min-width:30px;}
+        .gauge-val{width:110px;text-align:left;font-size:0.78rem;font-weight:700;font-family:'Cascadia Code',monospace;flex-shrink:0;}
+        .hm-container{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;overflow-x:auto;}
+        .hm-grid{display:grid;gap:3px;}
+        .hm-cell{padding:0.45rem 0.3rem;text-align:center;font-size:0.7rem;font-weight:600;border-radius:5px;}
+        .hm-h{background:var(--bg-section);color:var(--text-secondary);font-weight:700;font-size:0.67rem;}
+        .scenario-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;margin-bottom:1.5rem;}
+        .sc-card{border-radius:14px;padding:1.3rem;border:2px solid var(--border);}
+        .sc-card h3{font-size:0.95rem;font-weight:800;margin-bottom:0.65rem;}
+        .sc-card .sr{display:flex;justify-content:space-between;padding:0.35rem 0;border-bottom:1px solid rgba(44,62,80,0.4);font-size:0.78rem;}
+        .sc-card .sr:last-child{border-bottom:none;}
+        .sc-card .sr .l{color:var(--text-secondary);}
+        .sc-card .sr .v{font-weight:700;font-family:'Cascadia Code',monospace;font-size:0.76rem;}
+        .footer{text-align:center;padding:2rem;border-top:1px solid var(--border);margin-top:2rem;color:var(--text-muted);font-size:0.75rem;}
+        @media(max-width:768px){.container{padding:1rem;}.chart-grid{grid-template-columns:1fr;}.kpi-grid{grid-template-columns:repeat(2,1fr);}.vs-card{grid-template-columns:1fr;}.vs-center{text-align:center;}.scenario-grid{grid-template-columns:1fr;}}
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🌽🌱 Benchmarking: <span class="sj">SOJA</span> vs. <span class="ml">MILHO VERÃO</span> — Safra 26/27</h1>
+    <p>Análise comparativa completa · 9 cenários cruzados · Sensibilidade · Monte Carlo · Decisão estratégica para 548 ha</p>
+</div>
+
+<div class="container">
+
+    <!-- ===== PARÂMETROS BASE ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#2980b9,#3498db);">📝</div>
+        <h2>1. Parâmetros Base Definidos <small>Premissas informadas pelo Leandro + dados de mercado Goiás abr/2026</small></h2>
+    </div>
+
+    <div class="vs-card">
+        <div class="vs-side" style="border-top:4px solid var(--soja);">
+            <h3 style="color:var(--soja);">🌱 SOJA</h3>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.8rem;">Cultura atual da Fazenda Monte Alegre</p>
+            <div style="text-align:left;">
+                <div style="display:flex;justify-content:space-between;padding:0.35rem 0;border-bottom:1px solid rgba(44,62,80,0.3);font-size:0.82rem;"><span style="color:var(--text-secondary);">Custo Total/ha</span><span class="fm fb">R$ 7.500</span></div>
+                <div style="display:flex;justify-content:space-between;padding:0.35rem 0;border-bottom:1px solid rgba(44,62,80,0.3);font-size:0.82rem;"><span style="color:var(--text-secondary);">Produtividade base</span><span class="fm fb">70 sc/ha</span></div>
+                <div style="display:flex;justify-content:space-between;padding:0.35rem 0;border-bottom:1px solid rgba(44,62,80,0.3);font-size:0.82rem;"><span style="color:var(--text-secondary);">Preço venda (sc)</span><span class="fm fb">R$ 111,00</span></div>
+                <div style="display:flex;justify-content:space-between;padding:0.35rem 0;border-bottom:1px solid rgba(44,62,80,0.3);font-size:0.82rem;"><span style="color:var(--text-secondary);">Receita/ha (base)</span><span class="fm fb" style="color:var(--soja);">R$ 7.770</span></div>
+                <div style="display:flex;justify-content:space-between;padding:0.35rem 0;font-size:0.82rem;"><span style="color:var(--text-secondary);">Resultado/ha (base)</span><span class="fm fb" style="color:var(--soja);">R$ 270</span></div>
+            </div>
+        </div>
+        <div class="vs-center">⚔️<br><span style="font-size:0.7rem;color:var(--text-muted);">VS</span></div>
+        <div class="vs-side" style="border-top:4px solid var(--milho);">
+            <h3 style="color:var(--milho);">🌽 MILHO VERÃO</h3>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.8rem;">Alternativa de cultura para safra verão</p>
+            <div style="text-align:left;">
+                <div style="display:flex;justify-content:space-between;padding:0.35rem 0;border-bottom:1px solid rgba(44,62,80,0.3);font-size:0.82rem;"><span style="color:var(--text-secondary);">Custo Total/ha</span><span class="fm fb">R$ 7.000</span></div>
+                <div style="display:flex;justify-content:space-between;padding:0.35rem 0;border-bottom:1px solid rgba(44,62,80,0.3);font-size:0.82rem;"><span style="color:var(--text-secondary);">Produtividade base</span><span class="fm fb">150 sc/ha</span></div>
+                <div style="display:flex;justify-content:space-between;padding:0.35rem 0;border-bottom:1px solid rgba(44,62,80,0.3);font-size:0.82rem;"><span style="color:var(--text-secondary);">Preço venda (sc)</span><span class="fm fb">R$ 58,00</span></div>
+                <div style="display:flex;justify-content:space-between;padding:0.35rem 0;border-bottom:1px solid rgba(44,62,80,0.3);font-size:0.82rem;"><span style="color:var(--text-secondary);">Receita/ha (base)</span><span class="fm fb" style="color:var(--milho);">R$ 8.700</span></div>
+                <div style="display:flex;justify-content:space-between;padding:0.35rem 0;font-size:0.82rem;"><span style="color:var(--text-secondary);">Resultado/ha (base)</span><span class="fm fb" style="color:var(--milho);">R$ 1.700</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card"><div class="kb" style="background:var(--milho);"></div><div class="kl">Vantagem Milho (base)</div><div class="kv" style="color:var(--milho);">+R$ 1.430</div><div class="ks">/ha vs. soja · +530%</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--milho);"></div><div class="kl">Resultado Total Milho</div><div class="kv" style="color:var(--milho);">R$ 931,6k</div><div class="ks">548 ha × R$ 1.700</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--soja);"></div><div class="kl">Resultado Total Soja</div><div class="kv" style="color:var(--soja);">R$ 147,9k</div><div class="ks">548 ha × R$ 270</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--danger);"></div><div class="kl">Custo Oport. (Soja)</div><div class="kv" style="color:var(--danger-light);">R$ 783,7k</div><div class="ks">Que se perde ao não plantar milho</div></div>
+    </div>
+
+    <!-- ===== CENÁRIOS SOJA ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#27ae60,#2ecc71);">🌱</div>
+        <h2>2. Cenários SOJA — Safra 26/27 <small>9 combinações cruzadas: Custo × Produtividade × Preço</small></h2>
+    </div>
+
+    <div class="scenario-grid">
+        <div class="sc-card" style="background:rgba(231,76,60,0.05);border-color:rgba(231,76,60,0.3);">
+            <h3 style="color:var(--danger-light);">🔴 SOJA — Pessimista</h3>
+            <div class="sr"><span class="l">Custo/ha</span><span class="v">R$ 8.200 (+9,3%)</span></div>
+            <div class="sr"><span class="l">Produtividade</span><span class="v">58 sc/ha (-17,1%)</span></div>
+            <div class="sr"><span class="l">Preço/sc</span><span class="v">R$ 95,00 (-14,4%)</span></div>
+            <div class="sr"><span class="l">Receita/ha</span><span class="v" style="color:var(--danger-light);">R$ 5.510</span></div>
+            <div class="sr"><span class="l">Resultado/ha</span><span class="v" style="color:var(--danger-light);">-R$ 2.690</span></div>
+            <div class="sr"><span class="l">Resultado Total</span><span class="v" style="color:var(--danger-light);">-R$ 1.474.120</span></div>
+            <div class="sr"><span class="l">ROI</span><span class="v" style="color:var(--danger-light);">-32,8%</span></div>
+        </div>
+        <div class="sc-card" style="background:rgba(52,152,219,0.05);border-color:rgba(52,152,219,0.3);">
+            <h3 style="color:var(--info-light);">🔵 SOJA — Base</h3>
+            <div class="sr"><span class="l">Custo/ha</span><span class="v">R$ 7.500</span></div>
+            <div class="sr"><span class="l">Produtividade</span><span class="v">70 sc/ha</span></div>
+            <div class="sr"><span class="l">Preço/sc</span><span class="v">R$ 111,00</span></div>
+            <div class="sr"><span class="l">Receita/ha</span><span class="v">R$ 7.770</span></div>
+            <div class="sr"><span class="l">Resultado/ha</span><span class="v" style="color:var(--soja);">R$ 270</span></div>
+            <div class="sr"><span class="l">Resultado Total</span><span class="v" style="color:var(--soja);">R$ 147.960</span></div>
+            <div class="sr"><span class="l">ROI</span><span class="v">3,6%</span></div>
+        </div>
+        <div class="sc-card" style="background:rgba(39,174,96,0.05);border-color:rgba(39,174,96,0.3);">
+            <h3 style="color:var(--success-light);">🟢 SOJA — Otimista</h3>
+            <div class="sr"><span class="l">Custo/ha</span><span class="v">R$ 6.800 (-9,3%)</span></div>
+            <div class="sr"><span class="l">Produtividade</span><span class="v">80 sc/ha (+14,3%)</span></div>
+            <div class="sr"><span class="l">Preço/sc</span><span class="v">R$ 130,00 (+17,1%)</span></div>
+            <div class="sr"><span class="l">Receita/ha</span><span class="v" style="color:var(--success-light);">R$ 10.400</span></div>
+            <div class="sr"><span class="l">Resultado/ha</span><span class="v" style="color:var(--success-light);">R$ 3.600</span></div>
+            <div class="sr"><span class="l">Resultado Total</span><span class="v" style="color:var(--success-light);">R$ 1.972.800</span></div>
+            <div class="sr"><span class="l">ROI</span><span class="v" style="color:var(--success-light);">52,9%</span></div>
+        </div>
+    </div>
+
+    <!-- ===== CENÁRIOS MILHO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#d4a017,#f1c40f);">🌽</div>
+        <h2>3. Cenários MILHO VERÃO — Safra 26/27 <small>9 combinações cruzadas: Custo × Produtividade × Preço</small></h2>
+    </div>
+
+    <div class="scenario-grid">
+        <div class="sc-card" style="background:rgba(231,76,60,0.05);border-color:rgba(231,76,60,0.3);">
+            <h3 style="color:var(--danger-light);">🔴 MILHO — Pessimista</h3>
+            <div class="sr"><span class="l">Custo/ha</span><span class="v">R$ 7.800 (+11,4%)</span></div>
+            <div class="sr"><span class="l">Produtividade</span><span class="v">120 sc/ha (-20,0%)</span></div>
+            <div class="sr"><span class="l">Preço/sc</span><span class="v">R$ 45,00 (-22,4%)</span></div>
+            <div class="sr"><span class="l">Receita/ha</span><span class="v" style="color:var(--danger-light);">R$ 5.400</span></div>
+            <div class="sr"><span class="l">Resultado/ha</span><span class="v" style="color:var(--danger-light);">-R$ 2.400</span></div>
+            <div class="sr"><span class="l">Resultado Total</span><span class="v" style="color:var(--danger-light);">-R$ 1.315.200</span></div>
+            <div class="sr"><span class="l">ROI</span><span class="v" style="color:var(--danger-light);">-30,8%</span></div>
+        </div>
+        <div class="sc-card" style="background:rgba(241,196,15,0.05);border-color:rgba(241,196,15,0.3);">
+            <h3 style="color:var(--milho);">🟡 MILHO — Base</h3>
+            <div class="sr"><span class="l">Custo/ha</span><span class="v">R$ 7.000</span></div>
+            <div class="sr"><span class="l">Produtividade</span><span class="v">150 sc/ha</span></div>
+            <div class="sr"><span class="l">Preço/sc</span><span class="v">R$ 58,00</span></div>
+            <div class="sr"><span class="l">Receita/ha</span><span class="v">R$ 8.700</span></div>
+            <div class="sr"><span class="l">Resultado/ha</span><span class="v" style="color:var(--milho);">R$ 1.700</span></div>
+            <div class="sr"><span class="l">Resultado Total</span><span class="v" style="color:var(--milho);">R$ 931.600</span></div>
+            <div class="sr"><span class="l">ROI</span><span class="v" style="color:var(--milho);">24,3%</span></div>
+        </div>
+        <div class="sc-card" style="background:rgba(39,174,96,0.05);border-color:rgba(39,174,96,0.3);">
+            <h3 style="color:var(--success-light);">🟢 MILHO — Otimista</h3>
+            <div class="sr"><span class="l">Custo/ha</span><span class="v">R$ 6.300 (-10,0%)</span></div>
+            <div class="sr"><span class="l">Produtividade</span><span class="v">175 sc/ha (+16,7%)</span></div>
+            <div class="sr"><span class="l">Preço/sc</span><span class="v">R$ 70,00 (+20,7%)</span></div>
+            <div class="sr"><span class="l">Receita/ha</span><span class="v" style="color:var(--success-light);">R$ 12.250</span></div>
+            <div class="sr"><span class="l">Resultado/ha</span><span class="v" style="color:var(--success-light);">R$ 5.950</span></div>
+            <div class="sr"><span class="l">Resultado Total</span><span class="v" style="color:var(--success-light);">R$ 3.260.600</span></div>
+            <div class="sr"><span class="l">ROI</span><span class="v" style="color:var(--success-light);">94,4%</span></div>
+        </div>
+    </div>
+
+    <!-- ===== TABELA COMPARATIVA 9 CENÁRIOS ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);">📊</div>
+        <h2>4. Matriz Completa — 9 Cenários Cruzados por Cultura <small>Pessimista, base e otimista para cada variável (custo, produtividade, preço)</small></h2>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2">Cenário</th>
+                    <th colspan="5" class="tc" style="color:var(--soja);border-bottom:2px solid var(--soja);">🌱 SOJA</th>
+                    <th colspan="5" class="tc" style="color:var(--milho);border-bottom:2px solid var(--milho);">🌽 MILHO VERÃO</th>
+                    <th rowspan="2" class="tc">Vencedor</th>
+                </tr>
+                <tr>
+                    <th class="tr">CT/ha</th><th class="tr">Prod.</th><th class="tr">Preço</th><th class="tr">Result./ha</th><th class="tr">ROI</th>
+                    <th class="tr">CT/ha</th><th class="tr">Prod.</th><th class="tr">Preço</th><th class="tr">Result./ha</th><th class="tr">ROI</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- C1: Tudo pessimista -->
+                <tr style="background:rgba(231,76,60,0.04);">
+                    <td class="fb" style="color:var(--danger-light);">🔴 Pess. Total</td>
+                    <td class="tr fm">8.200</td><td class="tr fm">58</td><td class="tr fm">95</td><td class="tr fm fb" style="color:var(--danger-light);">-2.690</td><td class="tr fm">-32,8%</td>
+                    <td class="tr fm">7.800</td><td class="tr fm">120</td><td class="tr fm">45</td><td class="tr fm fb" style="color:var(--danger-light);">-2.400</td><td class="tr fm">-30,8%</td>
+                    <td class="tc"><span class="badge bml">🌽 -290</span></td>
+                </tr>
+                <!-- C2: Custo pess, resto base -->
+                <tr>
+                    <td class="fb">Custo Alto</td>
+                    <td class="tr fm">8.200</td><td class="tr fm">70</td><td class="tr fm">111</td><td class="tr fm" style="color:var(--danger-light);">-430</td><td class="tr fm">-5,2%</td>
+                    <td class="tr fm">7.800</td><td class="tr fm">150</td><td class="tr fm">58</td><td class="tr fm" style="color:var(--success-light);">900</td><td class="tr fm">11,5%</td>
+                    <td class="tc"><span class="badge bml">🌽 +1.330</span></td>
+                </tr>
+                <!-- C3: Prod pess, resto base -->
+                <tr>
+                    <td class="fb">Prod. Baixa</td>
+                    <td class="tr fm">7.500</td><td class="tr fm">58</td><td class="tr fm">111</td><td class="tr fm" style="color:var(--danger-light);">-1.062</td><td class="tr fm">-14,2%</td>
+                    <td class="tr fm">7.000</td><td class="tr fm">120</td><td class="tr fm">58</td><td class="tr fm" style="color:var(--danger-light);">-40</td><td class="tr fm">-0,6%</td>
+                    <td class="tc"><span class="badge bml">🌽 +1.022</span></td>
+                </tr>
+                <!-- C4: Preço pess, resto base -->
+                <tr>
+                    <td class="fb">Preço Baixo</td>
+                    <td class="tr fm">7.500</td><td class="tr fm">70</td><td class="tr fm">95</td><td class="tr fm" style="color:var(--danger-light);">-850</td><td class="tr fm">-11,3%</td>
+                    <td class="tr fm">7.000</td><td class="tr fm">150</td><td class="tr fm">45</td><td class="tr fm" style="color:var(--danger-light);">-250</td><td class="tr fm">-3,6%</td>
+                    <td class="tc"><span class="badge bml">🌽 +600</span></td>
+                </tr>
+                <!-- C5: BASE -->
+                <tr style="background:rgba(52,152,219,0.06);">
+                    <td class="fb" style="color:var(--info-light);">🔵 BASE</td>
+                    <td class="tr fm">7.500</td><td class="tr fm">70</td><td class="tr fm">111</td><td class="tr fm fb" style="color:var(--soja);">270</td><td class="tr fm">3,6%</td>
+                    <td class="tr fm">7.000</td><td class="tr fm">150</td><td class="tr fm">58</td><td class="tr fm fb" style="color:var(--milho);">1.700</td><td class="tr fm">24,3%</td>
+                    <td class="tc"><span class="badge bml">🌽 +1.430</span></td>
+                </tr>
+                <!-- C6: Custo otim, resto base -->
+                <tr>
+                    <td class="fb">Custo Baixo</td>
+                    <td class="tr fm">6.800</td><td class="tr fm">70</td><td class="tr fm">111</td><td class="tr fm" style="color:var(--success-light);">970</td><td class="tr fm">14,3%</td>
+                    <td class="tr fm">6.300</td><td class="tr fm">150</td><td class="tr fm">58</td><td class="tr fm" style="color:var(--success-light);">2.400</td><td class="tr fm">38,1%</td>
+                    <td class="tc"><span class="badge bml">🌽 +1.430</span></td>
+                </tr>
+                <!-- C7: Prod otim, resto base -->
+                <tr>
+                    <td class="fb">Prod. Alta</td>
+                    <td class="tr fm">7.500</td><td class="tr fm">80</td><td class="tr fm">111</td><td class="tr fm" style="color:var(--success-light);">1.380</td><td class="tr fm">18,4%</td>
+                    <td class="tr fm">7.000</td><td class="tr fm">175</td><td class="tr fm">58</td><td class="tr fm" style="color:var(--success-light);">3.150</td><td class="tr fm">45,0%</td>
+                    <td class="tc"><span class="badge bml">🌽 +1.770</span></td>
+                </tr>
+                <!-- C8: Preço otim, resto base -->
+                <tr>
+                    <td class="fb">Preço Alto</td>
+                    <td class="tr fm">7.500</td><td class="tr fm">70</td><td class="tr fm">130</td><td class="tr fm" style="color:var(--success-light);">1.600</td><td class="tr fm">21,3%</td>
+                    <td class="tr fm">7.000</td><td class="tr fm">150</td><td class="tr fm">70</td><td class="tr fm" style="color:var(--success-light);">3.500</td><td class="tr fm">50,0%</td>
+                    <td class="tc"><span class="badge bml">🌽 +1.900</span></td>
+                </tr>
+                <!-- C9: Tudo otimista -->
+                <tr style="background:rgba(39,174,96,0.06);">
+                    <td class="fb" style="color:var(--success-light);">🟢 Otim. Total</td>
+                    <td class="tr fm">6.800</td><td class="tr fm">80</td><td class="tr fm">130</td><td class="tr fm fb" style="color:var(--success-light);">3.600</td><td class="tr fm fb">52,9%</td>
+                    <td class="tr fm">6.300</td><td class="tr fm">175</td><td class="tr fm">70</td><td class="tr fm fb" style="color:var(--success-light);">5.950</td><td class="tr fm fb">94,4%</td>
+                    <td class="tc"><span class="badge bml">🌽 +2.350</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="info-box warning">
+        <h4>⚠️ Resultado: Milho Verão vence em TODOS os 9 cenários</h4>
+        <p>Nos parâmetros informados, o milho verão apresenta vantagem em <strong>100% das combinações testadas</strong>. A menor vantagem ocorre no cenário pessimista total (R$ 290/ha) e a maior no cenário otimista total (R$ 2.350/ha). <strong>Em nenhuma combinação a soja supera o milho com estes parâmetros.</strong></p>
+    </div>
+
+    <!-- ===== GRÁFICOS COMPARATIVOS ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#1abc9c,#16a085);">📈</div>
+        <h2>5. Gráficos Comparativos <small>Visualização lado a lado dos 9 cenários + indicadores financeiros</small></h2>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card chart-card-full">
+            <h3>Resultado/ha por Cenário — Soja vs. Milho Verão</h3>
+            <p class="cs">Barras agrupadas dos 9 cenários. Milho (amarelo) domina em todos.</p>
+            <div><canvas id="chart9Cenarios"></canvas></div>
+        </div>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Resultado Total (548 ha) — 3 Cenários Principais</h3>
+            <p class="cs">Pessimista, base e otimista para cada cultura</p>
+            <div><canvas id="chartResultTotal"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>ROI Comparativo — Soja vs. Milho vs. Selic</h3>
+            <p class="cs">A Selic (14,75%) como benchmark. Quem supera?</p>
+            <div><canvas id="chartROI"></canvas></div>
+        </div>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Composição da Receita/ha por Cenário Base</h3>
+            <p class="cs">Custo (vermelho) + Resultado (verde) = Receita total</p>
+            <div><canvas id="chartComposicao"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Break-Even Ratio por Cenário</h3>
+            <p class="cs">% da receita consumida pelo custo. Menor = melhor. Linha vermelha = 90%.</p>
+            <div><canvas id="chartBER"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ===== HEATMAPS ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#c0392b,#e74c3c);">🔥</div>
+        <h2>6. Heatmaps de Sensibilidade — Preço × Produtividade <small>Resultado/ha para 42 combinações por cultura · CT fixo no valor base</small></h2>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3 style="color:var(--soja);">🌱 Heatmap SOJA (CT = R$ 7.500/ha)</h3>
+            <p class="cs">Resultado/ha. Verde = lucro · Vermelho = prejuízo · ⭐ = cenário base</p>
+            <div class="hm-container" style="padding:0.5rem;border:none;margin:0;">
+                <div class="hm-grid" style="grid-template-columns:70px repeat(7,1fr);" id="hmSoja"></div>
+            </div>
+        </div>
+        <div class="chart-card">
+            <h3 style="color:var(--milho);">🌽 Heatmap MILHO (CT = R$ 7.000/ha)</h3>
+            <p class="cs">Resultado/ha. Verde = lucro · Vermelho = prejuízo · ⭐ = cenário base</p>
+            <div class="hm-container" style="padding:0.5rem;border:none;margin:0;">
+                <div class="hm-grid" style="grid-template-columns:70px repeat(7,1fr);" id="hmMilho"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== INDICADORES FINANCEIROS ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#d4a017,#f0c940);">💰</div>
+        <h2>7. Indicadores Financeiros Comparativos — Cenário Base <small>IEO, BER, ROIC, EVA, GAO, Elasticidade, Sharpe e Break-Even</small></h2>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Indicador</th><th class="tr" style="color:var(--soja);">🌱 Soja</th><th class="tr" style="color:var(--milho);">🌽 Milho</th><th class="tr">Δ</th><th class="tc">Vencedor</th><th>Nota</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="fb">Receita/ha</td><td class="tr fm">R$ 7.770</td><td class="tr fm fb" style="color:var(--milho);">R$ 8.700</td><td class="tr fm" style="color:var(--milho);">+R$ 930</td><td class="tc"><span class="badge bml">🌽</span></td><td style="font-size:0.73rem;">Milho gera +12% de receita</td></tr>
+                <tr><td class="fb">Custo/ha</td><td class="tr fm" style="color:var(--danger-light);">R$ 7.500</td><td class="tr fm" style="color:var(--success-light);">R$ 7.000</td><td class="tr fm" style="color:var(--milho);">-R$ 500</td><td class="tc"><span class="badge bml">🌽</span></td><td style="font-size:0.73rem;">Milho 6,7% mais barato</td></tr>
+                <tr><td class="fb">Resultado/ha</td><td class="tr fm">R$ 270</td><td class="tr fm fb" style="color:var(--milho);">R$ 1.700</td><td class="tr fm fb" style="color:var(--milho);">+R$ 1.430</td><td class="tc"><span class="badge bml">🌽 ✅✅</span></td><td style="font-size:0.73rem;">Milho 6,3× maior resultado</td></tr>
+                <tr><td class="fb">IEO (Rec/CT)</td><td class="tr fm">1,036</td><td class="tr fm fb" style="color:var(--milho);">1,243</td><td class="tr fm">+0,207</td><td class="tc"><span class="badge bml">🌽</span></td><td style="font-size:0.73rem;">Milho mais eficiente</td></tr>
+                <tr><td class="fb">BER (%)</td><td class="tr fm" style="color:var(--danger-light);">96,5%</td><td class="tr fm" style="color:var(--success-light);">80,5%</td><td class="tr fm" style="color:var(--milho);">-16,1pp</td><td class="tc"><span class="badge bml">🌽 ✅✅</span></td><td style="font-size:0.73rem;">Soja quase no break-even</td></tr>
+                <tr><td class="fb">ROIC (%)</td><td class="tr fm" style="color:var(--danger-light);">3,6%</td><td class="tr fm fb" style="color:var(--milho);">24,3%</td><td class="tr fm">+20,7pp</td><td class="tc"><span class="badge bml">🌽 ✅✅✅</span></td><td style="font-size:0.73rem;">Milho supera Selic · Soja não</td></tr>
+                <tr><td class="fb">EVA Total (R$)</td><td class="tr fm" style="color:var(--danger-light);">-R$ 155k</td><td class="tr fm fb" style="color:var(--milho);">+R$ 673k</td><td class="tr fm fb" style="color:var(--milho);">+R$ 828k</td><td class="tc"><span class="badge bml">🌽 ✅✅✅</span></td><td style="font-size:0.73rem;">Soja destrói valor · Milho cria</td></tr>
+                <tr><td class="fb">GAO</td><td class="tr fm" style="color:var(--danger-light);">28,78</td><td class="tr fm" style="color:var(--success-light);">5,12</td><td class="tr fm" style="color:var(--milho);">-23,66</td><td class="tc"><span class="badge bml">🌽 ✅✅</span></td><td style="font-size:0.73rem;">Soja altíssima alavancagem</td></tr>
+                <tr><td class="fb">B.E. Preço (R$/sc)</td><td class="tr fm">R$ 107,14</td><td class="tr fm" style="color:var(--success-light);">R$ 46,67</td><td class="tr fm">—</td><td class="tc"><span class="badge bml">🌽</span></td><td style="font-size:0.73rem;">Milho: folga de R$ 11,33/sc</td></tr>
+                <tr><td class="fb">B.E. Qtd (sc/ha)</td><td class="tr fm" style="color:var(--danger-light);">67,57</td><td class="tr fm" style="color:var(--success-light);">120,69</td><td class="tr fm">—</td><td class="tc"><span class="badge bml">🌽</span></td><td style="font-size:0.73rem;">Milho: folga de 29,3 sc/ha</td></tr>
+                <tr><td class="fb">Folga Produtividade</td><td class="tr fm" style="color:var(--danger-light);">+2,4 sc (3,5%)</td><td class="tr fm fb" style="color:var(--milho);">+29,3 sc (19,5%)</td><td class="tr fm">—</td><td class="tc"><span class="badge bml">🌽 ✅✅✅</span></td><td style="font-size:0.73rem;">Milho tem 5,6× mais folga</td></tr>
+                <tr><td class="fb">ε Preço (elasticidade)</td><td class="tr fm" style="color:var(--danger-light);">28,78×</td><td class="tr fm" style="color:var(--success-light);">5,12×</td><td class="tr fm">—</td><td class="tc"><span class="badge bml">🌽</span></td><td style="font-size:0.73rem;">Soja: 1% queda → -28,8% resultado</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TERMÔMETRO -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
+        <h3 style="font-size:0.95rem;margin-bottom:1rem;">🌡️ Comparativo Visual — Indicadores-Chave</h3>
+        <div class="gauge-row"><div class="gauge-label">BER Soja</div><div class="gauge-track"><div class="gauge-fill" style="width:96.5%;background:linear-gradient(90deg,#c0392b,#e74c3c);">96,5%</div></div><div class="gauge-val" style="color:var(--danger-light);">96,5% 🔴</div></div>
+        <div class="gauge-row"><div class="gauge-label">BER Milho</div><div class="gauge-track"><div class="gauge-fill" style="width:80.5%;background:linear-gradient(90deg,#27ae60,#2ecc71);">80,5%</div></div><div class="gauge-val" style="color:var(--success-light);">80,5% ✅</div></div>
+        <div style="height:0.75rem;"></div>
+        <div class="gauge-row"><div class="gauge-label">ROI Soja</div><div class="gauge-track"><div class="gauge-fill" style="width:7%;background:#c0392b;">3,6%</div></div><div class="gauge-val" style="color:var(--danger-light);">3,6%</div></div>
+        <div class="gauge-row"><div class="gauge-label">ROI Milho</div><div class="gauge-track"><div class="gauge-fill" style="width:48%;background:linear-gradient(90deg,#27ae60,#2ecc71);">24,3%</div></div><div class="gauge-val" style="color:var(--success-light);">24,3%</div></div>
+        <div class="gauge-row"><div class="gauge-label" style="color:var(--danger-light);">Selic</div><div class="gauge-track"><div class="gauge-fill" style="width:29%;background:linear-gradient(90deg,#c0392b,#e74c3c);">14,75%</div></div><div class="gauge-val" style="color:var(--danger-light);">14,75%</div></div>
+        <div style="height:0.75rem;"></div>
+        <div class="gauge-row"><div class="gauge-label">GAO Soja</div><div class="gauge-track"><div class="gauge-fill" style="width:100%;background:linear-gradient(90deg,#c0392b,#e74c3c);">28,78</div></div><div class="gauge-val" style="color:var(--danger-light);">28,78 🔴</div></div>
+        <div class="gauge-row"><div class="gauge-label">GAO Milho</div><div class="gauge-track"><div class="gauge-fill" style="width:18%;background:linear-gradient(90deg,#27ae60,#2ecc71);">5,12</div></div><div class="gauge-val" style="color:var(--success-light);">5,12 ✅</div></div>
+        <div style="height:0.75rem;"></div>
+        <div class="gauge-row"><div class="gauge-label">Folga Soja</div><div class="gauge-track"><div class="gauge-fill" style="width:3.5%;background:#c0392b;">3,5%</div></div><div class="gauge-val" style="color:var(--danger-light);">+2,4 sc (3,5%)</div></div>
+        <div class="gauge-row"><div class="gauge-label">Folga Milho</div><div class="gauge-track"><div class="gauge-fill" style="width:19.5%;background:linear-gradient(90deg,#27ae60,#2ecc71);">19,5%</div></div><div class="gauge-val" style="color:var(--success-light);">+29,3 sc (19,5%)</div></div>
+    </div>
+
+    <!-- ===== MONTE CARLO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#1abc9c,#16a085);">🎲</div>
+        <h2>8. Monte Carlo — 10.000 Simulações por Cultura <small>Distribuição triangular · Risco de prejuízo · VaR · Valor esperado</small></h2>
+    </div>
+
+    <div class="formula">
+        SOJA → Prod~Tri(58,70,80) · Preço~Tri(95,111,130) · CT~Tri(6.800,7.500,8.200) &nbsp;|&nbsp; MILHO → Prod~Tri(120,150,175) · Preço~Tri(45,58,70) · CT~Tri(6.300,7.000,7.800)
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3 style="color:var(--soja);">🌱 Distribuição Resultado — SOJA (10k sim.)</h3>
+            <p class="cs">Histograma com proporção de cenários negativos (vermelho) e positivos (verde)</p>
+            <div><canvas id="chartMCSoja"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3 style="color:var(--milho);">🌽 Distribuição Resultado — MILHO (10k sim.)</h3>
+            <p class="cs">Curva deslocada à direita — mais cenários positivos, maior valor esperado</p>
+            <div><canvas id="chartMCMilho"></canvas></div>
+        </div>
+    </div>
+
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));">
+        <div class="kpi-card"><div class="kb" style="background:var(--soja);"></div><div class="kl">Prob. Prejuízo Soja</div><div class="kv" id="kpiPPSoja" style="color:var(--danger-light);">—</div><div class="ks">Das 10.000 simulações</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--milho);"></div><div class="kl">Prob. Prejuízo Milho</div><div class="kv" id="kpiPPMilho" style="color:var(--success-light);">—</div><div class="ks">Das 10.000 simulações</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--soja);"></div><div class="kl">E[R] Soja</div><div class="kv" id="kpiERSoja" style="color:var(--soja);">—</div><div class="ks">Resultado esperado</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--milho);"></div><div class="kl">E[R] Milho</div><div class="kv" id="kpiERMilho" style="color:var(--milho);">—</div><div class="ks">Resultado esperado</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--danger);"></div><div class="kl">VaR 95% Soja</div><div class="kv" id="kpiVaRSoja" style="color:var(--danger-light);">—</div><div class="ks">Pior em 95% dos casos</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--warning);"></div><div class="kl">VaR 95% Milho</div><div class="kv" id="kpiVaRMilho" style="color:var(--warning-light);">—</div><div class="ks">Pior em 95% dos casos</div></div>
+    </div>
+
+    <!-- ===== PREÇO DE EQUILÍBRIO CRUZADO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#e67e22,#f39c12);">⚖️</div>
+        <h2>9. Ponto de Equilíbrio Cruzado — Quando Soja Vence o Milho? <small>Quais preços e produtividades a soja precisaria para empatar com o milho</small></h2>
+    </div>
+
+    <div class="formula">
+        Soja vence Milho quando: Prod_soja × Preço_soja − CT_soja > Prod_milho × Preço_milho − CT_milho
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Condição</th><th class="tr">Soja precisa de:</th><th class="tc">É realista?</th><th>Comentário</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="fb">Se milho base e soja preço sobe</td><td class="tr fm fb" style="color:var(--warning-light);">R$ 131,43/sc (+18,4%)</td><td class="tc"><span class="badge bw">Possível</span></td><td style="font-size:0.75rem;">USDA projeta R$ 180-220/sc em cenários apertados (sem considerar GO local)</td></tr>
+                <tr><td class="fb">Se milho base e soja prod. sobe</td><td class="tr fm fb" style="color:var(--danger-light);">82,88 sc/ha (+18,4%)</td><td class="tc"><span class="badge bd">Difícil</span></td><td style="font-size:0.75rem;">Acima do benchmark Comigo para Sudoeste GO</td></tr>
+                <tr><td class="fb">Se milho pessimista (tudo)</td><td class="tr fm" style="color:var(--success-light);">Soja com resultado > -R$2.400</td><td class="tc"><span class="badge bg">Fácil</span></td><td style="font-size:0.75rem;">Soja vence no cenário pessimista total por R$ 290/ha</td></tr>
+                <tr><td class="fb">Se milho preço cai para R$ 42/sc</td><td class="tr fm" style="color:var(--success-light);">Soja base já vence</td><td class="tc"><span class="badge bg">Improvável milho tão baixo</span></td><td style="font-size:0.75rem;">Milho GO ficou entre R$ 60-90/sc nos últimos 2 anos</td></tr>
+                <tr><td class="fb">Equilíbrio: soja preço+prod</td><td class="tr fm">R$ 120/sc + 76 sc/ha</td><td class="tc"><span class="badge bw">Possível c/ otimizações</span></td><td style="font-size:0.75rem;">Combinação viável se implementar plano das partes 1-7</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ===== VEREDICTO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#d4a017,#f0c940);">🏆</div>
+        <h2>10. Veredicto do Benchmarking <small>Recomendação final baseada nos 9 cenários, Monte Carlo e indicadores</small></h2>
+    </div>
+
+    <div class="info-box success" style="border-left-width:6px;">
+        <h4>🌽 O Milho Verão Apresenta Superioridade Expressiva nos Parâmetros Informados</h4>
+        <p>Com os dados fornecidos (CT Soja R$ 7.500 vs Milho R$ 7.000 · Prod. 70 vs 150 · Preço R$ 111 vs R$ 58), o milho verão supera a soja em <strong>todos os 9 cenários, todos os 12 indicadores financeiros e nas simulações Monte Carlo</strong>.</p>
+        <ul>
+            <li><strong>Resultado base:</strong> Milho R$ 1.700/ha vs. Soja R$ 270/ha (+530%)</li>
+            <li><strong>BER:</strong> Milho 80,5% vs. Soja 96,5% — milho tem 5× mais margem de segurança</li>
+            <li><strong>ROI:</strong> Milho 24,3% supera Selic · Soja 3,6% não cobre nem a inflação</li>
+            <li><strong>EVA:</strong> Milho cria R$ 673k de valor · Soja destrói R$ 155k</li>
+            <li><strong>GAO:</strong> Milho 5,12 (controlado) vs. Soja 28,78 (extremamente alavancado)</li>
+        </ul>
+    </div>
+
+    <div class="info-box warning" style="border-left-width:6px;">
+        <h4>⚠️ Ressalvas Importantes — Fatores Além do Benchmarking Numérico</h4>
+        <ul>
+            <li><strong>Infraestrutura:</strong> Milho verão exige secador/armazém com capacidade para ~82.200 sc (vs. ~38.380 de soja). Há capacidade?</li>
+            <li><strong>Logística:</strong> Milho tem menor valor por tonelada → frete proporcionalmente mais caro</li>
+            <li><strong>Comercialização:</strong> Soja tem liquidez global imediata (CBOT + demanda China). Milho depende mais do mercado interno e etanol</li>
+            <li><strong>Sucessão:</strong> Soja + milho safrinha é a "dobradinha" clássica. Milho verão inviabiliza a safrinha de milho (sobreposição)</li>
+            <li><strong>Rotação:</strong> Soja fixa nitrogênio, beneficiando a sucessão. Milho não</li>
+            <li><strong>Preço GO real:</strong> Milho em GO ficou entre R$ 60-70/sc em 25/26 (SEAPA). O cenário base de R$ 58 pode ser conservador</li>
+            <li><strong>Risco de preço do milho:</strong> Milho teve queda de até 30% em GO em 2023/24. Volatilidade maior que a soja</li>
+        </ul>
+    </div>
+
+    <div class="info-box" style="border-left-width:6px;">
+        <h4>💡 Recomendação Estratégica</h4>
+        <p>Considerando os números <strong>E</strong> os fatores qualitativos:</p>
+        <ol>
+            <li><strong>Cenário ideal:</strong> Alocar 30-40% da área (165-220 ha) em milho verão e manter 60-70% em soja otimizada (plano das Partes 1-7). Isso diversifica risco e captura o upside do milho sem abrir mão da liquidez da soja.</li>
+            <li><strong>Se infraestrutura permitir 100% milho:</strong> Os números justificam amplamente. Ganho potencial de +R$ 783k vs. soja pura.</li>
+            <li><strong>Hedge obrigatório:</strong> Independente da cultura, fixar 40-50% da produção antecipadamente a preços favoráveis.</li>
+        </ol>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card chart-card-full">
+            <h3>Radar Comparativo Final — Soja vs. Milho (Cenário Base)</h3>
+            <p class="cs">8 dimensões normalizadas 0-100. Verde = Soja · Amarelo = Milho</p>
+            <div style="max-width:520px;margin:0 auto;"><canvas id="chartRadarFinal"></canvas></div>
+        </div>
+    </div>
+
+</div>
+
+<div class="footer">
+    <p><strong>Fazenda Monte Alegre</strong> · Leandro Martins · Montividiu-GO · Safra 26/27</p>
+    <p>Benchmarking EXTRA — Soja vs. Milho Verão · 9 cenários · 10.000 simulações Monte Carlo · 12 indicadores</p>
+    <p>Gerado em 16 de abril de 2026 · Documento confidencial</p>
+</div>
+
+<!-- ======================== SCRIPTS ======================== -->
+<script>
+Chart.register(ChartDataLabels);
+const CL={soja:'#2ecc71',milho:'#f1c40f',red:'#e74c3c',redD:'#c0392b',green:'#2ecc71',greenD:'#27ae60',gold:'#f0c940',blue:'#3498db',orange:'#f39c12',purple:'#9b59b6',gray:'#95a5a6'};
+
+// 9 cenários barras agrupadas
+const cenLabels=['Pess.\nTotal','Custo\nAlto','Prod.\nBaixa','Preço\nBaixo','BASE','Custo\nBaixo','Prod.\nAlta','Preço\nAlto','Otim.\nTotal'];
+const sojaRes=[-2690,-430,-1062,-850,270,970,1380,1600,3600];
+const milhoRes=[-2400,900,-40,-250,1700,2400,3150,3500,5950];
+
+new Chart(document.getElementById('chart9Cenarios'),{
+    type:'bar',
+    data:{labels:cenLabels,datasets:[
+        {label:'🌱 Soja',data:sojaRes,backgroundColor:CL.soja+'bb',borderColor:CL.soja,borderWidth:2,borderRadius:4},
+        {label:'🌽 Milho',data:milhoRes,backgroundColor:CL.milho+'bb',borderColor:CL.milho,borderWidth:2,borderRadius:4}
+    ]},
+    options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:11},usePointStyle:true}},datalabels:{anchor:ctx=>ctx.dataset.data[ctx.dataIndex]>=0?'end':'start',align:ctx=>ctx.dataset.data[ctx.dataIndex]>=0?'top':'bottom',formatter:v=>(v>=0?'+':'')+v.toLocaleString('pt-BR'),color:'#ecf0f1',font:{size:8,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6',font:{size:9}},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>'R$'+v},grid:{color:'rgba(44,62,80,0.3)'}}}}
+});
+
+// Resultado total 3 cenários
+new Chart(document.getElementById('chartResultTotal'),{
+    type:'bar',
+    data:{labels:['Pessimista','Base','Otimista'],datasets:[
+        {label:'🌱 Soja (R$ mil)',data:[-1474,148,1973],backgroundColor:[CL.red+'88',CL.soja+'bb',CL.soja],borderRadius:6},
+        {label:'🌽 Milho (R$ mil)',data:[-1315,932,3261],backgroundColor:[CL.red+'88',CL.milho+'bb',CL.milho],borderRadius:6}
+    ]},
+    options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},datalabels:{anchor:ctx=>ctx.dataset.data[ctx.dataIndex]>=0?'end':'start',align:ctx=>ctx.dataset.data[ctx.dataIndex]>=0?'top':'bottom',formatter:v=>(v>=0?'':'')+'R$'+v+'k',color:'#ecf0f1',font:{size:9,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6'},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>'R$'+v+'k'},grid:{color:'rgba(44,62,80,0.3)'}}}}
+});
+
+// ROI vs Selic
+new Chart(document.getElementById('chartROI'),{
+    type:'bar',
+    data:{labels:['Pessimista','Base','Otimista'],datasets:[
+        {label:'Soja',data:[-32.8,3.6,52.9],backgroundColor:[CL.red,CL.soja+'bb',CL.soja],borderRadius:4},
+        {label:'Milho',data:[-30.8,24.3,94.4],backgroundColor:[CL.red,CL.milho+'bb',CL.milho],borderRadius:4},
+        {label:'Selic (14,75%)',data:[14.75,14.75,14.75],type:'line',borderColor:CL.red,borderDash:[6,4],borderWidth:2,pointRadius:0}
+    ]},
+    options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:9},usePointStyle:true}},datalabels:{display:ctx=>ctx.datasetIndex<2,anchor:ctx=>ctx.dataset.data[ctx.dataIndex]>=0?'end':'start',align:ctx=>ctx.dataset.data[ctx.dataIndex]>=0?'top':'bottom',formatter:v=>v.toFixed(1)+'%',color:'#ecf0f1',font:{size:9,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6'},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>v+'%'},grid:{color:'rgba(44,62,80,0.3)'}}}}
+});
+
+// Composição receita
+new Chart(document.getElementById('chartComposicao'),{
+    type:'bar',
+    data:{labels:['🌱 Soja','🌽 Milho'],datasets:[
+        {label:'Custo/ha',data:[7500,7000],backgroundColor:CL.red+'cc'},
+        {label:'Resultado/ha',data:[270,1700],backgroundColor:CL.green+'cc'}
+    ]},
+    options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},datalabels:{formatter:v=>'R$'+v.toLocaleString('pt-BR'),color:'#fff',font:{size:11,weight:'bold'}}},scales:{x:{stacked:true,ticks:{color:'#95a5a6'},grid:{display:false}},y:{stacked:true,ticks:{color:'#95a5a6',callback:v=>'R$'+v},grid:{color:'rgba(44,62,80,0.3)'}}}}
+});
+
+// BER
+new Chart(document.getElementById('chartBER'),{
+    type:'bar',
+    data:{labels:['Soja Pess.','Soja Base','Soja Otim.','Milho Pess.','Milho Base','Milho Otim.'],datasets:[
+        {label:'BER (%)',data:[148.8,96.5,65.4,144.4,80.5,51.4],backgroundColor:[CL.red,CL.orange+'cc',CL.soja,CL.red,CL.milho+'cc',CL.milho],borderRadius:4},
+        {label:'90% (perigo)',data:[90,90,90,90,90,90],type:'line',borderColor:'rgba(231,76,60,0.5)',borderDash:[6,4],borderWidth:2,pointRadius:0}
+    ]},
+    options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:9},usePointStyle:true}},datalabels:{display:ctx=>ctx.datasetIndex===0,anchor:'end',align:'top',formatter:v=>v.toFixed(1)+'%',color:'#ecf0f1',font:{size:9,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6',font:{size:9}},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>v+'%'},grid:{color:'rgba(44,62,80,0.3)'},max:160}}}
+});
+
+// HEATMAPS
+function buildHeatmap(id,prods,precos,ct,baseProd,basePreco){
+    const g=document.getElementById(id);
+    g.innerHTML='<div class="hm-cell hm-h">Preço\\Prod</div>';
+    prods.forEach(p=>g.innerHTML+=`<div class="hm-cell hm-h">${p} sc</div>`);
+    precos.forEach(pr=>{
+        g.innerHTML+=`<div class="hm-cell hm-h">R$${pr}</div>`;
+        prods.forEach(pd=>{
+            const res=pd*pr-ct;
+            const isCur=pd===baseProd&&pr===basePreco;
+            let bg;
+            if(res<-2000)bg='rgba(139,0,0,0.7)';else if(res<-500)bg='rgba(183,28,28,0.6)';else if(res<0)bg='rgba(231,76,60,0.5)';else if(res<500)bg='rgba(51,105,30,0.5)';else if(res<1500)bg='rgba(46,125,50,0.6)';else if(res<3000)bg='rgba(27,94,32,0.7)';else bg='rgba(13,61,20,0.8)';
+            g.innerHTML+=`<div class="hm-cell" style="background:${bg};color:#fff;${isCur?'border:2px solid #f0c940;':''}">${isCur?'⭐':''} ${res>=0?'+':''}${res}</div>`;
+        });
+    });
+}
+buildHeatmap('hmSoja',[58,64,70,76,80,84,90],[95,100,105,111,120,130,140],7500,70,111);
+buildHeatmap('hmMilho',[120,130,140,150,160,170,175],[45,48,52,58,62,66,70],7000,150,58);
+
+// MONTE CARLO
+function triRand(a,b,c){const u=Math.random();const fc=(c-a)/(b-a);if(u<fc)return a+Math.sqrt(u*(b-a)*(c-a));return b-Math.sqrt((1-u)*(b-a)*(b-c));}
+
+function runMC(canvasId,prodA,prodB,prodC,precoA,precoB,precoC,ctA,ctB,ctC,area,prefix,kpiPP,kpiER,kpiVaR){
+    const results=[];const bins=new Array(35).fill(0);const minR=-2500;const step=200;
+    for(let i=0;i<10000;i++){
+        const prod=triRand(prodA,prodB,prodC);
+        const preco=triRand(precoA,precoB,precoC);
+        const ct=triRand(ctA,ctB,ctC);
+        const res=(prod*preco-ct)*area/1000;
+        results.push(res);
+        const idx=Math.min(34,Math.max(0,Math.floor((res-minR)/step)));
+        bins[idx]++;
+    }
+    results.sort((a,b)=>a-b);
+    const neg=results.filter(r=>r<0).length;
+    const mean=results.reduce((s,v)=>s+v,0)/results.length;
+    const var95=results[Math.floor(0.05*results.length)];
+    
+    document.getElementById(kpiPP).textContent=(neg/100).toFixed(1)+'%';
+    document.getElementById(kpiER).textContent='R$ '+(mean).toFixed(0)+'k';
+    document.getElementById(kpiVaR).textContent='R$ '+(var95).toFixed(0)+'k';
+    
+    const labels=[];for(let i=0;i<35;i++)labels.push(Math.round(minR+i*step));
+    const clr=prefix==='soja'?CL.soja:CL.milho;
+    const colors=labels.map(v=>v<0?CL.red+'88':clr+'99');
+    
+    new Chart(document.getElementById(canvasId),{type:'bar',data:{labels:labels.map(v=>(v>=0?'+':'')+v+'k'),datasets:[{label:'Frequência',data:bins,backgroundColor:colors,borderRadius:2}]},options:{responsive:true,plugins:{legend:{display:false},datalabels:{display:false}},scales:{x:{ticks:{color:'#95a5a6',font:{size:7},maxRotation:90},grid:{display:false}},y:{ticks:{color:'#95a5a6'},grid:{color:'rgba(44,62,80,0.3)'}}}}});
+}
+
+runMC('chartMCSoja',58,80,70,95,130,111,6800,8200,7500,548,'soja','kpiPPSoja','kpiERSoja','kpiVaRSoja');
+runMC('chartMCMilho',120,175,150,45,70,58,6300,7800,7000,548,'milho','kpiPPMilho','kpiERMilho','kpiVaRMilho');
+
+// Radar Final
+new Chart(document.getElementById('chartRadarFinal'),{
+    type:'radar',
+    data:{
+        labels:['Resultado/ha','ROI','BER (inv.)','GAO (inv.)','Folga Prod.','EVA','Receita/ha','Custo (inv.)'],
+        datasets:[
+            {label:'🌱 Soja',data:[16,14,23,18,18,0,89,87],borderColor:CL.soja,backgroundColor:'rgba(46,204,113,0.1)',borderWidth:3,pointRadius:5,pointBackgroundColor:CL.soja},
+            {label:'🌽 Milho',data:[100,100,100,100,100,100,100,100],borderColor:CL.milho,backgroundColor:'rgba(241,196,15,0.08)',borderWidth:3,pointRadius:5,pointBackgroundColor:CL.milho}
+        ]
+    },
+    options:{responsive:true,scales:{r:{beginAtZero:true,max:110,grid:{color:'rgba(44,62,80,0.5)'},pointLabels:{color:'#95a5a6',font:{size:10,weight:'bold'}},ticks:{display:false}}},plugins:{legend:{labels:{color:'#95a5a6',font:{size:11},usePointStyle:true}},datalabels:{display:false}}}
+});
+</script>
+
+</body>
+</html>

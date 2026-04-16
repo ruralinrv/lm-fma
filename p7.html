@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fazenda Monte Alegre — Parte 7: Relatório Executivo Final</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        :root{--primary:#1a5632;--primary-light:#2d8a4e;--primary-dark:#0e3b20;--accent:#d4a017;--accent-light:#f0c940;--danger:#c0392b;--danger-light:#e74c3c;--warning:#e67e22;--warning-light:#f39c12;--success:#27ae60;--success-light:#2ecc71;--info:#2980b9;--info-light:#3498db;--bg-dark:#0f1923;--bg-card:#1a2634;--bg-card-hover:#223344;--bg-section:#15202d;--text-primary:#ecf0f1;--text-secondary:#95a5a6;--text-muted:#7f8c8d;--border:#2c3e50;--shadow:0 4px 24px rgba(0,0,0,0.3);}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-dark);color:var(--text-primary);line-height:1.7;}
+        
+        /* COVER */
+        .cover{background:linear-gradient(135deg,#0a1a0f 0%,var(--primary-dark) 30%,var(--primary) 60%,var(--primary-light) 100%);padding:4rem 2rem;text-align:center;position:relative;overflow:hidden;min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+        .cover::before{content:'';position:absolute;top:-100px;right:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(212,160,23,0.1),transparent 70%);border-radius:50%;}
+        .cover::after{content:'';position:absolute;bottom:-100px;left:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(46,204,113,0.08),transparent 70%);border-radius:50%;}
+        .cover .logo{font-size:3.5rem;margin-bottom:0.5rem;position:relative;z-index:2;}
+        .cover h1{font-size:2rem;font-weight:900;color:#fff;position:relative;z-index:2;letter-spacing:-0.5px;}
+        .cover h1 span{color:var(--accent-light);}
+        .cover .subtitle{font-size:1.1rem;color:rgba(255,255,255,0.7);margin-top:0.5rem;position:relative;z-index:2;}
+        .cover .meta{display:flex;gap:2rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap;position:relative;z-index:2;}
+        .cover .meta-item{background:rgba(255,255,255,0.08);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:0.6rem 1.2rem;font-size:0.8rem;color:rgba(255,255,255,0.85);}
+        .cover .meta-item strong{color:var(--accent-light);}
+
+        .nav-parts{display:flex;gap:0.5rem;padding:0.75rem 2rem;background:var(--bg-section);border-bottom:1px solid var(--border);flex-wrap:wrap;position:sticky;top:0;z-index:100;}
+        .nav-parts a{padding:0.45rem 0.9rem;border-radius:8px;text-decoration:none;font-size:0.78rem;font-weight:600;color:var(--text-secondary);background:var(--bg-card);border:1px solid var(--border);transition:all 0.2s;}
+        .nav-parts a:hover,.nav-parts a.active{background:var(--primary);color:#fff;border-color:var(--primary-light);}
+        .container{max-width:1200px;margin:0 auto;padding:2rem 1.5rem;}
+        .section-title{display:flex;align-items:center;gap:0.75rem;margin:2.5rem 0 1.25rem;padding-bottom:0.75rem;border-bottom:2px solid var(--border);}
+        .section-title .icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;}
+        .section-title h2{font-size:1.35rem;font-weight:700;}
+        .section-title h2 small{display:block;font-size:0.75rem;font-weight:400;color:var(--text-secondary);margin-top:0.15rem;}
+        .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:1.5rem;margin-bottom:1.5rem;}
+        .chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+        .chart-card h3{font-size:0.92rem;font-weight:700;margin-bottom:0.25rem;}
+        .chart-card p.cs{font-size:0.73rem;color:var(--text-muted);margin-bottom:1rem;}
+        .chart-card-full{grid-column:1/-1;}
+        .table-wrapper{overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-bottom:1.5rem;}
+        table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+        thead th{background:var(--bg-section);color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;font-size:0.7rem;padding:0.8rem;text-align:left;border-bottom:2px solid var(--border);}
+        tbody td{padding:0.7rem 0.8rem;border-bottom:1px solid var(--border);}
+        tbody tr:hover{background:var(--bg-card-hover);}
+        tbody tr:last-child td{border-bottom:none;}
+        .tr{text-align:right}.tc{text-align:center}.fb{font-weight:700}.fm{font-family:'Cascadia Code','Fira Code',monospace;font-size:0.8rem;}
+        .badge{display:inline-flex;align-items:center;gap:0.2rem;padding:0.18rem 0.5rem;border-radius:6px;font-size:0.68rem;font-weight:600;white-space:nowrap;}
+        .bg{background:rgba(39,174,96,0.15);color:var(--success-light);}
+        .bw{background:rgba(243,156,18,0.15);color:var(--warning-light);}
+        .bd{background:rgba(231,76,60,0.15);color:var(--danger-light);}
+        .bi{background:rgba(52,152,219,0.15);color:var(--info-light);}
+        .info-box{background:var(--bg-card);border-left:4px solid var(--info);border-radius:0 12px 12px 0;padding:1.15rem 1.35rem;margin-bottom:1.5rem;}
+        .info-box.warning{border-left-color:var(--warning);}.info-box.danger{border-left-color:var(--danger);}.info-box.success{border-left-color:var(--success);}.info-box.gold{border-left-color:var(--accent);}
+        .info-box h4{font-size:0.9rem;font-weight:700;margin-bottom:0.4rem;}
+        .info-box p,.info-box ul,.info-box ol{font-size:0.82rem;color:var(--text-secondary);line-height:1.7;}
+        .info-box ul,.info-box ol{margin-left:1.3rem;margin-top:0.35rem;}
+        .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;}
+        .kpi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.1rem;position:relative;overflow:hidden;}
+        .kpi-card .kb{position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
+        .kpi-card .kl{font-size:0.72rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.35rem;}
+        .kpi-card .kv{font-size:1.4rem;font-weight:800;line-height:1.2;}
+        .kpi-card .ks{font-size:0.73rem;color:var(--text-muted);margin-top:0.25rem;}
+
+        /* EXECUTIVE SUMMARY BLOCKS */
+        .exec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.25rem;margin-bottom:1.5rem;}
+        .exec-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.4rem;position:relative;overflow:hidden;}
+        .exec-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:4px 4px 0 0;}
+        .exec-card h3{font-size:0.95rem;font-weight:800;margin-bottom:0.6rem;}
+        .exec-card p{font-size:0.82rem;color:var(--text-secondary);line-height:1.65;}
+        .exec-card .exec-number{font-size:2.2rem;font-weight:900;line-height:1;}
+        .exec-card .exec-sub{font-size:0.75rem;color:var(--text-muted);margin-top:0.2rem;}
+
+        /* VERDICT */
+        .verdict{background:linear-gradient(135deg,rgba(26,86,50,0.15),rgba(45,138,78,0.08));border:2px solid rgba(45,138,78,0.3);border-radius:16px;padding:2rem;margin:2rem 0;text-align:center;}
+        .verdict h2{font-size:1.5rem;font-weight:900;color:var(--accent-light);margin-bottom:0.5rem;}
+        .verdict .verdict-score{font-size:4rem;font-weight:900;line-height:1;}
+        .verdict .verdict-label{font-size:1rem;color:var(--text-secondary);margin-top:0.3rem;}
+
+        /* SIGNATURE */
+        .signature{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:2rem;margin-top:2rem;text-align:center;}
+        .signature .sig-line{width:250px;border-bottom:1px solid var(--text-muted);margin:1.5rem auto 0.5rem;}
+        
+        .footer{text-align:center;padding:2.5rem;border-top:2px solid var(--border);margin-top:3rem;color:var(--text-muted);font-size:0.75rem;}
+        @media(max-width:768px){.container{padding:1rem;}.chart-grid{grid-template-columns:1fr;}.exec-grid{grid-template-columns:1fr;}.kpi-grid{grid-template-columns:repeat(2,1fr);}.cover{padding:2rem 1rem;}.cover h1{font-size:1.4rem;}}
+    </style>
+</head>
+<body>
+
+<!-- ===== CAPA ===== -->
+<div class="cover">
+    <div class="logo">🌱</div>
+    <h1>Relatório Técnico-Econômico <span>Final</span></h1>
+    <div class="subtitle">Fazenda Monte Alegre · Safra 2025/2026 · Soja</div>
+    <div class="meta">
+        <div class="meta-item">📍 <strong>Montividiu-GO</strong> · Sudoeste Goiano</div>
+        <div class="meta-item">🌾 <strong>548 ha</strong> · 5 talhões</div>
+        <div class="meta-item">👤 <strong>Leandro Martins</strong> · Proprietário</div>
+        <div class="meta-item">📅 <strong>16/04/2026</strong> · Parte 7 de 7</div>
+    </div>
+</div>
+
+<div class="nav-parts">
+    <a href="#">📊 Parte 1</a><a href="#">📉 Parte 2</a><a href="#">🌱 Parte 3</a><a href="#">📐 Parte 4</a><a href="#">🔬 Parte 5</a><a href="#">🎯 Parte 6</a>
+    <a href="#" class="active">📄 Parte 7 — Relatório Final</a>
+</div>
+
+<div class="container">
+
+    <!-- ===== 1. SUMÁRIO EXECUTIVO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#d4a017,#f0c940);">📋</div>
+        <h2>1. Sumário Executivo <small>Visão geral em 60 segundos para o tomador de decisão</small></h2>
+    </div>
+
+    <div class="exec-grid">
+        <div class="exec-card" style="border-top:4px solid var(--accent-light);">
+            <h3 style="color:var(--accent-light);">📐 Escala</h3>
+            <div class="exec-number" style="color:var(--accent-light);">548 ha</div>
+            <div class="exec-sub">5 talhões · 6 cultivares · 4 obtentoras</div>
+            <p style="margin-top:0.6rem;">Área consolidada na região mais produtiva de Goiás (Sudoeste Goiano), com benchmark Comigo de 76 sc/ha para a região.</p>
+        </div>
+        <div class="exec-card" style="border-top:4px solid var(--warning-light);">
+            <h3 style="color:var(--warning-light);">💰 Resultado Financeiro</h3>
+            <div class="exec-number" style="color:var(--warning-light);">R$ 261,8k</div>
+            <div class="exec-sub">Resultado total · R$ 478/ha · ROI 6,6%</div>
+            <p style="margin-top:0.6rem;">Lucro contábil positivo, mas <strong>abaixo do custo de oportunidade</strong> (Selic 14,75%). EVA de <strong>-R$ 30,7k</strong> — a fazenda destrói valor econômico.</p>
+        </div>
+        <div class="exec-card" style="border-top:4px solid var(--danger-light);">
+            <h3 style="color:var(--danger-light);">⚠️ Risco Identificado</h3>
+            <div class="exec-number" style="color:var(--danger-light);">93,8%</div>
+            <div class="exec-sub">Break-Even Ratio · folga de apenas 6,2%</div>
+            <p style="margin-top:0.6rem;">Operação na zona de risco. Uma queda de 6% no preço ou produtividade levaria ao prejuízo. O T-03 opera a <strong>97,9% do BER</strong> (quase break-even).</p>
+        </div>
+        <div class="exec-card" style="border-top:4px solid var(--success-light);">
+            <h3 style="color:var(--success-light);">🏆 Potencial Identificado</h3>
+            <div class="exec-number" style="color:var(--success-light);">R$ 1,07M</div>
+            <div class="exec-sub">Resultado projetado 26/27 (cenário otimista)</div>
+            <p style="margin-top:0.6rem;">Com as otimizações propostas (3 cultivares, redução fitoss., +7 sc/ha), o resultado pode <strong>quadruplicar</strong> — comprovado pelo T-02 que já entrega R$ 1.041/ha.</p>
+        </div>
+    </div>
+
+    <!-- ===== 2. DIAGNÓSTICO CENTRAL ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#e74c3c,#c0392b);">🔍</div>
+        <h2>2. Diagnóstico Central — As 5 Descobertas-Chave <small>Os achados mais importantes que emergiram da análise de 50+ indicadores</small></h2>
+    </div>
+
+    <div class="info-box danger">
+        <h4>🔴 Descoberta #1 — O T-03 é o Gargalo Sistêmico da Fazenda</h4>
+        <p>O Talhão 03 concentra <strong>39,8% da área</strong> (218 ha) e <strong>4 cultivares com ciclos divergentes</strong> (GM 5.7 a 7.5). Isso gera:</p>
+        <ul>
+            <li>Custo fitossanitário de <strong>R$ 1.244/ha</strong> — 5,4× maior que o T-02 (R$ 230/ha)</li>
+            <li>Resultado de apenas <strong>R$ 162/ha</strong> — o pior da fazenda</li>
+            <li>EVA de <strong>-R$ 86 mil</strong> — sozinho neutraliza quase todo o EVA positivo do T-02</li>
+            <li>GAO de <strong>24,17</strong> — cada 1% de queda na receita elimina 24% do resultado</li>
+            <li>ICPT de <strong>0/100</strong> — último em todos os indicadores compostos</li>
+        </ul>
+    </div>
+
+    <div class="info-box success">
+        <h4>🟢 Descoberta #2 — O T-02 Prova que a Fazenda Pode Ser Altamente Rentável</h4>
+        <p>O Talhão 02 (166 ha, 30,3% da área) entrega performance de <strong>excelência</strong>:</p>
+        <ul>
+            <li>Resultado de <strong>R$ 1.041/ha</strong> — 6,4× maior que a média dos outros talhões</li>
+            <li>EVA de <strong>+R$ 91 mil</strong> — única unidade que cria valor econômico real</li>
+            <li>TIR anualizada de <strong>33,63%</strong> — mais que o dobro da Selic</li>
+            <li>Relação Fitoss./Semente de <strong>0,31×</strong> — modelo de eficiência</li>
+            <li>ICPT de <strong>100/100</strong> — benchmark interno</li>
+        </ul>
+        <p style="margin-top:0.5rem;"><strong>O que o T-02 faz diferente?</strong> Usa apenas 2 cultivares compatíveis (Guepardo + DM 73I75), investiu mais em semente premium com TSI robusto, e consequentemente gastou 81% menos em fitossanitário.</p>
+    </div>
+
+    <div class="info-box warning">
+        <h4>⚠️ Descoberta #3 — A "Economia Falsa" na Semente Custa R$ 1.014/ha a Mais</h4>
+        <p>A regressão econométrica (R² = 0,947) comprovou que:</p>
+        <ul>
+            <li><strong>β₁ Fitossanitário = -0,812:</strong> Cada R$ 1 gasto a mais em defensivo reduz R$ 0,81 do resultado</li>
+            <li><strong>β₂ Semente = +0,307:</strong> Cada R$ 1 investido a mais em semente gera R$ 0,31 de retorno adicional</li>
+            <li><strong>β₃ Nº Cultivares = -187,40:</strong> Cada cultivar adicional no talhão custa R$ 187/ha</li>
+        </ul>
+        <p style="margin-top:0.5rem;">O T-03 economizou R$ 331/ha em semente barata e gastou R$ 1.014/ha a mais em fitossanitário. <strong>ROI negativo de -206%</strong> na "economia".</p>
+    </div>
+
+    <div class="info-box">
+        <h4>🔵 Descoberta #4 — A Fazenda Tem EVA Negativo (Destrói Valor)</h4>
+        <p>Com resultado de R$ 261.837 e custo de oportunidade de R$ 292.498 (Selic 14,75% sobre o capital investido), o <strong>EVA é de -R$ 30.661</strong>. Em termos práticos: o Leandro teria ganho R$ 30,7k a mais deixando o capital investido em CDB/Selic, sem nenhum risco.<br><br>
+        <strong>Porém:</strong> Isso é corrigível. A simulação Monte Carlo mostra que com as otimizações propostas, o E[Resultado] salta para R$ 847k (EVA projetado de +R$ 554k).</p>
+    </div>
+
+    <div class="info-box gold">
+        <h4>💎 Descoberta #5 — Produtividade é a Alavanca #1 (R$ 636k de impacto)</h4>
+        <p>A análise de sensibilidade mostrou que <strong>+10 sc/ha de produtividade</strong> (de 66,47 para 76 sc/ha — benchmark Comigo) gera +R$ 636 mil de resultado adicional. Isso é mais do que todas as outras alavancas (custo, preço, ADM) somadas. O gap de produtividade é o principal limitante — e é corrigível com manejo otimizado, simplificação de cultivares e timing correto de aplicações.</p>
+    </div>
+
+    <!-- ===== 3. NÚMEROS QUE IMPORTAM ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#2980b9,#3498db);">📊</div>
+        <h2>3. Números que Importam — Painel Final <small>Os 16 indicadores definitivos que o Leandro precisa acompanhar</small></h2>
+    </div>
+
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+        <div class="kpi-card"><div class="kb" style="background:var(--accent);"></div><div class="kl">Receita Total</div><div class="kv" style="color:var(--accent-light);">R$ 4,23M</div><div class="ks">R$ 7.715/ha · 36.427 sc</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--danger);"></div><div class="kl">Custo Total</div><div class="kv" style="color:var(--danger-light);">R$ 3,97M</div><div class="ks">R$ 7.237/ha · 93,8% da receita</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--warning);"></div><div class="kl">Resultado</div><div class="kv" style="color:var(--warning-light);">R$ 261,8k</div><div class="ks">R$ 478/ha · 6,2% da receita</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--danger);"></div><div class="kl">EVA</div><div class="kv" style="color:var(--danger-light);">-R$ 30,7k</div><div class="ks">Destrói valor vs. Selic</div></div>
+    </div>
+
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+        <div class="kpi-card"><div class="kb" style="background:var(--info);"></div><div class="kl">Produtividade</div><div class="kv" style="color:var(--info-light);">66,47</div><div class="ks">sc/ha · Meta: 73 sc/ha</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--info);"></div><div class="kl">PMV</div><div class="kv" style="color:var(--info-light);">R$ 116</div><div class="ks">/saca · CBOT 23/10: $9,82</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--danger);"></div><div class="kl">ROI / ROIC</div><div class="kv" style="color:var(--danger-light);">6,6%</div><div class="ks">vs. Selic 14,75% → Perde</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--danger);"></div><div class="kl">BER</div><div class="kv" style="color:var(--danger-light);">93,8%</div><div class="ks">Meta: ≤85% · Folga: 6,2%</div></div>
+    </div>
+
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+        <div class="kpi-card"><div class="kb" style="background:var(--warning);"></div><div class="kl">GAO Fazenda</div><div class="kv" style="color:var(--warning-light);">8,83</div><div class="ks">Meta: ≤6,0 · Alto risco</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--danger);"></div><div class="kl">Sharpe Agrícola</div><div class="kv" style="color:var(--danger-light);">-0,28</div><div class="ks">Não remunera o risco</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--danger);"></div><div class="kl">Prob. Prejuízo</div><div class="kv" style="color:var(--danger-light);">28,4%</div><div class="ks">Monte Carlo · Meta: ≤15%</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--warning);"></div><div class="kl">BSC Global</div><div class="kv" style="color:var(--warning-light);">52/100</div><div class="ks">Meta 26/27: 75/100</div></div>
+    </div>
+
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+        <div class="kpi-card"><div class="kb" style="background:#bb86fc;"></div><div class="kl">Cultivares</div><div class="kv" style="color:#bb86fc;">6 → 3</div><div class="ks">Meta: DM73+Guepardo+NEO761</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--success);"></div><div class="kl">Melhor Talhão</div><div class="kv" style="color:var(--success-light);">T-02</div><div class="ks">R$ 1.041/ha · TIR 33,6%</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--danger);"></div><div class="kl">Pior Talhão</div><div class="kv" style="color:var(--danger-light);">T-03</div><div class="ks">R$ 162/ha · EVA -R$ 86k</div></div>
+        <div class="kpi-card"><div class="kb" style="background:var(--success);"></div><div class="kl">E[R] Otimizado</div><div class="kv" style="color:var(--success-light);">R$ 847k</div><div class="ks">Monte Carlo c/ melhorias</div></div>
+    </div>
+
+    <!-- ===== 4. T-02 vs T-03 DEFINITIVO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#27ae60,#e74c3c);">⚔️</div>
+        <h2>4. O Confronto Definitivo: T-02 🏆 vs. T-03 ⚠️ <small>A comparação que sintetiza todo o relatório em uma única tabela</small></h2>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card chart-card-full">
+            <h3>T-02 vs. T-03 — Radar de 8 Dimensões</h3>
+            <p class="cs">Cada eixo normalizado 0-100. O T-02 domina todas as dimensões exceto área plantada.</p>
+            <div style="max-width:520px;margin:0 auto;"><canvas id="chartRadarFinal"></canvas></div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Indicador</th><th class="tr" style="color:var(--success-light);">T-02 🏆</th><th class="tr" style="color:var(--danger-light);">T-03 ⚠️</th><th class="tr">Diferença</th><th class="tc">Vantagem</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="fb">Área (ha)</td><td class="tr fm">166,00</td><td class="tr fm">218,00</td><td class="tr fm">-52 ha</td><td class="tc"><span class="badge bd">T-03</span></td></tr>
+                <tr><td class="fb">Nº Cultivares</td><td class="tr fm" style="color:var(--success-light);">2</td><td class="tr fm" style="color:var(--danger-light);">4</td><td class="tr fm">-2</td><td class="tc"><span class="badge bg">T-02 ✅</span></td></tr>
+                <tr><td class="fb">Custo Semente/ha</td><td class="tr fm">R$ 751</td><td class="tr fm">R$ 420</td><td class="tr fm">+R$ 331</td><td class="tc"><span class="badge bg">T-02 investe ✅</span></td></tr>
+                <tr><td class="fb">Custo Fitoss./ha</td><td class="tr fm" style="color:var(--success-light);">R$ 230</td><td class="tr fm" style="color:var(--danger-light);">R$ 1.244</td><td class="tr fm fb" style="color:var(--success-light);">-R$ 1.014</td><td class="tc"><span class="badge bg">T-02 ✅✅</span></td></tr>
+                <tr><td class="fb">Relação Fitoss./Semente</td><td class="tr fm" style="color:var(--success-light);">0,31×</td><td class="tr fm" style="color:var(--danger-light);">2,96×</td><td class="tr fm">-2,65×</td><td class="tc"><span class="badge bg">T-02 ✅✅</span></td></tr>
+                <tr><td class="fb">Custo Total/ha</td><td class="tr fm" style="color:var(--success-light);">R$ 6.674</td><td class="tr fm" style="color:var(--danger-light);">R$ 7.553</td><td class="tr fm" style="color:var(--success-light);">-R$ 879</td><td class="tc"><span class="badge bg">T-02 ✅</span></td></tr>
+                <tr><td class="fb">Resultado/ha</td><td class="tr fm fb" style="color:var(--success-light);">R$ 1.041</td><td class="tr fm" style="color:var(--danger-light);">R$ 162</td><td class="tr fm fb" style="color:var(--success-light);">+R$ 879</td><td class="tc"><span class="badge bg">T-02 ✅✅✅</span></td></tr>
+                <tr><td class="fb">Resultado Total</td><td class="tr fm fb" style="color:var(--success-light);">R$ 172.848</td><td class="tr fm" style="color:var(--danger-light);">R$ 35.404</td><td class="tr fm" style="color:var(--success-light);">+R$ 137.444</td><td class="tc"><span class="badge bg">T-02 ✅✅✅</span></td></tr>
+                <tr><td class="fb">EVA</td><td class="tr fm" style="color:var(--success-light);">+R$ 91.142</td><td class="tr fm" style="color:var(--danger-light);">-R$ 86.026</td><td class="tr fm fb" style="color:var(--success-light);">+R$ 177.168</td><td class="tc"><span class="badge bg">T-02 ✅✅✅</span></td></tr>
+                <tr><td class="fb">TIR Anualizada</td><td class="tr fm" style="color:var(--success-light);">33,63%</td><td class="tr fm" style="color:var(--danger-light);">4,35%</td><td class="tr fm" style="color:var(--success-light);">+29,28 pp</td><td class="tc"><span class="badge bg">T-02 ✅✅✅</span></td></tr>
+                <tr><td class="fb">BER</td><td class="tr fm" style="color:var(--success-light);">86,5%</td><td class="tr fm" style="color:var(--danger-light);">97,9%</td><td class="tr fm" style="color:var(--success-light);">-11,4 pp</td><td class="tc"><span class="badge bg">T-02 ✅✅</span></td></tr>
+                <tr><td class="fb">GAO</td><td class="tr fm" style="color:var(--success-light);">4,56</td><td class="tr fm" style="color:var(--danger-light);">24,17</td><td class="tr fm" style="color:var(--success-light);">-19,61</td><td class="tc"><span class="badge bg">T-02 ✅✅✅</span></td></tr>
+                <tr><td class="fb">ICPT</td><td class="tr fm fb" style="color:var(--success-light);">100/100</td><td class="tr fm fb" style="color:var(--danger-light);">0/100</td><td class="tr fm">100 pontos</td><td class="tc"><span class="badge bg">T-02 ✅✅✅</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ===== 5. PLANO DE AÇÃO TOP 10 ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#27ae60,#2ecc71);">🚀</div>
+        <h2>5. Plano de Ação — Top 10 Recomendações <small>Ações priorizadas por impacto financeiro estimado · Implementação safra 26/27</small></h2>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>#</th><th>Ação</th><th>Perspectiva BSC</th><th class="tr">Impacto Estimado</th><th class="tc">Prazo</th><th class="tc">Prioridade</th></tr>
+            </thead>
+            <tbody>
+                <tr style="background:rgba(39,174,96,0.06);">
+                    <td class="fb tc" style="color:var(--success-light);font-size:1.1rem;">1</td>
+                    <td class="fb">Reduzir portfólio para 3 cultivares</td>
+                    <td><span class="badge" style="background:rgba(155,89,182,0.15);color:#bb86fc;">🧬 Genética</span></td>
+                    <td class="tr fm fb" style="color:var(--success-light);">+R$ 102k</td>
+                    <td class="tc">Mai/26</td>
+                    <td class="tc"><span class="badge bg">🔥 Crítica</span></td>
+                </tr>
+                <tr style="background:rgba(39,174,96,0.06);">
+                    <td class="fb tc" style="color:var(--success-light);font-size:1.1rem;">2</td>
+                    <td class="fb">Zoneamento ≤2 cultivares por talhão</td>
+                    <td><span class="badge" style="background:rgba(155,89,182,0.15);color:#bb86fc;">🧬 Genética</span></td>
+                    <td class="tr fm">(incl. na #1)</td>
+                    <td class="tc">Mai/26</td>
+                    <td class="tc"><span class="badge bg">🔥 Crítica</span></td>
+                </tr>
+                <tr style="background:rgba(39,174,96,0.06);">
+                    <td class="fb tc" style="color:var(--success-light);font-size:1.1rem;">3</td>
+                    <td class="fb">Convergir fitoss. do T-03 para padrão T-02</td>
+                    <td><span class="badge bw">🌾 Operacional</span></td>
+                    <td class="tr fm fb" style="color:var(--success-light);">+R$ 164k</td>
+                    <td class="tc">Out/26</td>
+                    <td class="tc"><span class="badge bg">🔥 Crítica</span></td>
+                </tr>
+                <tr>
+                    <td class="fb tc" style="color:var(--warning-light);font-size:1.1rem;">4</td>
+                    <td class="fb">Meta produtividade: 73 sc/ha (+10%)</td>
+                    <td><span class="badge bw">🌾 Operacional</span></td>
+                    <td class="tr fm fb" style="color:var(--success-light);">+R$ 636k</td>
+                    <td class="tc">Safra inteira</td>
+                    <td class="tc"><span class="badge bw">Alta</span></td>
+                </tr>
+                <tr>
+                    <td class="fb tc" style="color:var(--warning-light);font-size:1.1rem;">5</td>
+                    <td class="fb">TSI padronizado em 100% das sementes</td>
+                    <td><span class="badge" style="background:rgba(155,89,182,0.15);color:#bb86fc;">🧬 Genética</span></td>
+                    <td class="tr fm">(incl. na #3)</td>
+                    <td class="tc">Ago/26</td>
+                    <td class="tc"><span class="badge bw">Alta</span></td>
+                </tr>
+                <tr>
+                    <td class="fb tc" style="color:var(--warning-light);font-size:1.1rem;">6</td>
+                    <td class="fb">Fixar 40% da produção a R$ 130+/sc</td>
+                    <td><span class="badge bd">💰 Financeira</span></td>
+                    <td class="tr fm fb" style="color:var(--success-light);">+R$ 200k</td>
+                    <td class="tc">Nov/26</td>
+                    <td class="tc"><span class="badge bw">Alta</span></td>
+                </tr>
+                <tr>
+                    <td class="fb tc" style="color:var(--info-light);font-size:1.1rem;">7</td>
+                    <td class="fb">Implantar caderno de campo digital</td>
+                    <td><span class="badge bi">📊 Gestão</span></td>
+                    <td class="tr fm">Qualitativo</td>
+                    <td class="tc">Jun/26</td>
+                    <td class="tc"><span class="badge bi">Média</span></td>
+                </tr>
+                <tr>
+                    <td class="fb tc" style="color:var(--info-light);font-size:1.1rem;">8</td>
+                    <td class="fb">Renegociar custos ADM e financeiros (-10%)</td>
+                    <td><span class="badge bd">💰 Financeira</span></td>
+                    <td class="tr fm fb" style="color:var(--success-light);">+R$ 77k</td>
+                    <td class="tc">Jul/26</td>
+                    <td class="tc"><span class="badge bi">Média</span></td>
+                </tr>
+                <tr>
+                    <td class="fb tc" style="font-size:1.1rem;">9</td>
+                    <td class="fb">Expandir NEO 761 I2X (resistência NCS)</td>
+                    <td><span class="badge" style="background:rgba(155,89,182,0.15);color:#bb86fc;">🧬 Genética</span></td>
+                    <td class="tr fm">Estrutural</td>
+                    <td class="tc">Mai/26</td>
+                    <td class="tc"><span class="badge bi">Média</span></td>
+                </tr>
+                <tr>
+                    <td class="fb tc" style="font-size:1.1rem;">10</td>
+                    <td class="fb">Colheita segregada + pesagem por talhão</td>
+                    <td><span class="badge bi">📊 Gestão</span></td>
+                    <td class="tr fm">Qualitativo</td>
+                    <td class="tc">Mar/27</td>
+                    <td class="tc"><span class="badge bi">Média</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ===== 6. PROJEÇÃO COMPARATIVA ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#1abc9c,#16a085);">📈</div>
+        <h2>6. Projeção — Antes vs. Depois das Otimizações <small>Comparativo do estado atual com o cenário projetado após implementação do plano</small></h2>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card chart-card-full">
+            <h3>Resultado Projetado — 3 Safras (R$ mil)</h3>
+            <p class="cs">Evolução progressiva do resultado total com implementação das melhorias</p>
+            <div><canvas id="chartProjecao3Safras"></canvas></div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Indicador</th><th class="tr" style="color:var(--warning-light);">25/26 (Atual)</th><th class="tr" style="color:var(--info-light);">26/27 (Meta)</th><th class="tr" style="color:var(--success-light);">27/28 (Meta)</th><th class="tr" style="color:#2ecc71;">28/29 (Meta)</th><th class="tr">Δ Total</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="fb">Produtividade (sc/ha)</td><td class="tr fm">66,47</td><td class="tr fm">73</td><td class="tr fm">76</td><td class="tr fm" style="color:var(--success-light);">80</td><td class="tr fm fb" style="color:var(--success-light);">+20,3%</td></tr>
+                <tr><td class="fb">Custo Total/ha</td><td class="tr fm">R$ 7.237</td><td class="tr fm">R$ 6.800</td><td class="tr fm">R$ 6.500</td><td class="tr fm" style="color:var(--success-light);">R$ 6.200</td><td class="tr fm fb" style="color:var(--success-light);">-14,3%</td></tr>
+                <tr><td class="fb">Resultado/ha</td><td class="tr fm">R$ 478</td><td class="tr fm">R$ 1.956</td><td class="tr fm">R$ 2.600</td><td class="tr fm" style="color:var(--success-light);">R$ 3.200</td><td class="tr fm fb" style="color:var(--success-light);">+569%</td></tr>
+                <tr><td class="fb">Resultado Total</td><td class="tr fm">R$ 262k</td><td class="tr fm">R$ 1.072k</td><td class="tr fm">R$ 1.425k</td><td class="tr fm" style="color:var(--success-light);">R$ 1.754k</td><td class="tr fm fb" style="color:var(--success-light);">+R$ 1.492k</td></tr>
+                <tr><td class="fb">ROIC</td><td class="tr fm" style="color:var(--danger-light);">6,6%</td><td class="tr fm">28,8%</td><td class="tr fm">40,0%</td><td class="tr fm" style="color:var(--success-light);">51,6%</td><td class="tr fm fb" style="color:var(--success-light);">+45 pp</td></tr>
+                <tr><td class="fb">BER</td><td class="tr fm" style="color:var(--danger-light);">93,8%</td><td class="tr fm">78%</td><td class="tr fm">73%</td><td class="tr fm" style="color:var(--success-light);">68%</td><td class="tr fm fb" style="color:var(--success-light);">-25,8 pp</td></tr>
+                <tr><td class="fb">EVA</td><td class="tr fm" style="color:var(--danger-light);">-R$ 31k</td><td class="tr fm" style="color:var(--success-light);">+R$ 570k</td><td class="tr fm">+R$ 945k</td><td class="tr fm" style="color:var(--success-light);">+R$ 1.296k</td><td class="tr fm fb" style="color:var(--success-light);">→ Positivo</td></tr>
+                <tr><td class="fb">BSC Global</td><td class="tr fm" style="color:var(--warning-light);">52/100</td><td class="tr fm">75</td><td class="tr fm">85</td><td class="tr fm" style="color:var(--success-light);">92</td><td class="tr fm fb" style="color:var(--success-light);">+40 pts</td></tr>
+                <tr><td class="fb">Prob. Prejuízo</td><td class="tr fm" style="color:var(--danger-light);">28,4%</td><td class="tr fm">12,6%</td><td class="tr fm">8%</td><td class="tr fm" style="color:var(--success-light);">5%</td><td class="tr fm fb" style="color:var(--success-light);">-23,4 pp</td></tr>
+                <tr><td class="fb">Nº Cultivares</td><td class="tr fm" style="color:var(--danger-light);">6</td><td class="tr fm" style="color:var(--success-light);">3</td><td class="tr fm">3</td><td class="tr fm">3-4</td><td class="tr fm fb" style="color:var(--success-light);">-50%</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ===== 7. VEREDICTO FINAL ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#d4a017,#f0c940);">⚖️</div>
+        <h2>7. Veredicto Final <small>Classificação geral da safra 25/26 e perspectiva de evolução</small></h2>
+    </div>
+
+    <div class="verdict">
+        <div class="verdict-score" style="color:var(--warning-light);">52<span style="font-size:1.5rem;color:var(--text-muted);">/100</span></div>
+        <div class="verdict-label">Nota Global BSC — Safra 2025/2026</div>
+        <h2 style="margin-top:1rem;">⚠️ ATENÇÃO — Operação na Zona de Risco</h2>
+        <p style="font-size:0.9rem;color:var(--text-secondary);max-width:700px;margin:1rem auto 0;line-height:1.8;">
+            A Fazenda Monte Alegre encerrou a safra 25/26 com <strong>lucro contábil positivo</strong> (R$ 261,8k), mas com <strong>valor econômico negativo</strong> (EVA -R$ 30,7k). A operação está tecnicamente funcional, mas economicamente vulnerável — BER de 93,8% significa que apenas 6,2% da receita é margem livre. <strong>Porém, o potencial é real e comprovado:</strong> o T-02 demonstra que a fazenda pode operar com TIR de 33,6% e EVA positivo de R$ 91k. A implementação das 10 ações recomendadas pode <strong>quadruplicar o resultado em 1 safra</strong> e elevar o BSC de 52 para 75/100.
+        </p>
+    </div>
+
+    <!-- ===== 8. MENSAGEM AO LEANDRO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#27ae60,#2ecc71);">💬</div>
+        <h2>8. Mensagem ao Produtor <small>Considerações finais para Leandro Martins</small></h2>
+    </div>
+
+    <div class="info-box success" style="border-left-width:6px;">
+        <h4>🌱 Leandro,</h4>
+        <p>Este relatório analisou sua safra 25/26 sob mais de <strong>50 indicadores</strong>, com rigor técnico de nível acadêmico e pragmatismo de gestão. Os números mostram uma operação que está <strong>no limite</strong> — mas com <strong>um caminho claro de evolução</strong>.</p>
+        <p style="margin-top:0.75rem;">A boa notícia é que <strong>você já tem a prova dentro da sua própria fazenda</strong>. O T-02 não é um benchmark teórico — é um talhão real, com suas condições reais, que entregou 6,4× mais resultado que a média dos outros talhões. A pergunta não é "se é possível melhorar", mas "quando vamos replicar o T-02 para toda a fazenda".</p>
+        <p style="margin-top:0.75rem;">As 3 ações de maior impacto são:</p>
+        <ol>
+            <li><strong>Simplificar para 3 cultivares</strong> (decisão de maio/26 — custo zero, impacto imediato)</li>
+            <li><strong>Investir mais em semente, gastar menos em fitossanitário</strong> (ROI de 206% comprovado)</li>
+            <li><strong>Buscar +10 sc/ha de produtividade</strong> (alavanca de R$ 636k)</li>
+        </ol>
+        <p style="margin-top:0.75rem;">Você já tem os dados, a análise e o plano. Agora é execução. <strong>A safra 26/27 é a safra da virada.</strong></p>
+        <p style="margin-top:0.75rem;font-style:italic;color:var(--text-muted);">"A diferença entre uma fazenda que sobrevive e uma fazenda que prospera está nos centavos por hectare — e nas decisões tomadas antes do plantio."</p>
+    </div>
+
+    <!-- ===== GRÁFICO FINAL ===== -->
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Evolução Projetada do Resultado (R$ mil)</h3>
+            <p class="cs">De R$ 262k para R$ 1,75M em 3 safras — crescimento de 569%</p>
+            <div><canvas id="chartResultFinal"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Evolução da Nota BSC</h3>
+            <p class="cs">De 52 → 92 em 3 safras — da zona de "Atenção" para "Excelência"</p>
+            <div><canvas id="chartBSCFinal"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ===== ASSINATURA ===== -->
+    <div class="signature">
+        <p style="font-size:0.85rem;color:var(--text-secondary);">Relatório elaborado em <strong>16 de abril de 2026</strong></p>
+        <p style="font-size:0.85rem;color:var(--text-secondary);">Análise técnico-econômica com <strong>50+ indicadores</strong> · <strong>7 partes</strong> · <strong>40+ gráficos</strong> · <strong>30+ tabelas</strong></p>
+        <div class="sig-line"></div>
+        <p style="font-weight:700;margin-top:0.5rem;">Sidney — Analista</p>
+        <p style="font-size:0.78rem;color:var(--text-muted);">Assistido por Claude Opus 4.6 (Anthropic)</p>
+        <div class="sig-line" style="margin-top:1.5rem;"></div>
+        <p style="font-weight:700;margin-top:0.5rem;">Leandro Martins</p>
+        <p style="font-size:0.78rem;color:var(--text-muted);">Proprietário · Fazenda Monte Alegre · Montividiu-GO</p>
+    </div>
+
+    <!-- ===== ANEXO: GLOSSÁRIO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#7f8c8d,#95a5a6);">📖</div>
+        <h2>Anexo — Glossário de Indicadores <small>Referência rápida para todos os indicadores utilizados no relatório</small></h2>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Sigla</th><th>Nome Completo</th><th>Fórmula</th><th>Interpretação</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="fb">MC</td><td>Margem de Contribuição</td><td class="fm">Receita − Custos Variáveis</td><td style="font-size:0.75rem;">Quanto sobra para cobrir custos fixos</td></tr>
+                <tr><td class="fb">IEO</td><td>Índice de Eficiência Operacional</td><td class="fm">Receita ÷ Custo Total</td><td style="font-size:0.75rem;">>1 = lucro · <1 = prejuízo</td></tr>
+                <tr><td class="fb">BER</td><td>Break-Even Ratio</td><td class="fm">Custo Total ÷ Receita × 100</td><td style="font-size:0.75rem;">% da receita consumida pelo custo. Menor = melhor</td></tr>
+                <tr><td class="fb">ROIC</td><td>Return on Invested Capital</td><td class="fm">Resultado ÷ Capital Investido × 100</td><td style="font-size:0.75rem;">Rentabilidade do capital empregado</td></tr>
+                <tr><td class="fb">GAO</td><td>Grau de Alavancagem Operacional</td><td class="fm">MC ÷ Resultado</td><td style="font-size:0.75rem;">Sensibilidade do lucro a variações na receita</td></tr>
+                <tr><td class="fb">EVA</td><td>Economic Value Added</td><td class="fm">Resultado − (CT × Selic/2)</td><td style="font-size:0.75rem;">Valor criado acima do custo de oportunidade</td></tr>
+                <tr><td class="fb">TIR</td><td>Taxa Interna de Retorno</td><td class="fm">(1 + TIR safra)² − 1</td><td style="font-size:0.75rem;">Retorno anualizado do investimento</td></tr>
+                <tr><td class="fb">RBC</td><td>Relação Benefício-Custo</td><td class="fm">Receita ÷ Custo Total</td><td style="font-size:0.75rem;">>1 = viável · <1 = inviável</td></tr>
+                <tr><td class="fb">ICCF</td><td>Índice de Cobertura de Custos Fixos</td><td class="fm">MC ÷ Custos Fixos</td><td style="font-size:0.75rem;">>1 = cobre CFs · <1 = não cobre</td></tr>
+                <tr><td class="fb">ICPT</td><td>Índice Composto de Performance</td><td class="fm">Média ponderada MC+IEO+BER+ROIC+GAO</td><td style="font-size:0.75rem;">Score 0-100 por talhão</td></tr>
+                <tr><td class="fb">Sharpe</td><td>Índice de Sharpe Agrícola</td><td class="fm">(Retorno − Selic) ÷ Desvio Padrão</td><td style="font-size:0.75rem;">>0 = remunera risco · <0 = não remunera</td></tr>
+                <tr><td class="fb">VaR</td><td>Value at Risk (95%)</td><td class="fm">Percentil 5% da simulação</td><td style="font-size:0.75rem;">Perda máxima esperada em 95% dos cenários</td></tr>
+                <tr><td class="fb">CVaR</td><td>Conditional VaR (Expected Shortfall)</td><td class="fm">Média dos 5% piores cenários</td><td style="font-size:0.75rem;">Perda média nos cenários de cauda</td></tr>
+                <tr><td class="fb">GM</td><td>Grupo de Maturação</td><td class="fm">Escala 0-10</td><td style="font-size:0.75rem;">Ciclo da cultivar. Maior = mais tardio</td></tr>
+                <tr><td class="fb">BSC</td><td>Balanced Scorecard</td><td class="fm">4 perspectivas × pesos</td><td style="font-size:0.75rem;">Nota global 0-100 de performance estratégica</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<div class="footer">
+    <p style="font-size:1rem;font-weight:700;color:var(--accent-light);margin-bottom:0.5rem;">🌱 Fazenda Monte Alegre — Relatório Técnico-Econômico Completo</p>
+    <p><strong>Leandro Martins</strong> · Montividiu-GO · Sudoeste Goiano · Safra 2025/2026</p>
+    <p>7 Partes · 50+ Indicadores · 40+ Gráficos · 30+ Tabelas · 10.000 Simulações Monte Carlo</p>
+    <p style="margin-top:0.5rem;">Gerado em 16 de abril de 2026 · Documento confidencial</p>
+    <p style="margin-top:1rem;font-size:0.7rem;color:var(--text-muted);">© 2026 · Análise por Sidney · Assistido por Claude Opus 4.6 (Anthropic)</p>
+</div>
+
+<script>
+Chart.register(ChartDataLabels);
+const C={green:'#2ecc71',greenD:'#27ae60',red:'#e74c3c',redD:'#c0392b',gold:'#f0c940',goldD:'#d4a017',blue:'#3498db',orange:'#f39c12',purple:'#9b59b6',teal:'#1abc9c',gray:'#95a5a6'};
+
+// Radar T-02 vs T-03
+new Chart(document.getElementById('chartRadarFinal'),{
+    type:'radar',
+    data:{
+        labels:['Resultado/ha','MC%','IEO','BER (inv.)','ROIC','GAO (inv.)','ICCF','ICPT'],
+        datasets:[
+            {label:'T-02 🏆',data:[100,100,100,100,100,100,100,100],borderColor:C.green,backgroundColor:'rgba(46,204,113,0.12)',borderWidth:3,pointRadius:5,pointBackgroundColor:C.green},
+            {label:'T-03 ⚠️',data:[16,83,66,12,14,19,82,0],borderColor:C.red,backgroundColor:'rgba(231,76,60,0.08)',borderWidth:3,pointRadius:5,pointBackgroundColor:C.red}
+        ]
+    },
+    options:{responsive:true,scales:{r:{beginAtZero:true,max:110,grid:{color:'rgba(44,62,80,0.5)'},pointLabels:{color:'#95a5a6',font:{size:10,weight:'bold'}},ticks:{display:false}}},plugins:{legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},datalabels:{display:false}}}
+});
+
+// Projeção 3 safras
+new Chart(document.getElementById('chartProjecao3Safras'),{
+    type:'bar',
+    data:{
+        labels:['25/26\n(Atual)','26/27\n(Meta)','27/28\n(Meta)','28/29\n(Meta)'],
+        datasets:[
+            {label:'Resultado (R$ mil)',data:[262,1072,1425,1754],backgroundColor:[C.orange+'cc',C.blue+'cc',C.green+'cc',C.greenD+'cc'],borderRadius:8},
+            {label:'Custo Total (R$ mil)',data:[3966,3726,3562,3398],type:'line',borderColor:C.red,borderWidth:2,borderDash:[6,4],pointRadius:5,pointBackgroundColor:C.red,fill:false,yAxisID:'y1'}
+        ]
+    },
+    options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},datalabels:{display:ctx=>ctx.datasetIndex===0,anchor:'end',align:'top',formatter:v=>'R$ '+v+'k',color:'#ecf0f1',font:{size:12,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6'},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>'R$ '+v+'k'},grid:{color:'rgba(44,62,80,0.3)'},max:2000},y1:{position:'right',ticks:{color:'#95a5a6',callback:v=>'R$'+v+'k'},grid:{display:false},min:3000,max:4200}}}
+});
+
+// Resultado Final Line
+new Chart(document.getElementById('chartResultFinal'),{
+    type:'line',
+    data:{
+        labels:['25/26','26/27','27/28','28/29'],
+        datasets:[{
+            label:'Resultado Total (R$ mil)',
+            data:[262,1072,1425,1754],
+            borderColor:C.gold,backgroundColor:'rgba(240,201,64,0.1)',
+            borderWidth:4,pointRadius:8,pointBackgroundColor:[C.orange,C.blue,C.green,C.greenD],
+            fill:true,tension:0.3
+        }]
+    },
+    options:{responsive:true,plugins:{legend:{display:false},datalabels:{anchor:'top',align:'top',formatter:v=>'R$ '+v+'k',color:'#ecf0f1',font:{size:13,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6'},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>'R$ '+v+'k'},grid:{color:'rgba(44,62,80,0.3)'},min:0,max:2000}}}
+});
+
+// BSC Final
+new Chart(document.getElementById('chartBSCFinal'),{
+    type:'line',
+    data:{
+        labels:['25/26','26/27','27/28','28/29'],
+        datasets:[
+            {label:'💰 Financeira',data:[42,68,80,90],borderColor:C.red,borderWidth:2,pointRadius:5,pointBackgroundColor:C.red,tension:0.3},
+            {label:'🌾 Operacional',data:[55,75,85,92],borderColor:C.orange,borderWidth:2,pointRadius:5,pointBackgroundColor:C.orange,tension:0.3},
+            {label:'🧬 Genética',data:[48,80,88,93],borderColor:C.purple,borderWidth:2,pointRadius:5,pointBackgroundColor:C.purple,tension:0.3},
+            {label:'📊 Gestão',data:[63,78,87,94],borderColor:C.blue,borderWidth:2,pointRadius:5,pointBackgroundColor:C.blue,tension:0.3},
+            {label:'🏅 Global',data:[52,75,85,92],borderColor:C.gold,borderWidth:4,pointRadius:8,pointBackgroundColor:C.gold,tension:0.3}
+        ]
+    },
+    options:{responsive:true,plugins:{legend:{labels:{color:'#95a5a6',font:{size:9},usePointStyle:true,padding:8}},datalabels:{display:ctx=>ctx.datasetIndex===4,anchor:'top',align:'top',formatter:v=>v,color:C.gold,font:{size:13,weight:'bold'}}},scales:{x:{ticks:{color:'#95a5a6'},grid:{display:false}},y:{ticks:{color:'#95a5a6'},grid:{color:'rgba(44,62,80,0.3)'},min:30,max:100}}}
+});
+</script>
+
+</body>
+</html>

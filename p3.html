@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fazenda Monte Alegre — Parte 3: Variedades e Cultivares</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        :root{--primary:#1a5632;--primary-light:#2d8a4e;--primary-dark:#0e3b20;--accent:#d4a017;--accent-light:#f0c940;--danger:#c0392b;--danger-light:#e74c3c;--warning:#e67e22;--warning-light:#f39c12;--success:#27ae60;--success-light:#2ecc71;--info:#2980b9;--info-light:#3498db;--bg-dark:#0f1923;--bg-card:#1a2634;--bg-card-hover:#223344;--bg-section:#15202d;--text-primary:#ecf0f1;--text-secondary:#95a5a6;--text-muted:#7f8c8d;--border:#2c3e50;--shadow:0 4px 24px rgba(0,0,0,0.3);}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg-dark);color:var(--text-primary);line-height:1.6;overflow-x:hidden;}
+        .header{background:linear-gradient(135deg,var(--primary-dark) 0%,var(--primary) 50%,var(--primary-light) 100%);padding:1.5rem 2rem;position:relative;overflow:hidden;}
+        .header::before{content:'';position:absolute;top:-50%;right:-10%;width:400px;height:400px;background:radial-gradient(circle,rgba(212,160,23,0.12) 0%,transparent 70%);border-radius:50%;}
+        .header h1{font-size:1.5rem;font-weight:800;color:#fff;position:relative;z-index:1;}
+        .header h1 span{color:var(--accent-light);}
+        .header p{color:rgba(255,255,255,0.6);font-size:0.85rem;position:relative;z-index:1;}
+        .nav-parts{display:flex;gap:0.5rem;padding:0.75rem 2rem;background:var(--bg-section);border-bottom:1px solid var(--border);flex-wrap:wrap;position:sticky;top:0;z-index:100;}
+        .nav-parts a{padding:0.45rem 0.9rem;border-radius:8px;text-decoration:none;font-size:0.78rem;font-weight:600;color:var(--text-secondary);background:var(--bg-card);border:1px solid var(--border);transition:all 0.2s;}
+        .nav-parts a:hover,.nav-parts a.active{background:var(--primary);color:#fff;border-color:var(--primary-light);}
+        .container{max-width:1400px;margin:0 auto;padding:1.5rem;}
+        .section-title{display:flex;align-items:center;gap:0.75rem;margin:2rem 0 1.25rem;padding-bottom:0.75rem;border-bottom:2px solid var(--border);}
+        .section-title .icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+        .section-title h2{font-size:1.3rem;font-weight:700;}
+        .section-title h2 small{display:block;font-size:0.75rem;font-weight:400;color:var(--text-secondary);margin-top:0.15rem;}
+        .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:1.5rem;margin-bottom:1.5rem;}
+        .chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+        .chart-card h3{font-size:0.92rem;font-weight:700;color:var(--text-primary);margin-bottom:0.25rem;}
+        .chart-card p.chart-sub{font-size:0.73rem;color:var(--text-muted);margin-bottom:1rem;}
+        .chart-card-full{grid-column:1/-1;}
+        .table-wrapper{overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-bottom:1.5rem;}
+        table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+        thead th{background:var(--bg-section);color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;font-size:0.7rem;padding:0.8rem 0.9rem;text-align:left;border-bottom:2px solid var(--border);position:sticky;top:0;}
+        tbody td{padding:0.7rem 0.9rem;border-bottom:1px solid var(--border);color:var(--text-primary);}
+        tbody tr:hover{background:var(--bg-card-hover);}
+        tbody tr:last-child td{border-bottom:none;}
+        .text-right{text-align:right;}.text-center{text-align:center;}.font-bold{font-weight:700;}.font-mono{font-family:'Cascadia Code','Fira Code',monospace;}
+        .badge{display:inline-flex;align-items:center;gap:0.25rem;padding:0.2rem 0.55rem;border-radius:6px;font-size:0.7rem;font-weight:600;white-space:nowrap;}
+        .badge-success{background:rgba(39,174,96,0.15);color:var(--success-light);}
+        .badge-warning{background:rgba(243,156,18,0.15);color:var(--warning-light);}
+        .badge-danger{background:rgba(231,76,60,0.15);color:var(--danger-light);}
+        .badge-info{background:rgba(52,152,219,0.15);color:var(--info-light);}
+        .badge-purple{background:rgba(155,89,182,0.15);color:#bb86fc;}
+        .info-box{background:var(--bg-card);border-left:4px solid var(--info);border-radius:0 12px 12px 0;padding:1rem 1.25rem;margin-bottom:1.5rem;}
+        .info-box.warning{border-left-color:var(--warning);}.info-box.danger{border-left-color:var(--danger);}.info-box.success{border-left-color:var(--success);}
+        .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;}
+        .kpi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.1rem;position:relative;overflow:hidden;transition:transform 0.2s;}
+        .kpi-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+        .kpi-card .kpi-label{font-size:0.73rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.4rem;}
+        .kpi-card .kpi-value{font-size:1.5rem;font-weight:800;line-height:1.2;}
+        .kpi-card .kpi-sub{font-size:0.75rem;color:var(--text-muted);margin-top:0.3rem;}
+        .kpi-card .kpi-bar{position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
+
+        /* CULTIVAR CARDS */
+        .cultivar-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.25rem;margin-bottom:1.5rem;}
+        .cultivar-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;}
+        .cultivar-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
+        .cultivar-card .cc-header{padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;gap:0.75rem;}
+        .cultivar-card .cc-name{font-size:1.05rem;font-weight:800;}
+        .cultivar-card .cc-grade{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;flex-shrink:0;}
+        .cultivar-card .cc-body{padding:0 1.25rem 1.25rem;}
+        .cultivar-card .cc-row{display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid rgba(44,62,80,0.4);font-size:0.8rem;}
+        .cultivar-card .cc-row:last-child{border-bottom:none;}
+        .cultivar-card .cc-row .label{color:var(--text-secondary);}
+        .cultivar-card .cc-row .value{font-weight:700;font-family:'Cascadia Code',monospace;font-size:0.78rem;}
+        .cultivar-card .cc-tags{display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.75rem;}
+
+        /* GM TIMELINE */
+        .gm-timeline{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;}
+        .gm-track{position:relative;height:60px;margin:0.75rem 0;}
+        .gm-axis{position:absolute;top:50%;left:0;right:0;height:2px;background:var(--border);transform:translateY(-50%);}
+        .gm-tick{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:0.3rem;z-index:2;}
+        .gm-dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--bg-dark);}
+        .gm-lbl{font-size:0.65rem;font-weight:700;white-space:nowrap;color:var(--text-secondary);}
+        .gm-val{font-size:0.72rem;font-weight:800;}
+
+        /* TALHAO MAP */
+        .talhao-map{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;}
+        .tm-card{border-radius:12px;padding:1.1rem;text-align:center;border:2px solid var(--border);transition:transform 0.2s;}
+        .tm-card:hover{transform:scale(1.02);}
+        .tm-card .tm-name{font-size:1.1rem;font-weight:800;margin-bottom:0.3rem;}
+        .tm-card .tm-area{font-size:0.78rem;color:var(--text-secondary);}
+        .tm-card .tm-vars{margin-top:0.6rem;display:flex;flex-wrap:wrap;gap:0.3rem;justify-content:center;}
+        .tm-card .tm-vars span{padding:0.15rem 0.5rem;border-radius:5px;font-size:0.68rem;font-weight:600;}
+        .tm-card .tm-result{margin-top:0.6rem;font-size:0.82rem;font-weight:700;}
+
+        .footer{text-align:center;padding:2rem;border-top:1px solid var(--border);margin-top:2rem;color:var(--text-muted);font-size:0.75rem;}
+        @media(max-width:768px){.header{padding:1rem;}.container{padding:1rem;}.chart-grid{grid-template-columns:1fr;}.cultivar-grid{grid-template-columns:1fr;}.kpi-grid{grid-template-columns:repeat(2,1fr);}.talhao-map{grid-template-columns:repeat(2,1fr);}}
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🌱 Parte 3 — Análise de <span>Variedades e Cultivares</span></h1>
+    <p>Perfil técnico das 6 cultivares · Mapa de alocação · Linha do tempo GM · Matriz de avaliação · Recomendação 26/27</p>
+</div>
+
+<div class="nav-parts">
+    <a href="#">📊 Parte 1 — Dashboard</a>
+    <a href="#">📉 Parte 2 — Custos</a>
+    <a href="#" class="active">🌱 Parte 3 — Variedades</a>
+    <a href="#">📐 Parte 4 — Indicadores</a>
+    <a href="#">🔬 Parte 5 — Econometria</a>
+    <a href="#">🎯 Parte 6 — Scorecard</a>
+    <a href="#">📄 Parte 7 — Relatório Final</a>
+</div>
+
+<div class="container">
+
+    <!-- ===== KPIs DE VARIEDADES ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#27ae60,#2ecc71);">🧬</div>
+        <h2>Panorama de Cultivares — Safra 25/26 <small>Indicadores-chave de diversificação genética e alocação de variedades</small></h2>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#e74c3c,#c0392b);"></div>
+            <div class="kpi-label">Total de Cultivares</div>
+            <div class="kpi-value" style="color:var(--danger-light);">6</div>
+            <div class="kpi-sub">Meta 26/27: ≤ 3 cultivares</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#e74c3c,#c0392b);"></div>
+            <div class="kpi-label">Máx. Variedades/Talhão</div>
+            <div class="kpi-value" style="color:var(--danger-light);">4 <span style="font-size:0.8rem;">(T-03)</span></div>
+            <div class="kpi-sub">Meta 26/27: ≤ 2 por talhão</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#f39c12,#e67e22);"></div>
+            <div class="kpi-label">Amplitude GM</div>
+            <div class="kpi-value" style="color:var(--warning-light);">5.7 — 7.6</div>
+            <div class="kpi-sub">Amplitude: 1.9 (muito amplo)</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#2980b9,#3498db);"></div>
+            <div class="kpi-label">Obtentoras</div>
+            <div class="kpi-value" style="color:var(--info-light);">4</div>
+            <div class="kpi-sub">Brasmax · Don Mario · Embrapa · Neogen</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#27ae60,#2ecc71);"></div>
+            <div class="kpi-label">Tecnologia Dominante</div>
+            <div class="kpi-value" style="color:var(--success-light);font-size:1.2rem;">INTACTA RR2 PRO</div>
+            <div class="kpi-sub">4 cultivares · 2 em INTACTA 2 XTEND</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:linear-gradient(135deg,#d4a017,#f0c940);"></div>
+            <div class="kpi-label">Custo Médio Semente/ha</div>
+            <div class="kpi-value" style="color:var(--accent-light);">R$ 652</div>
+            <div class="kpi-sub">Amplitude: R$ 420 – R$ 1.253</div>
+        </div>
+    </div>
+
+    <!-- ===== MAPA DE TALHÕES ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#2980b9,#3498db);">🗺️</div>
+        <h2>Mapa de Alocação de Cultivares por Talhão <small>Distribuição das variedades nos 5 talhões — 548 hectares</small></h2>
+    </div>
+
+    <div class="talhao-map">
+        <div class="tm-card" style="background:rgba(243,156,18,0.08);border-color:rgba(243,156,18,0.3);">
+            <div class="tm-name" style="color:var(--warning-light);">T-01</div>
+            <div class="tm-area">67,70 ha (12,4%)</div>
+            <div class="tm-vars">
+                <span style="background:rgba(46,204,113,0.2);color:#2ecc71;">Guepardo IPRO</span>
+            </div>
+            <div class="tm-result" style="color:var(--warning-light);">R$ 323,75/ha</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem;">1 cultivar · GM 6.7-6.9</div>
+        </div>
+        <div class="tm-card" style="background:rgba(39,174,96,0.1);border-color:rgba(39,174,96,0.4);">
+            <div class="tm-name" style="color:var(--success-light);">T-02 🏆</div>
+            <div class="tm-area">166,00 ha (30,3%)</div>
+            <div class="tm-vars">
+                <span style="background:rgba(46,204,113,0.2);color:#2ecc71;">Guepardo IPRO</span>
+                <span style="background:rgba(52,152,219,0.2);color:#3498db;">DM 73I75 IPRO</span>
+            </div>
+            <div class="tm-result" style="color:var(--success-light);">R$ 1.041,25/ha 🏆</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem;">2 cultivares · GM 6.7-7.5 · Melhor resultado</div>
+        </div>
+        <div class="tm-card" style="background:rgba(231,76,60,0.08);border-color:rgba(231,76,60,0.4);">
+            <div class="tm-name" style="color:var(--danger-light);">T-03 ⚠️</div>
+            <div class="tm-area">218,00 ha (39,8%)</div>
+            <div class="tm-vars">
+                <span style="background:rgba(155,89,182,0.2);color:#bb86fc;">BRS 573 IPRO</span>
+                <span style="background:rgba(52,152,219,0.2);color:#3498db;">DM 73I75 IPRO</span>
+                <span style="background:rgba(0,188,212,0.2);color:#00bcd4;">NEO 750 IPRO</span>
+                <span style="background:rgba(233,30,99,0.2);color:#f48fb1;">NEO 690 I2X</span>
+            </div>
+            <div class="tm-result" style="color:var(--danger-light);">R$ 162,40/ha ⚠️</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem;">4 cultivares · GM 5.7-7.5 · Pior resultado</div>
+        </div>
+        <div class="tm-card" style="background:rgba(52,152,219,0.08);border-color:rgba(52,152,219,0.3);">
+            <div class="tm-name" style="color:var(--info-light);">T-04</div>
+            <div class="tm-area">56,30 ha (10,3%)</div>
+            <div class="tm-vars">
+                <span style="background:rgba(233,30,99,0.2);color:#f48fb1;">NEO 761 I2X</span>
+            </div>
+            <div class="tm-result" style="color:var(--warning-light);">R$ 333,60/ha</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem;">1 cultivar · GM 7.6 · Área teste</div>
+        </div>
+        <div class="tm-card" style="background:rgba(155,89,182,0.08);border-color:rgba(155,89,182,0.3);">
+            <div class="tm-name" style="color:#bb86fc;">T-05</div>
+            <div class="tm-area">40,00 ha (7,3%)</div>
+            <div class="tm-vars">
+                <span style="background:rgba(155,89,182,0.2);color:#bb86fc;">BRS 573 IPRO</span>
+            </div>
+            <div class="tm-result" style="color:var(--warning-light);">R$ 322,14/ha</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem;">1 cultivar · GM 5.7 · Superprecoce</div>
+        </div>
+    </div>
+
+    <div class="info-box danger">
+        <h4>🔴 Problema Central: T-03 com 4 Cultivares de Ciclos Divergentes</h4>
+        <p>O T-03 concentra <strong>39,8% da área total</strong> (218 ha) e utiliza 4 cultivares com grupos de maturação que vão de 5.7 (BRS 573 — superprecoce) a 7.5 (NEO 750 — tardio). Essa amplitude de <strong>1.8 pontos de GM</strong> no mesmo talhão gera janelas de florescimento, enchimento de grãos e maturação completamente dessincronizadas, impossibilitando aplicações fitossanitárias no timing ideal para todas as cultivares simultaneamente. Resultado: o T-03 gasta <strong>5,4× mais em fitossanitário</strong> que o T-02 e entrega o <strong>pior resultado da fazenda</strong>.</p>
+    </div>
+
+    <!-- ===== LINHA DO TEMPO GM ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);">📏</div>
+        <h2>Escala de Grupo de Maturação (GM) <small>Posicionamento das 6 cultivares na escala de ciclo — do mais precoce ao mais tardio</small></h2>
+    </div>
+
+    <div class="gm-timeline">
+        <h3 style="font-size:0.88rem;color:var(--text-primary);margin-bottom:0.5rem;">Distribuição de GM das Cultivares Utilizadas</h3>
+        <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:1rem;">Quanto maior o GM, mais longo o ciclo. Cultivares com GMs muito distantes no mesmo talhão geram conflito de manejo.</p>
+        <div class="gm-track">
+            <div class="gm-axis"></div>
+            <!-- BRS 573 - GM 5.7 -->
+            <div class="gm-tick" style="left:5%;">
+                <div class="gm-lbl" style="position:absolute;top:-22px;">BRS 573</div>
+                <div class="gm-dot" style="background:#bb86fc;"></div>
+                <div class="gm-val" style="color:#bb86fc;position:absolute;bottom:-22px;">5.7</div>
+            </div>
+            <!-- Guepardo - GM 6.8 -->
+            <div class="gm-tick" style="left:30%;">
+                <div class="gm-lbl" style="position:absolute;top:-22px;">Guepardo</div>
+                <div class="gm-dot" style="background:#2ecc71;"></div>
+                <div class="gm-val" style="color:#2ecc71;position:absolute;bottom:-22px;">6.8</div>
+            </div>
+            <!-- NEO 690 - GM 6.9 -->
+            <div class="gm-tick" style="left:37%;">
+                <div class="gm-lbl" style="position:absolute;top:-22px;">NEO 690</div>
+                <div class="gm-dot" style="background:#f48fb1;"></div>
+                <div class="gm-val" style="color:#f48fb1;position:absolute;bottom:-22px;">6.9</div>
+            </div>
+            <!-- DM 73I75 - GM 7.3 -->
+            <div class="gm-tick" style="left:58%;">
+                <div class="gm-lbl" style="position:absolute;top:-22px;">DM 73I75</div>
+                <div class="gm-dot" style="background:#3498db;"></div>
+                <div class="gm-val" style="color:#3498db;position:absolute;bottom:-22px;">7.3</div>
+            </div>
+            <!-- NEO 750 - GM 7.5 -->
+            <div class="gm-tick" style="left:72%;">
+                <div class="gm-lbl" style="position:absolute;top:-22px;">NEO 750</div>
+                <div class="gm-dot" style="background:#00bcd4;"></div>
+                <div class="gm-val" style="color:#00bcd4;position:absolute;bottom:-22px;">7.5</div>
+            </div>
+            <!-- NEO 761 - GM 7.6 -->
+            <div class="gm-tick" style="left:80%;">
+                <div class="gm-lbl" style="position:absolute;top:-22px;">NEO 761</div>
+                <div class="gm-dot" style="background:#e91e63;"></div>
+                <div class="gm-val" style="color:#e91e63;position:absolute;bottom:-22px;">7.6</div>
+            </div>
+            <!-- Zona T-03 highlight -->
+            <div style="position:absolute;top:0;bottom:0;left:3%;width:72%;background:rgba(231,76,60,0.08);border:1px dashed rgba(231,76,60,0.3);border-radius:8px;z-index:0;"></div>
+            <div style="position:absolute;top:-38px;left:3%;font-size:0.65rem;color:var(--danger-light);font-weight:700;">◄ T-03: GM 5.7 a 7.5 (Δ1.8) ►</div>
+        </div>
+        <div style="display:flex;gap:1.5rem;margin-top:1.5rem;font-size:0.7rem;color:var(--text-muted);flex-wrap:wrap;">
+            <span>🟣 IPRO (Intacta RR2 PRO)</span>
+            <span>🔵 IPRO (Don Mario)</span>
+            <span>🩷 I2X (Intacta 2 Xtend)</span>
+            <span>🔴 Zona de conflito do T-03</span>
+        </div>
+    </div>
+
+    <!-- ===== FICHAS TÉCNICAS DAS CULTIVARES ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#1abc9c,#16a085);">🔬</div>
+        <h2>Fichas Técnicas das Cultivares <small>Perfil agronômico, tecnológico e avaliação de performance na safra 25/26</small></h2>
+    </div>
+
+    <div class="cultivar-grid">
+        <!-- GUEPARDO -->
+        <div class="cultivar-card" style="border-top:4px solid #2ecc71;">
+            <div class="cc-header">
+                <div>
+                    <div class="cc-name" style="color:#2ecc71;">BMX Guepardo IPRO</div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);">Brasmax / SLC Sementes · 67I68RSF</div>
+                </div>
+                <div class="cc-grade" style="background:rgba(46,204,113,0.2);color:#2ecc71;">A-</div>
+            </div>
+            <div class="cc-body">
+                <div class="cc-row"><span class="label">Grupo de Maturação</span><span class="value">6.7 — 6.9</span></div>
+                <div class="cc-row"><span class="label">Tecnologia</span><span class="value">INTACTA RR2 PRO</span></div>
+                <div class="cc-row"><span class="label">PMG</span><span class="value">190g</span></div>
+                <div class="cc-row"><span class="label">Exigência Fertilidade</span><span class="value" style="color:var(--warning-light);">Alta</span></div>
+                <div class="cc-row"><span class="label">Resistência NCS</span><span class="value">R (3,14) · MR (6,9,10,14+)</span></div>
+                <div class="cc-row"><span class="label">Tolerância STS™</span><span class="value" style="color:var(--success-light);">Sim ✅</span></div>
+                <div class="cc-row"><span class="label">Talhões Utilizados</span><span class="value">T-01, T-02</span></div>
+                <div class="cc-row"><span class="label">Resultado Observado</span><span class="value" style="color:var(--success-light);">Bom (T-02) / Moderado (T-01)</span></div>
+                <div class="cc-tags">
+                    <span class="badge badge-success">Alto Potencial</span>
+                    <span class="badge badge-info">Altitudes Elevadas</span>
+                    <span class="badge badge-warning">Exige Fertilidade</span>
+                    <span class="badge badge-success">Bom Arranque</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- DM 73I75 -->
+        <div class="cultivar-card" style="border-top:4px solid #3498db;">
+            <div class="cc-header">
+                <div>
+                    <div class="cc-name" style="color:#3498db;">DM 73I75 RSF IPRO</div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);">Don Mario Sementes</div>
+                </div>
+                <div class="cc-grade" style="background:rgba(52,152,219,0.2);color:#3498db;">A</div>
+            </div>
+            <div class="cc-body">
+                <div class="cc-row"><span class="label">Grupo de Maturação</span><span class="value">7.3 — 7.5</span></div>
+                <div class="cc-row"><span class="label">Tecnologia</span><span class="value">INTACTA RR2 PRO</span></div>
+                <div class="cc-row"><span class="label">Ciclo</span><span class="value">Médio-tardio</span></div>
+                <div class="cc-row"><span class="label">Ramificação</span><span class="value" style="color:var(--success-light);">Boa</span></div>
+                <div class="cc-row"><span class="label">Estabilidade</span><span class="value" style="color:var(--success-light);">Alta ✅</span></div>
+                <div class="cc-row"><span class="label">Validação UEG/Rio Verde</span><span class="value" style="color:var(--success-light);">Top produtividade</span></div>
+                <div class="cc-row"><span class="label">Talhões Utilizados</span><span class="value">T-02, T-03</span></div>
+                <div class="cc-row"><span class="label">Resultado Observado</span><span class="value" style="color:var(--success-light);">Excelente no T-02 🏆</span></div>
+                <div class="cc-tags">
+                    <span class="badge badge-success">★ Melhor Resultado</span>
+                    <span class="badge badge-info">Alta Estabilidade</span>
+                    <span class="badge badge-success">Validada UEG</span>
+                    <span class="badge badge-purple">Boa Ramificação</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BRS 573 -->
+        <div class="cultivar-card" style="border-top:4px solid #bb86fc;">
+            <div class="cc-header">
+                <div>
+                    <div class="cc-name" style="color:#bb86fc;">BRS 573 IPRO</div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);">Embrapa Soja</div>
+                </div>
+                <div class="cc-grade" style="background:rgba(155,89,182,0.2);color:#bb86fc;">C</div>
+            </div>
+            <div class="cc-body">
+                <div class="cc-row"><span class="label">Grupo de Maturação</span><span class="value">~5.7</span></div>
+                <div class="cc-row"><span class="label">Tecnologia</span><span class="value">INTACTA RR2 PRO</span></div>
+                <div class="cc-row"><span class="label">Ciclo</span><span class="value" style="color:var(--warning-light);">Superprecoce</span></div>
+                <div class="cc-row"><span class="label">Indicação Principal</span><span class="value">Abertura janela 2ª safra</span></div>
+                <div class="cc-row"><span class="label">Potencial Produtivo</span><span class="value" style="color:var(--warning-light);">Moderado (ciclo curto)</span></div>
+                <div class="cc-row"><span class="label">Plasticidade sob Estresse</span><span class="value" style="color:var(--danger-light);">Baixa ⚠️</span></div>
+                <div class="cc-row"><span class="label">Talhões Utilizados</span><span class="value">T-03, T-05</span></div>
+                <div class="cc-row"><span class="label">Resultado Observado</span><span class="value" style="color:var(--warning-light);">Regular (T-05) / Problema (T-03)</span></div>
+                <div class="cc-tags">
+                    <span class="badge badge-warning">Ciclo Curto</span>
+                    <span class="badge badge-danger">Potencial Limitado</span>
+                    <span class="badge badge-info">Janela 2ª Safra</span>
+                    <span class="badge badge-danger">Baixa Plasticidade</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEO 750 -->
+        <div class="cultivar-card" style="border-top:4px solid #00bcd4;">
+            <div class="cc-header">
+                <div>
+                    <div class="cc-name" style="color:#00bcd4;">NEO 750 IPRO</div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);">Neogen Sementes</div>
+                </div>
+                <div class="cc-grade" style="background:rgba(0,188,212,0.2);color:#00bcd4;">C</div>
+            </div>
+            <div class="cc-body">
+                <div class="cc-row"><span class="label">Grupo de Maturação</span><span class="value">~7.5</span></div>
+                <div class="cc-row"><span class="label">Tecnologia</span><span class="value">INTACTA RR2 PRO</span></div>
+                <div class="cc-row"><span class="label">RB/C (UEG Ipameri 22/23)</span><span class="value">1,30</span></div>
+                <div class="cc-row"><span class="label">Talhões Utilizados</span><span class="value">T-03 (mistura)</span></div>
+                <div class="cc-row"><span class="label">Resultado Observado</span><span class="value" style="color:var(--text-muted);">Inconclusivo ❓</span></div>
+                <div class="cc-tags">
+                    <span class="badge badge-info">GM Tardio</span>
+                    <span class="badge badge-warning">Resultado Indefinido</span>
+                    <span class="badge badge-danger">Misturada T-03</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEO 690 -->
+        <div class="cultivar-card" style="border-top:4px solid #f48fb1;">
+            <div class="cc-header">
+                <div>
+                    <div class="cc-name" style="color:#f48fb1;">NEO 690 I2X</div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);">Neogen Sementes</div>
+                </div>
+                <div class="cc-grade" style="background:rgba(233,30,99,0.2);color:#f48fb1;">B</div>
+            </div>
+            <div class="cc-body">
+                <div class="cc-row"><span class="label">Grupo de Maturação</span><span class="value">~6.9</span></div>
+                <div class="cc-row"><span class="label">Tecnologia</span><span class="value" style="color:var(--info-light);">INTACTA 2 XTEND</span></div>
+                <div class="cc-row"><span class="label">Resultado Neogen (23/24)</span><span class="value">82 sc (seq.) · 77 sc (irrig.)</span></div>
+                <div class="cc-row"><span class="label">Talhões Utilizados</span><span class="value">T-03 (mistura)</span></div>
+                <div class="cc-row"><span class="label">Resultado Observado</span><span class="value" style="color:var(--text-muted);">Inconclusivo ❓</span></div>
+                <div class="cc-tags">
+                    <span class="badge badge-info">I2X (Xtend)</span>
+                    <span class="badge badge-success">82 sc/ha potencial</span>
+                    <span class="badge badge-warning">Resultado Indefinido</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEO 761 -->
+        <div class="cultivar-card" style="border-top:4px solid #e91e63;">
+            <div class="cc-header">
+                <div>
+                    <div class="cc-name" style="color:#e91e63;">NEO 761 I2X</div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);">Neogen Sementes</div>
+                </div>
+                <div class="cc-grade" style="background:rgba(233,30,99,0.2);color:#e91e63;">B+</div>
+            </div>
+            <div class="cc-body">
+                <div class="cc-row"><span class="label">Grupo de Maturação</span><span class="value">7.6</span></div>
+                <div class="cc-row"><span class="label">Tecnologia</span><span class="value" style="color:var(--info-light);">INTACTA 2 XTEND</span></div>
+                <div class="cc-row"><span class="label">PMG</span><span class="value">186g</span></div>
+                <div class="cc-row"><span class="label">Ciclo</span><span class="value">~100 dias</span></div>
+                <div class="cc-row"><span class="label">Resistência NCS</span><span class="value">R (3) · MR (6,9,10,14,14+)</span></div>
+                <div class="cc-row"><span class="label">Resultados Neogen (23/24)</span><span class="value" style="color:var(--success-light);">82-91,8 sc/ha (GO,MT,MG)</span></div>
+                <div class="cc-row"><span class="label">Resultado Fazenda</span><span class="value" style="color:var(--warning-light);">66,47 sc (abaixo do potencial)</span></div>
+                <div class="cc-row"><span class="label">Talhão</span><span class="value">T-04 (56,3 ha — teste)</span></div>
+                <div class="cc-tags">
+                    <span class="badge badge-success">82-92 sc potencial</span>
+                    <span class="badge badge-info">I2X (Xtend)</span>
+                    <span class="badge badge-success">Resistência NCS</span>
+                    <span class="badge badge-warning">Subutilizada</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MATRIZ DE AVALIAÇÃO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#d4a017,#f0c940);">⭐</div>
+        <h2>Matriz de Avaliação Comparativa <small>Scoring de 6 critérios agronômicos e financeiros por cultivar (1-5 estrelas)</small></h2>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Cultivar</th>
+                    <th class="text-center">Potencial Produtivo</th>
+                    <th class="text-center">Custo Semente</th>
+                    <th class="text-center">Exigência Manejo</th>
+                    <th class="text-center">Risco</th>
+                    <th class="text-center">Resultado 25/26</th>
+                    <th class="text-center">Validação Regional</th>
+                    <th class="text-center">Nota Final</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background:rgba(52,152,219,0.06);">
+                    <td class="font-bold" style="color:#3498db;">DM 73I75 IPRO</td>
+                    <td class="text-center">⭐⭐⭐⭐⭐</td>
+                    <td class="text-center">⭐⭐⭐</td>
+                    <td class="text-center">⭐⭐⭐</td>
+                    <td class="text-center"><span class="badge badge-success">Baixo</span></td>
+                    <td class="text-center"><span class="badge badge-success">Excelente (T-02)</span></td>
+                    <td class="text-center"><span class="badge badge-success">UEG Top ✅</span></td>
+                    <td class="text-center"><span style="font-size:1.3rem;font-weight:800;color:#3498db;">A</span></td>
+                </tr>
+                <tr style="background:rgba(46,204,113,0.06);">
+                    <td class="font-bold" style="color:#2ecc71;">Guepardo IPRO</td>
+                    <td class="text-center">⭐⭐⭐⭐</td>
+                    <td class="text-center">⭐⭐⭐</td>
+                    <td class="text-center">⭐⭐⭐⭐</td>
+                    <td class="text-center"><span class="badge badge-warning">Médio</span></td>
+                    <td class="text-center"><span class="badge badge-success">Bom (T-02)</span></td>
+                    <td class="text-center"><span class="badge badge-success">Validada ✅</span></td>
+                    <td class="text-center"><span style="font-size:1.3rem;font-weight:800;color:#2ecc71;">A-</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold" style="color:#e91e63;">NEO 761 I2X</td>
+                    <td class="text-center">⭐⭐⭐⭐⭐</td>
+                    <td class="text-center">⭐⭐⭐⭐</td>
+                    <td class="text-center">⭐⭐⭐</td>
+                    <td class="text-center"><span class="badge badge-warning">Médio</span></td>
+                    <td class="text-center"><span class="badge badge-warning">Subutilizada</span></td>
+                    <td class="text-center"><span class="badge badge-info">82-92 sc Neogen</span></td>
+                    <td class="text-center"><span style="font-size:1.3rem;font-weight:800;color:#e91e63;">B+</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold" style="color:#f48fb1;">NEO 690 I2X</td>
+                    <td class="text-center">⭐⭐⭐⭐</td>
+                    <td class="text-center">⭐⭐⭐⭐</td>
+                    <td class="text-center">⭐⭐⭐</td>
+                    <td class="text-center"><span class="badge badge-warning">Médio</span></td>
+                    <td class="text-center"><span class="badge badge-info">Inconclusivo</span></td>
+                    <td class="text-center"><span class="badge badge-info">82 sc Neogen</span></td>
+                    <td class="text-center"><span style="font-size:1.3rem;font-weight:800;color:#f48fb1;">B</span></td>
+                </tr>
+                <tr style="background:rgba(231,76,60,0.04);">
+                    <td class="font-bold" style="color:#bb86fc;">BRS 573 IPRO</td>
+                    <td class="text-center">⭐⭐⭐</td>
+                    <td class="text-center">⭐⭐</td>
+                    <td class="text-center">⭐⭐⭐</td>
+                    <td class="text-center"><span class="badge badge-danger">Alto</span></td>
+                    <td class="text-center"><span class="badge badge-warning">Regular</span></td>
+                    <td class="text-center"><span class="badge badge-warning">Limitada</span></td>
+                    <td class="text-center"><span style="font-size:1.3rem;font-weight:800;color:#bb86fc;">C</span></td>
+                </tr>
+                <tr style="background:rgba(231,76,60,0.04);">
+                    <td class="font-bold" style="color:#00bcd4;">NEO 750 IPRO</td>
+                    <td class="text-center">⭐⭐⭐</td>
+                    <td class="text-center">⭐⭐⭐</td>
+                    <td class="text-center">⭐⭐⭐</td>
+                    <td class="text-center"><span class="badge badge-warning">Médio</span></td>
+                    <td class="text-center"><span class="badge badge-info">Inconclusivo</span></td>
+                    <td class="text-center"><span class="badge badge-info">RB/C 1,30 UEG</span></td>
+                    <td class="text-center"><span style="font-size:1.3rem;font-weight:800;color:#00bcd4;">C</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ===== GRÁFICOS COMPARATIVOS ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#2980b9,#3498db);">📊</div>
+        <h2>Análises Gráficas de Variedades <small>Custo de semente, relação semente-fitossanitário, e alocação de área</small></h2>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Custo de Semente vs. Custo Fitossanitário por Talhão</h3>
+            <p class="chart-sub">Hipótese: investir mais em semente reduz necessidade de defensivo</p>
+            <div class="chart-wrap"><canvas id="chartSementeVsFitoss"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Custo de Semente/ha por Talhão</h3>
+            <p class="chart-sub">T-04 lidera (NEO 761 I2X premium) · T-03 tem o menor (sementes mais baratas)</p>
+            <div class="chart-wrap"><canvas id="chartSementeTalhao"></canvas></div>
+        </div>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Nº de Cultivares por Talhão vs. Resultado/ha</h3>
+            <p class="chart-sub">Talhões com mais cultivares tendem a ter piores resultados</p>
+            <div class="chart-wrap"><canvas id="chartNVarsResult"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Distribuição de Área por Cultivar (estimativa)</h3>
+            <p class="chart-sub">Estimativa da área ocupada por cada cultivar baseado nos talhões declarados</p>
+            <div class="chart-wrap"><canvas id="chartAreaCultivar"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ===== ANÁLISE SEMENTE x FITOSSANITÁRIO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#e67e22,#f39c12);">🔍</div>
+        <h2>A Relação Semente ↔ Fitossanitário <small>Evidência da troca custo-benefício: investir em semente de qualidade reduz gasto fitossanitário</small></h2>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Talhão</th>
+                    <th class="text-right">Custo Semente/ha</th>
+                    <th class="text-right">Custo Fitoss./ha</th>
+                    <th class="text-right">Relação Fitoss./Semente</th>
+                    <th class="text-right">Resultado/ha</th>
+                    <th class="text-center">Diagnóstico</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="font-bold">T-01</td>
+                    <td class="text-right font-mono">R$ 600</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">R$ 931</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--danger-light);">1,55×</td>
+                    <td class="text-right font-mono">R$ 324</td>
+                    <td class="text-center"><span class="badge badge-warning">Semente OK, Fitoss. alto</span></td>
+                </tr>
+                <tr style="background:rgba(39,174,96,0.06);">
+                    <td class="font-bold" style="color:var(--success-light);">T-02 🏆</td>
+                    <td class="text-right font-mono" style="color:var(--success-light);">R$ 751</td>
+                    <td class="text-right font-mono" style="color:var(--success-light);">R$ 230</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--success-light);">0,31×</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--success-light);">R$ 1.041</td>
+                    <td class="text-center"><span class="badge badge-success">✅ Modelo ideal</span></td>
+                </tr>
+                <tr style="background:rgba(231,76,60,0.06);">
+                    <td class="font-bold" style="color:var(--danger-light);">T-03 ⚠️</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">R$ 420</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">R$ 1.244</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--danger-light);">2,96×</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">R$ 162</td>
+                    <td class="text-center"><span class="badge badge-danger">🔴 Economia falsa</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold">T-04</td>
+                    <td class="text-right font-mono">R$ 1.253</td>
+                    <td class="text-right font-mono">R$ 328</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--success-light);">0,26×</td>
+                    <td class="text-right font-mono">R$ 334</td>
+                    <td class="text-center"><span class="badge badge-info">Semente cara (I2X), mas fitoss. baixo</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold">T-05</td>
+                    <td class="text-right font-mono">R$ 712</td>
+                    <td class="text-right font-mono" style="color:var(--warning-light);">R$ 655</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--warning-light);">0,92×</td>
+                    <td class="text-right font-mono">R$ 322</td>
+                    <td class="text-center"><span class="badge badge-warning">Relação intermediária</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="info-box success">
+        <h4>✅ Evidência Comprovada: A "Equação de Ouro" da Semente</h4>
+        <p>A relação <strong>Custo Fitossanitário / Custo Semente</strong> funciona como um termômetro de eficiência:<br><br>
+        🟢 <strong>T-02 (0,31×):</strong> Gastou R$ 751 em semente premium com TSI robusto → economizou R$ 1.014 em fitossanitário vs. T-03<br>
+        🔴 <strong>T-03 (2,96×):</strong> Economizou R$ 331 em semente barata → gastou R$ 1.014 a mais em fitossanitário<br><br>
+        <strong>ROI da decisão de semente no T-02:</strong> Para cada R$ 1 investido a mais em semente (vs. T-03), economizou R$ 3,06 em fitossanitário. <strong>Retorno de 206%</strong>.<br>
+        <strong>Meta 26/27:</strong> Relação Fitoss./Semente ≤ 0,50 em todos os talhões.</p>
+    </div>
+
+    <!-- ===== RECOMENDAÇÃO DE PORTFÓLIO 26/27 ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#27ae60,#2ecc71);">🎯</div>
+        <h2>Recomendação de Portfólio — Safra 26/27 <small>Simplificação para 3 cultivares baseada na análise de performance e risco</small></h2>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Portfólio Atual (25/26) — 6 Cultivares</h3>
+            <p class="chart-sub">Fragmentação excessiva com 4 obtentoras e amplitude de GM de 5.7 a 7.6</p>
+            <div class="chart-wrap"><canvas id="chartPortfolioAtual"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Portfólio Recomendado (26/27) — 3 Cultivares</h3>
+            <p class="chart-sub">Foco em materiais comprovados + potencial I2X para nematoides</p>
+            <div class="chart-wrap"><canvas id="chartPortfolioNovo"></canvas></div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Cultivar</th>
+                    <th class="text-center">Nota</th>
+                    <th class="text-right">Área Proposta</th>
+                    <th class="text-right">% da Fazenda</th>
+                    <th>Papel no Portfólio</th>
+                    <th>Talhões Sugeridos</th>
+                    <th class="text-center">GM</th>
+                    <th>Justificativa</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background:rgba(52,152,219,0.06);">
+                    <td class="font-bold" style="color:#3498db;">DM 73I75 IPRO</td>
+                    <td class="text-center"><span style="font-weight:800;color:#3498db;font-size:1.1rem;">A</span></td>
+                    <td class="text-right font-mono font-bold">~200 ha</td>
+                    <td class="text-right font-mono">36%</td>
+                    <td>🏗️ <strong>Base</strong> — Estabilidade</td>
+                    <td>T-02 + T-03 (parcial)</td>
+                    <td class="text-center font-mono">7.3</td>
+                    <td style="font-size:0.75rem;">Melhor resultado comprovado na fazenda. Validada pela UEG/Rio Verde. Alta estabilidade.</td>
+                </tr>
+                <tr style="background:rgba(46,204,113,0.06);">
+                    <td class="font-bold" style="color:#2ecc71;">Guepardo IPRO</td>
+                    <td class="text-center"><span style="font-weight:800;color:#2ecc71;font-size:1.1rem;">A-</span></td>
+                    <td class="text-right font-mono font-bold">~200 ha</td>
+                    <td class="text-right font-mono">36%</td>
+                    <td>🔄 <strong>Complemento</strong> — Escalonamento</td>
+                    <td>T-01 + T-03 (parcial) + T-05</td>
+                    <td class="text-center font-mono">6.8</td>
+                    <td style="font-size:0.75rem;">Bom desempenho comprovado. GM complementar ao DM 73I75. STS™. Bom arranque.</td>
+                </tr>
+                <tr>
+                    <td class="font-bold" style="color:#e91e63;">NEO 761 I2X</td>
+                    <td class="text-center"><span style="font-weight:800;color:#e91e63;font-size:1.1rem;">B+</span></td>
+                    <td class="text-right font-mono font-bold">~148 ha</td>
+                    <td class="text-right font-mono">27%</td>
+                    <td>🚀 <strong>Expansão</strong> — Potencial + NCS</td>
+                    <td>T-04 (ampliado) + T-03 (parcial)</td>
+                    <td class="text-center font-mono">7.6</td>
+                    <td style="font-size:0.75rem;">Potencial de 82-92 sc/ha. Tecnologia I2X. Resistência a nematoides (crucial para Sudoeste GO).</td>
+                </tr>
+                <tr style="background:rgba(231,76,60,0.04);">
+                    <td class="font-bold" style="color:var(--text-muted);">BRS 573 / NEO 750 / NEO 690</td>
+                    <td class="text-center"><span style="font-weight:800;color:var(--danger-light);font-size:1.1rem;">❌</span></td>
+                    <td class="text-right font-mono">—</td>
+                    <td class="text-right font-mono">0%</td>
+                    <td>🚫 <strong>Eliminadas</strong></td>
+                    <td>—</td>
+                    <td class="text-center">—</td>
+                    <td style="font-size:0.75rem;">BRS 573: ciclo curto limita potencial. NEO 750/690: resultados inconclusivos, contribuíram para caos do T-03.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="info-box">
+        <h4>🎯 Benefícios Esperados da Simplificação</h4>
+        <p>
+            <strong>1. Redução de custo fitossanitário:</strong> Com GMs mais homogêneos por talhão (6.8–7.6 vs. 5.7–7.5), janelas de aplicação convergem → menos aplicações, melhor timing.<br>
+            <strong>2. Otimização de manejo:</strong> 3 cultivares permitem protocolos dedicados vs. 6 cultivares com necessidades conflitantes.<br>
+            <strong>3. Melhor negociação de sementes:</strong> Volume concentrado em 3 materiais → poder de barganha com obtentoras/distribuidores.<br>
+            <strong>4. Rastreabilidade:</strong> Facilita atribuição de resultado a cada cultivar, permitindo decisões baseadas em dados para safras futuras.<br>
+            <strong>5. Amplitude de GM otimizada:</strong> O portfólio proposto vai de GM 6.8 a 7.6 (amplitude de 0.8), ideal para escalonamento sem conflito de manejo.
+        </p>
+    </div>
+
+    <!-- ===== ANÁLISE DE POTENCIAL NÃO REALIZADO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:linear-gradient(135deg,#c0392b,#e74c3c);">📉</div>
+        <h2>Potencial Não Realizado <small>Gap entre o potencial documentado das cultivares e o resultado obtido na fazenda</small></h2>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card chart-card-full">
+            <h3>Potencial vs. Realizado — Produtividade (sc/ha)</h3>
+            <p class="chart-sub">Gap de produtividade entre o potencial genético documentado e o que foi efetivamente colhido na Fazenda Monte Alegre</p>
+            <div class="chart-wrap"><canvas id="chartPotencial"></canvas></div>
+        </div>
+    </div>
+
+    <div class="info-box warning">
+        <h4>⚠️ Gap de Potencial: R$ 606 mil perdidos</h4>
+        <p>Se a produtividade média da fazenda alcançasse o benchmark regional Comigo (76 sc/ha), o resultado total saltaria de <strong>R$ 261.837 para R$ 867.925</strong> — um ganho de R$ 606 mil. A NEO 761, por exemplo, tem potencial documentado de 82-92 sc/ha mas entregou apenas 66,47 no T-04. O portfólio simplificado, com manejo otimizado, deve fechar parte significativa desse gap.</p>
+    </div>
+
+</div>
+
+<div class="footer">
+    <p><strong>Fazenda Monte Alegre</strong> · Leandro Martins · Montividiu-GO · Safra 2025/2026</p>
+    <p>Relatório gerado em 16 de abril de 2026 · Documento confidencial · Parte 3 de 7</p>
+</div>
+
+<script>
+    Chart.register(ChartDataLabels);
+    const C={green:'#2ecc71',greenD:'#27ae60',red:'#e74c3c',redD:'#c0392b',gold:'#f0c940',goldD:'#d4a017',blue:'#3498db',blueD:'#2980b9',orange:'#f39c12',purple:'#9b59b6',teal:'#1abc9c',gray:'#95a5a6',pink:'#e91e63',cyan:'#00bcd4',lilac:'#bb86fc',pinkL:'#f48fb1'};
+
+    // 1. Semente vs Fitossanitário (Scatter com tamanho = resultado)
+    new Chart(document.getElementById('chartSementeVsFitoss'),{
+        type:'bubble',
+        data:{
+            datasets:[
+                {label:'T-01',data:[{x:600,y:931,r:10}],backgroundColor:'rgba(243,156,18,0.6)',borderColor:C.orange,borderWidth:2},
+                {label:'T-02 🏆',data:[{x:751,y:230,r:18}],backgroundColor:'rgba(46,204,113,0.6)',borderColor:C.green,borderWidth:2},
+                {label:'T-03 ⚠️',data:[{x:420,y:1244,r:8}],backgroundColor:'rgba(231,76,60,0.6)',borderColor:C.red,borderWidth:2},
+                {label:'T-04',data:[{x:1253,y:328,r:10}],backgroundColor:'rgba(52,152,219,0.6)',borderColor:C.blue,borderWidth:2},
+                {label:'T-05',data:[{x:712,y:655,r:10}],backgroundColor:'rgba(155,89,182,0.6)',borderColor:C.purple,borderWidth:2}
+            ]
+        },
+        options:{
+            responsive:true,
+            plugins:{
+                legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},
+                datalabels:{display:false}
+            },
+            scales:{
+                x:{title:{display:true,text:'Custo Semente (R$/ha)',color:'#7f8c8d',font:{size:11}},ticks:{color:'#95a5a6',callback:v=>'R$'+v},grid:{color:'rgba(44,62,80,0.4)'}},
+                y:{title:{display:true,text:'Custo Fitossanitário (R$/ha)',color:'#7f8c8d',font:{size:11}},ticks:{color:'#95a5a6',callback:v=>'R$'+v},grid:{color:'rgba(44,62,80,0.4)'}}
+            }
+        }
+    });
+
+    // 2. Custo Semente por Talhão
+    new Chart(document.getElementById('chartSementeTalhao'),{
+        type:'bar',
+        data:{
+            labels:['T-01','T-02 🏆','T-03 ⚠️','T-04','T-05'],
+            datasets:[{
+                label:'Custo Semente/ha',
+                data:[600,751,420,1253,712],
+                backgroundColor:[C.orange,C.green,C.red,C.blue,C.purple],
+                borderRadius:6
+            }]
+        },
+        options:{
+            responsive:true,
+            plugins:{
+                legend:{display:false},
+                datalabels:{anchor:'end',align:'top',formatter:v=>'R$ '+v,color:'#ecf0f1',font:{size:11,weight:'bold'}}
+            },
+            scales:{
+                x:{ticks:{color:'#95a5a6'},grid:{display:false}},
+                y:{ticks:{color:'#95a5a6',callback:v=>'R$ '+v},grid:{color:'rgba(44,62,80,0.3)'},beginAtZero:true,max:1400}
+            }
+        }
+    });
+
+    // 3. Nº Cultivares vs Resultado (Combo)
+    new Chart(document.getElementById('chartNVarsResult'),{
+        type:'bar',
+        data:{
+            labels:['T-01','T-02 🏆','T-03 ⚠️','T-04','T-05'],
+            datasets:[
+                {label:'Nº Cultivares',data:[1,2,4,1,1],backgroundColor:[C.orange,C.green,C.red,C.blue,C.purple],borderRadius:6,yAxisID:'y',order:2},
+                {label:'Resultado/ha (R$)',data:[324,1041,162,334,322],type:'line',borderColor:C.gold,backgroundColor:C.gold,pointRadius:6,pointBackgroundColor:C.gold,borderWidth:3,yAxisID:'y1',order:1,tension:0.3}
+            ]
+        },
+        options:{
+            responsive:true,
+            plugins:{
+                legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true}},
+                datalabels:{
+                    display:function(ctx){return ctx.datasetIndex===0;},
+                    anchor:'end',align:'top',color:'#ecf0f1',font:{size:14,weight:'bold'}
+                }
+            },
+            scales:{
+                x:{ticks:{color:'#95a5a6'},grid:{display:false}},
+                y:{position:'left',title:{display:true,text:'Nº Cultivares',color:'#7f8c8d'},ticks:{color:'#95a5a6',stepSize:1},grid:{color:'rgba(44,62,80,0.3)'},max:5},
+                y1:{position:'right',title:{display:true,text:'Resultado R$/ha',color:'#7f8c8d'},ticks:{color:'#95a5a6',callback:v=>'R$'+v},grid:{display:false},beginAtZero:true}
+            }
+        }
+    });
+
+    // 4. Área por cultivar (Doughnut)
+    new Chart(document.getElementById('chartAreaCultivar'),{
+        type:'doughnut',
+        data:{
+            labels:['Guepardo IPRO (~155ha)','DM 73I75 IPRO (~140ha)','BRS 573 IPRO (~95ha)','NEO 761 I2X (~56ha)','NEO 750 IPRO (~50ha)','NEO 690 I2X (~52ha)'],
+            datasets:[{
+                data:[155,140,95,56,50,52],
+                backgroundColor:[C.green,C.blue,C.lilac,C.pink,C.cyan,C.pinkL],
+                borderColor:'#1a2634',borderWidth:3
+            }]
+        },
+        options:{
+            responsive:true,cutout:'50%',
+            plugins:{
+                legend:{position:'bottom',labels:{color:'#95a5a6',font:{size:10},padding:8,usePointStyle:true,pointStyle:'rectRounded'}},
+                datalabels:{
+                    formatter:(v,ctx)=>{const s=ctx.dataset.data.reduce((a,b)=>a+b,0);const p=(v/s*100).toFixed(0);return p>8?p+'%':'';},
+                    color:'#fff',font:{size:11,weight:'bold'}
+                }
+            }
+        }
+    });
+
+    // 5. Portfolio Atual (Pie)
+    new Chart(document.getElementById('chartPortfolioAtual'),{
+        type:'pie',
+        data:{
+            labels:['Guepardo','DM 73I75','BRS 573','NEO 761','NEO 750','NEO 690'],
+            datasets:[{
+                data:[155,140,95,56,50,52],
+                backgroundColor:[C.green,C.blue,C.lilac,C.pink,C.cyan,C.pinkL],
+                borderColor:'#1a2634',borderWidth:2
+            }]
+        },
+        options:{
+            responsive:true,
+            plugins:{
+                legend:{position:'bottom',labels:{color:'#95a5a6',font:{size:10},padding:8,usePointStyle:true}},
+                datalabels:{formatter:(v,ctx)=>{const s=ctx.dataset.data.reduce((a,b)=>a+b,0);return (v/s*100).toFixed(0)+'%';},color:'#fff',font:{size:11,weight:'bold'}}
+            }
+        }
+    });
+
+    // 6. Portfolio Novo (Pie)
+    new Chart(document.getElementById('chartPortfolioNovo'),{
+        type:'pie',
+        data:{
+            labels:['DM 73I75 IPRO (36%)','Guepardo IPRO (36%)','NEO 761 I2X (27%)'],
+            datasets:[{
+                data:[200,200,148],
+                backgroundColor:[C.blue,C.green,C.pink],
+                borderColor:'#1a2634',borderWidth:2
+            }]
+        },
+        options:{
+            responsive:true,
+            plugins:{
+                legend:{position:'bottom',labels:{color:'#95a5a6',font:{size:10},padding:8,usePointStyle:true}},
+                datalabels:{formatter:(v,ctx)=>{const s=ctx.dataset.data.reduce((a,b)=>a+b,0);return (v/s*100).toFixed(0)+'%';},color:'#fff',font:{size:12,weight:'bold'}}
+            }
+        }
+    });
+
+    // 7. Potencial vs Realizado (Grouped Bar)
+    new Chart(document.getElementById('chartPotencial'),{
+        type:'bar',
+        data:{
+            labels:['Guepardo IPRO','DM 73I75 IPRO','BRS 573 IPRO','NEO 761 I2X','Benchmark Comigo'],
+            datasets:[
+                {label:'Potencial Documentado (sc/ha)',data:[75,80,65,87,76],backgroundColor:'rgba(46,204,113,0.3)',borderColor:C.green,borderWidth:2,borderRadius:6},
+                {label:'Realizado Fazenda (sc/ha)',data:[66.47,66.47,66.47,66.47,66.47],backgroundColor:'rgba(243,156,18,0.3)',borderColor:C.gold,borderWidth:2,borderRadius:6}
+            ]
+        },
+        options:{
+            responsive:true,
+            plugins:{
+                legend:{labels:{color:'#95a5a6',font:{size:10},usePointStyle:true,pointStyle:'rectRounded'}},
+                datalabels:{
+                    anchor:'end',align:'top',
+                    formatter:v=>v.toFixed(1),
+                    color:'#ecf0f1',font:{size:11,weight:'bold'}
+                }
+            },
+            scales:{
+                x:{ticks:{color:'#95a5a6',font:{size:10}},grid:{display:false}},
+                y:{ticks:{color:'#95a5a6',callback:v=>v+' sc'},grid:{color:'rgba(44,62,80,0.3)'},beginAtZero:false,min:50,max:95,title:{display:true,text:'sc/ha',color:'#7f8c8d'}}
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

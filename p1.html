@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fazenda Monte Alegre — Parte 1: Dashboard Executivo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        :root {
+            --primary: #1a5632;
+            --primary-light: #2d8a4e;
+            --primary-dark: #0e3b20;
+            --accent: #d4a017;
+            --accent-light: #f0c940;
+            --danger: #c0392b;
+            --danger-light: #e74c3c;
+            --warning: #e67e22;
+            --warning-light: #f39c12;
+            --success: #27ae60;
+            --success-light: #2ecc71;
+            --info: #2980b9;
+            --info-light: #3498db;
+            --bg-dark: #0f1923;
+            --bg-card: #1a2634;
+            --bg-card-hover: #223344;
+            --bg-section: #15202d;
+            --text-primary: #ecf0f1;
+            --text-secondary: #95a5a6;
+            --text-muted: #7f8c8d;
+            --border: #2c3e50;
+            --border-light: #34495e;
+            --gradient-green: linear-gradient(135deg, #1a5632, #2d8a4e);
+            --gradient-gold: linear-gradient(135deg, #d4a017, #f0c940);
+            --gradient-red: linear-gradient(135deg, #c0392b, #e74c3c);
+            --gradient-blue: linear-gradient(135deg, #2980b9, #3498db);
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+            --shadow-lg: 0 8px 40px rgba(0,0,0,0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
+            padding: 2rem 2rem 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(212,160,23,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        .header-brand h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        .header-brand h1 span { color: var(--accent-light); }
+        .header-brand p {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.95rem;
+            margin-top: 0.25rem;
+        }
+        .header-badge {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+        .header-badge .label { font-size: 0.75rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; }
+        .header-badge .value { font-size: 1.4rem; font-weight: 700; color: var(--accent-light); }
+
+        /* NAV */
+        .nav-parts {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            background: var(--bg-section);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-parts a {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        .nav-parts a:hover, .nav-parts a.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary-light);
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* SECTION TITLE */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 2rem 0 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+        .section-title .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .section-title h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .section-title h2 small {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            margin-top: 0.15rem;
+        }
+
+        /* KPI CARDS */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        .kpi-card .kpi-label {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .kpi-card .kpi-value {
+            font-size: 1.65rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .kpi-card .kpi-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.35rem;
+        }
+        .kpi-card .kpi-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            border-radius: 4px 0 0 4px;
+        }
+        .kpi-card .kpi-icon {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.8rem;
+            opacity: 0.15;
+        }
+
+        /* TABLES */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        thead th {
+            background: var(--bg-section);
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.72rem;
+            padding: 0.85rem 1rem;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+            position: sticky;
+            top: 0;
+        }
+        tbody td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+        tbody tr:hover { background: var(--bg-card-hover); }
+        tbody tr:last-child td { border-bottom: none; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .font-bold { font-weight: 700; }
+        .font-mono { font-family: 'Cascadia Code', 'Fira Code', monospace; }
+
+        /* STATUS BADGES */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .badge-success { background: rgba(39,174,96,0.15); color: var(--success-light); }
+        .badge-warning { background: rgba(243,156,18,0.15); color: var(--warning-light); }
+        .badge-danger { background: rgba(231,76,60,0.15); color: var(--danger-light); }
+        .badge-info { background: rgba(52,152,219,0.15); color: var(--info-light); }
+
+        /* CHART CONTAINER */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+        .chart-card h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+        }
+        .chart-card p.chart-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        .chart-wrap {
+            position: relative;
+            width: 100%;
+        }
+
+        /* HEATMAP */
+        .heatmap-grid {
+            display: grid;
+            gap: 3px;
+            margin-bottom: 1.5rem;
+        }
+        .heatmap-cell {
+            padding: 0.5rem 0.4rem;
+            text-align: center;
+            font-size: 0.72rem;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: transform 0.15s;
+        }
+        .heatmap-cell:hover { transform: scale(1.05); z-index: 2; }
+        .heatmap-header {
+            background: var(--bg-section);
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 0.7rem;
+        }
+
+        /* THERMOMETER */
+        .thermo-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .thermo-label {
+            width: 80px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .thermo-bar-bg {
+            flex: 1;
+            height: 28px;
+            background: var(--bg-section);
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+        }
+        .thermo-bar-fill {
+            height: 100%;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 0.6rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #fff;
+            transition: width 1s ease;
+            min-width: 50px;
+        }
+        .thermo-val {
+            width: 90px;
+            text-align: left;
+            font-size: 0.82rem;
+            font-weight: 700;
+            font-family: 'Cascadia Code', monospace;
+            flex-shrink: 0;
+        }
+
+        /* INFO BOX */
+        .info-box {
+            background: var(--bg-card);
+            border-left: 4px solid var(--info);
+            border-radius: 0 12px 12px 0;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        .info-box.warning { border-left-color: var(--warning); }
+        .info-box.danger { border-left-color: var(--danger); }
+        .info-box.success { border-left-color: var(--success); }
+        .info-box h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+        .info-box p {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* FOOTER */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .header { padding: 1.25rem; }
+            .header-brand h1 { font-size: 1.3rem; }
+            .container { padding: 1rem; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .chart-grid { grid-template-columns: 1fr; }
+            .nav-parts { padding: 0.75rem 1rem; }
+            .nav-parts a { font-size: 0.72rem; padding: 0.4rem 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ======================== HEADER ======================== -->
+<div class="header">
+    <div class="header-top">
+        <div class="header-brand">
+            <h1>🌿 Fazenda <span>Monte Alegre</span></h1>
+            <p>Relatório Analítico Consolidado — Safra 2025/2026 + Projeções 2026/2027</p>
+            <p style="margin-top:0.5rem; font-size:0.8rem; opacity:0.6;">Leandro Martins · Montividiu-GO · Sudoeste Goiano · 548 ha</p>
+        </div>
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <div class="header-badge">
+                <div class="label">Receita Bruta</div>
+                <div class="value">R$ 4,23 Mi</div>
+            </div>
+            <div class="header-badge">
+                <div class="label">Resultado</div>
+                <div class="value">R$ 261,8 mil</div>
+            </div>
+            <div class="header-badge">
+                <div class="label">Rentabilidade</div>
+                <div class="value">6,60%</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================== NAV ======================== -->
+<div class="nav-parts">
+    <a href="#" class="active">📊 Parte 1 — Dashboard</a>
+    <a href="#">📉 Parte 2 — Custos</a>
+    <a href="#">🌱 Parte 3 — Variedades</a>
+    <a href="#">📐 Parte 4 — Indicadores</a>
+    <a href="#">🔬 Parte 5 — Econometria</a>
+    <a href="#">🎯 Parte 6 — Scorecard</a>
+    <a href="#">📄 Parte 7 — Relatório Final</a>
+</div>
+
+<!-- ======================== CONTEÚDO ======================== -->
+<div class="container">
+
+    <!-- ===== SEÇÃO 1: KPIs MACRO ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:var(--gradient-green);">💰</div>
+        <h2>Visão Geral da Safra 2025/2026 <small>Indicadores-chave consolidados para 548 hectares</small></h2>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:var(--gradient-green);"></div>
+            <div class="kpi-icon">🌾</div>
+            <div class="kpi-label">Área Total</div>
+            <div class="kpi-value" style="color:var(--success-light);">548 ha</div>
+            <div class="kpi-sub">5 talhões · 6 cultivares</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:var(--gradient-gold);"></div>
+            <div class="kpi-icon">📦</div>
+            <div class="kpi-label">Produtividade</div>
+            <div class="kpi-value" style="color:var(--accent-light);">66,47 <span style="font-size:0.9rem;">sc/ha</span></div>
+            <div class="kpi-sub">-12,5% vs. Comigo (76 sc/ha)</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:var(--gradient-blue);"></div>
+            <div class="kpi-icon">💲</div>
+            <div class="kpi-label">PMV</div>
+            <div class="kpi-value" style="color:var(--info-light);">R$ 116,07<span style="font-size:0.8rem;">/sc</span></div>
+            <div class="kpi-sub">+9,1% vs. spot regional</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:var(--gradient-green);"></div>
+            <div class="kpi-icon">📈</div>
+            <div class="kpi-label">Receita Bruta</div>
+            <div class="kpi-value" style="color:var(--success-light);">R$ 7.715<span style="font-size:0.8rem;">/ha</span></div>
+            <div class="kpi-sub">Total: R$ 4.227.915</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:var(--gradient-red);"></div>
+            <div class="kpi-icon">📉</div>
+            <div class="kpi-label">Custo Total</div>
+            <div class="kpi-value" style="color:var(--danger-light);">R$ 7.237<span style="font-size:0.8rem;">/ha</span></div>
+            <div class="kpi-sub">Total: R$ 3.966.078</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:var(--gradient-gold);"></div>
+            <div class="kpi-icon">🎯</div>
+            <div class="kpi-label">Resultado/ha</div>
+            <div class="kpi-value" style="color:var(--accent-light);">R$ 477,80</div>
+            <div class="kpi-sub">Total: R$ 261.837</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:var(--gradient-red);"></div>
+            <div class="kpi-icon">⚖️</div>
+            <div class="kpi-label">Break-Even Ratio</div>
+            <div class="kpi-value" style="color:var(--warning-light);">93,8%</div>
+            <div class="kpi-sub">Folga de apenas 6,2%</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-bar" style="background:var(--gradient-red);"></div>
+            <div class="kpi-icon">🏦</div>
+            <div class="kpi-label">EVA</div>
+            <div class="kpi-value" style="color:var(--danger-light);">-R$ 30,7k</div>
+            <div class="kpi-sub">Destrói valor vs. Selic 14,75%</div>
+        </div>
+    </div>
+
+    <!-- ===== SEÇÃO 2: RESULTADO POR TALHÃO — TABELA + GRÁFICOS ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:var(--gradient-blue);">📊</div>
+        <h2>Resultado por Talhão <small>Demonstrativo comparativo de performance — 5 talhões</small></h2>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Talhão</th>
+                    <th class="text-right">Área (ha)</th>
+                    <th class="text-right">% Fazenda</th>
+                    <th>Variedade(s)</th>
+                    <th class="text-right">Receita/ha</th>
+                    <th class="text-right">Custo Total/ha</th>
+                    <th class="text-right">Resultado/ha</th>
+                    <th class="text-right">Resultado Total</th>
+                    <th class="text-right">Rentab.</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="font-bold">T-01</td>
+                    <td class="text-right font-mono">67,70</td>
+                    <td class="text-right">12,4%</td>
+                    <td>Guepardo</td>
+                    <td class="text-right font-mono">7.715</td>
+                    <td class="text-right font-mono">7.391</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--warning-light);">323,75</td>
+                    <td class="text-right font-mono">21.918</td>
+                    <td class="text-right">4,20%</td>
+                    <td class="text-center"><span class="badge badge-warning">⚠ Apertado</span></td>
+                </tr>
+                <tr style="background:rgba(39,174,96,0.08);">
+                    <td class="font-bold" style="color:var(--success-light);">T-02 🏆</td>
+                    <td class="text-right font-mono">166,00</td>
+                    <td class="text-right">30,3%</td>
+                    <td>Guepardo + DM 73I75</td>
+                    <td class="text-right font-mono">7.715</td>
+                    <td class="text-right font-mono" style="color:var(--success-light);">6.674</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--success-light);">1.041,25</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--success-light);">172.848</td>
+                    <td class="text-right font-bold" style="color:var(--success-light);">13,50%</td>
+                    <td class="text-center"><span class="badge badge-success">✅ Excelente</span></td>
+                </tr>
+                <tr style="background:rgba(231,76,60,0.06);">
+                    <td class="font-bold" style="color:var(--danger-light);">T-03 ⚠️</td>
+                    <td class="text-right font-mono">218,00</td>
+                    <td class="text-right">39,8%</td>
+                    <td>BRS573+DM73I75+NEO750+NEO690</td>
+                    <td class="text-right font-mono">7.715</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">7.553</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--danger-light);">162,40</td>
+                    <td class="text-right font-mono" style="color:var(--danger-light);">35.404</td>
+                    <td class="text-right" style="color:var(--danger-light);">2,11%</td>
+                    <td class="text-center"><span class="badge badge-danger">🔴 Crítico</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold">T-04</td>
+                    <td class="text-right font-mono">56,30</td>
+                    <td class="text-right">10,3%</td>
+                    <td>NEO 761 I2X</td>
+                    <td class="text-right font-mono">7.715</td>
+                    <td class="text-right font-mono">7.382</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--warning-light);">333,60</td>
+                    <td class="text-right font-mono">18.782</td>
+                    <td class="text-right">4,32%</td>
+                    <td class="text-center"><span class="badge badge-warning">⚠ Apertado</span></td>
+                </tr>
+                <tr>
+                    <td class="font-bold">T-05</td>
+                    <td class="text-right font-mono">40,00</td>
+                    <td class="text-right">7,3%</td>
+                    <td>BRS 573</td>
+                    <td class="text-right font-mono">7.715</td>
+                    <td class="text-right font-mono">7.393</td>
+                    <td class="text-right font-mono font-bold" style="color:var(--warning-light);">322,14</td>
+                    <td class="text-right font-mono">12.886</td>
+                    <td class="text-right">4,17%</td>
+                    <td class="text-center"><span class="badge badge-warning">⚠ Apertado</span></td>
+                </tr>
+                <tr style="background:var(--bg-section); font-weight:700;">
+                    <td>FAZENDA</td>
+                    <td class="text-right font-mono">548,00</td>
+                    <td class="text-right">100%</td>
+                    <td>6 cultivares</td>
+                    <td class="text-right font-mono">7.715</td>
+                    <td class="text-right font-mono">7.237</td>
+                    <td class="text-right font-mono" style="color:var(--accent-light);">477,80</td>
+                    <td class="text-right font-mono" style="color:var(--accent-light);">261.837</td>
+                    <td class="text-right" style="color:var(--accent-light);">6,19%</td>
+                    <td class="text-center"><span class="badge badge-info">ℹ Viável</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- GRÁFICOS RESULTADO + ÁREA -->
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Resultado Financeiro por Talhão (R$/ha)</h3>
+            <p class="chart-sub">Comparação do resultado por hectare — amplitude de R$ 878,85</p>
+            <div class="chart-wrap"><canvas id="chartResultTalhao"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Distribuição da Área vs. Resultado</h3>
+            <p class="chart-sub">T-02 tem 30% da área e gera 66% do resultado</p>
+            <div class="chart-wrap"><canvas id="chartAreaVsResultado"></canvas></div>
+        </div>
+    </div>
+
+    <!-- INFO BOX GINI -->
+    <div class="info-box warning">
+        <h4>⚠️ Índice de Gini = 0,41 — Concentração Moderada-Alta</h4>
+        <p>O Talhão 02 concentra <strong>66% do resultado total</strong> da fazenda, mas ocupa apenas 30,3% da área. Os outros 4 talhões (69,7% da área) geram apenas 34% do resultado. Essa desigualdade expõe a fazenda a um risco estrutural: se o T-02 tiver um ano ruim, toda a fazenda entra em prejuízo.</p>
+    </div>
+
+    <!-- ===== SEÇÃO 3: COMPOSIÇÃO DE CUSTOS ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:var(--gradient-gold);">💸</div>
+        <h2>Composição de Custos <small>Estrutura do custo total por categoria — R$ 7.237,37/ha</small></h2>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Estrutura do Custo Total/ha</h3>
+            <p class="chart-sub">Custeio (insumos) representa 45,3% da receita</p>
+            <div class="chart-wrap"><canvas id="chartCustoEstrutura"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Composição dos Insumos/ha</h3>
+            <p class="chart-sub">Adubo lidera com 53,6% dos insumos (R$ 1.872/ha)</p>
+            <div class="chart-wrap"><canvas id="chartInsumos"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ===== SEÇÃO 4: TERMÔMETRO DE PERFORMANCE ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:var(--gradient-red);">🌡️</div>
+        <h2>Termômetro de Performance por Talhão <small>Comparação visual do ICPT — Índice Composto de Performance</small></h2>
+    </div>
+
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
+        <div class="thermo-row">
+            <div class="thermo-label">T-02 🏆</div>
+            <div class="thermo-bar-bg">
+                <div class="thermo-bar-fill" style="width:100%; background:var(--gradient-green);">100</div>
+            </div>
+            <div class="thermo-val" style="color:var(--success-light);">100,0 pts</div>
+        </div>
+        <div class="thermo-row">
+            <div class="thermo-label">T-04</div>
+            <div class="thermo-bar-bg">
+                <div class="thermo-bar-fill" style="width:26%; background:linear-gradient(135deg,#e67e22,#f39c12);">26</div>
+            </div>
+            <div class="thermo-val" style="color:var(--warning-light);">26,0 pts</div>
+        </div>
+        <div class="thermo-row">
+            <div class="thermo-label">T-01</div>
+            <div class="thermo-bar-bg">
+                <div class="thermo-bar-fill" style="width:25.3%; background:linear-gradient(135deg,#e67e22,#f39c12);">25,3</div>
+            </div>
+            <div class="thermo-val" style="color:var(--warning-light);">25,3 pts</div>
+        </div>
+        <div class="thermo-row">
+            <div class="thermo-label">T-05</div>
+            <div class="thermo-bar-bg">
+                <div class="thermo-bar-fill" style="width:24.9%; background:linear-gradient(135deg,#e67e22,#f39c12);">24,9</div>
+            </div>
+            <div class="thermo-val" style="color:var(--warning-light);">24,9 pts</div>
+        </div>
+        <div class="thermo-row">
+            <div class="thermo-label" style="color:var(--danger-light);">T-03 ⚠️</div>
+            <div class="thermo-bar-bg">
+                <div class="thermo-bar-fill" style="width:5%; background:var(--gradient-red);">0</div>
+            </div>
+            <div class="thermo-val" style="color:var(--danger-light);">0,0 pts</div>
+        </div>
+    </div>
+
+    <!-- ===== SEÇÃO 5: HEATMAP SENSIBILIDADE ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:var(--gradient-blue);">🔥</div>
+        <h2>Heatmap — Sensibilidade Preço × Produtividade <small>Resultado/ha (R$) para diferentes combinações — C.T. = R$ 7.240/ha</small></h2>
+    </div>
+
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1.25rem; margin-bottom:1.5rem; overflow-x:auto;">
+        <div class="heatmap-grid" style="grid-template-columns: 100px repeat(5, 1fr); min-width:600px;">
+            <!-- Header Row -->
+            <div class="heatmap-cell heatmap-header">Preço \ Prod.</div>
+            <div class="heatmap-cell heatmap-header">55 sc/ha</div>
+            <div class="heatmap-cell heatmap-header">60 sc/ha</div>
+            <div class="heatmap-cell heatmap-header">66 sc/ha</div>
+            <div class="heatmap-cell heatmap-header">70 sc/ha</div>
+            <div class="heatmap-cell heatmap-header">76 sc/ha</div>
+            <!-- R$100 -->
+            <div class="heatmap-cell heatmap-header">R$ 100</div>
+            <div class="heatmap-cell" style="background:#8b0000; color:#fdd;">-1.740</div>
+            <div class="heatmap-cell" style="background:#b71c1c; color:#fdd;">-1.240</div>
+            <div class="heatmap-cell" style="background:#d32f2f; color:#fdd;">-640</div>
+            <div class="heatmap-cell" style="background:#e53935; color:#fff;">-240</div>
+            <div class="heatmap-cell" style="background:#388e3c; color:#fff;">+360</div>
+            <!-- R$110 -->
+            <div class="heatmap-cell heatmap-header">R$ 110</div>
+            <div class="heatmap-cell" style="background:#b71c1c; color:#fdd;">-1.190</div>
+            <div class="heatmap-cell" style="background:#d32f2f; color:#fdd;">-640</div>
+            <div class="heatmap-cell" style="background:#2e7d32; color:#fff;">+20</div>
+            <div class="heatmap-cell" style="background:#388e3c; color:#fff;">+460</div>
+            <div class="heatmap-cell" style="background:#2e7d32; color:#fff;">+1.120</div>
+            <!-- R$116 -->
+            <div class="heatmap-cell heatmap-header" style="color:var(--accent-light);">R$ 116 ★</div>
+            <div class="heatmap-cell" style="background:#c62828; color:#fdd;">-860</div>
+            <div class="heatmap-cell" style="background:#e53935; color:#fff;">-280</div>
+            <div class="heatmap-cell" style="background:#388e3c; color:#fff; border:2px solid var(--accent-light);">+416 ★</div>
+            <div class="heatmap-cell" style="background:#2e7d32; color:#fff;">+872</div>
+            <div class="heatmap-cell" style="background:#1b5e20; color:#fff;">+1.576</div>
+            <!-- R$120 -->
+            <div class="heatmap-cell heatmap-header">R$ 120</div>
+            <div class="heatmap-cell" style="background:#d32f2f; color:#fdd;">-640</div>
+            <div class="heatmap-cell" style="background:#ef5350; color:#fff;">-40</div>
+            <div class="heatmap-cell" style="background:#388e3c; color:#fff;">+680</div>
+            <div class="heatmap-cell" style="background:#2e7d32; color:#fff;">+1.160</div>
+            <div class="heatmap-cell" style="background:#1b5e20; color:#fff;">+1.880</div>
+            <!-- R$130 -->
+            <div class="heatmap-cell heatmap-header">R$ 130</div>
+            <div class="heatmap-cell" style="background:#ef5350; color:#fff;">-90</div>
+            <div class="heatmap-cell" style="background:#388e3c; color:#fff;">+560</div>
+            <div class="heatmap-cell" style="background:#2e7d32; color:#fff;">+1.340</div>
+            <div class="heatmap-cell" style="background:#1b5e20; color:#fff;">+1.860</div>
+            <div class="heatmap-cell" style="background:#0d3d14; color:#aaffaa;">+2.640</div>
+            <!-- R$140 -->
+            <div class="heatmap-cell heatmap-header">R$ 140</div>
+            <div class="heatmap-cell" style="background:#388e3c; color:#fff;">+460</div>
+            <div class="heatmap-cell" style="background:#2e7d32; color:#fff;">+1.160</div>
+            <div class="heatmap-cell" style="background:#1b5e20; color:#fff;">+2.000</div>
+            <div class="heatmap-cell" style="background:#0d3d14; color:#aaffaa;">+2.560</div>
+            <div class="heatmap-cell" style="background:#082a0e; color:#aaffaa;">+3.400</div>
+        </div>
+        <div style="display:flex; gap:1.5rem; margin-top:0.75rem; font-size:0.72rem; color:var(--text-muted); flex-wrap:wrap;">
+            <span>🔴 Vermelho = Prejuízo</span>
+            <span>🟢 Verde = Lucro</span>
+            <span>⭐ Posição atual do Leandro (116/sc, 66 sc/ha)</span>
+            <span>📌 Zona de conforto: Preço ≥ R$120 E Prod. ≥ 70 sc</span>
+        </div>
+    </div>
+
+    <!-- ===== SEÇÃO 6: BENCHMARKING ===== -->
+    <div class="section-title">
+        <div class="icon" style="background:var(--gradient-gold);">📏</div>
+        <h2>Benchmarking Regional <small>Posicionamento vs. referências do Sudoeste Goiano e Brasil</small></h2>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3>Produtividade — Leandro vs. Benchmarks</h3>
+            <p class="chart-sub">GAP de -9,53 sc/ha vs. média Comigo (76 sc/ha)</p>
+            <div class="chart-wrap"><canvas id="chartBenchProd"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Preço Médio de Venda — Comparativo</h3>
+            <p class="chart-sub">PMV de R$ 116,07 = +9,1% vs. spot Montividiu</p>
+            <div class="chart-wrap"><canvas id="chartBenchPreco"></canvas></div>
+        </div>
+    </div>
+
+    <div class="info-box success">
+        <h4>✅ Destaque Positivo: Estratégia Comercial</h4>
+        <p>A combinação de contratos CJ (R$ 137-140/sc) com venda disponível gerou um PMV de R$ 116,07/sc — <strong>9,1% acima do preço spot regional</strong>. Essa decisão salvou a safra: se todo o volume fosse vendido no disponível (~R$ 106/sc), o resultado seria de apenas <strong>R$ 96.000</strong> (-63% vs. realizado). A fixação antecipada gerou um prêmio estimado de <strong>R$ 165 mil</strong>.</p>
+    </div>
+
+    <div class="info-box danger">
+        <h4>🔴 Alerta Crítico: Gap de Produtividade</h4>
+        <p>A produtividade de 66,47 sc/ha está <strong>12,5% abaixo</strong> da média do sistema Comigo (76 sc/ha) para a mesma região. Esse gap representa uma <strong>perda potencial de R$ 606 mil</strong> (9,53 sc × R$ 116 × 548 ha). Fechar esse gap é a maior alavanca de resultado disponível.</p>
+    </div>
+
+</div><!-- /container -->
+
+<div class="footer">
+    <p><strong>Fazenda Monte Alegre</strong> · Leandro Martins · Montividiu-GO · Safra 2025/2026</p>
+    <p>Relatório gerado em 16 de abril de 2026 · Documento confidencial · Parte 1 de 7</p>
+</div>
+
+<!-- ======================== SCRIPTS ======================== -->
+<script>
+    Chart.register(ChartDataLabels);
+
+    const COLORS = {
+        green: '#2ecc71', greenDark: '#27ae60',
+        red: '#e74c3c', redDark: '#c0392b',
+        gold: '#f0c940', goldDark: '#d4a017',
+        blue: '#3498db', blueDark: '#2980b9',
+        orange: '#f39c12', purple: '#9b59b6',
+        teal: '#1abc9c', gray: '#95a5a6'
+    };
+
+    const defaultFont = { family: "'Segoe UI', sans-serif", size: 11, color: '#95a5a6' };
+    const defaultPlugins = {
+        legend: { labels: { color: '#95a5a6', font: { size: 11 }, padding: 15, usePointStyle: true, pointStyle: 'rectRounded' } },
+        datalabels: { color: '#ecf0f1', font: { size: 11, weight: 'bold' } }
+    };
+    const defaultScales = (yLabel = '') => ({
+        x: { ticks: { color: '#95a5a6', font: { size: 11 } }, grid: { color: 'rgba(44,62,80,0.5)' } },
+        y: { ticks: { color: '#95a5a6', font: { size: 11 } }, grid: { color: 'rgba(44,62,80,0.5)' }, title: { display: !!yLabel, text: yLabel, color: '#7f8c8d', font: { size: 11 } } }
+    });
+
+    // 1. Resultado por Talhão (Bar)
+    new Chart(document.getElementById('chartResultTalhao'), {
+        type: 'bar',
+        data: {
+            labels: ['T-01', 'T-02 🏆', 'T-03 ⚠️', 'T-04', 'T-05'],
+            datasets: [{
+                label: 'Resultado/ha (R$)',
+                data: [323.75, 1041.25, 162.40, 333.60, 322.14],
+                backgroundColor: [COLORS.orange, COLORS.green, COLORS.red, COLORS.orange, COLORS.orange],
+                borderColor: [COLORS.orange, COLORS.greenDark, COLORS.redDark, COLORS.orange, COLORS.orange],
+                borderWidth: 2,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                ...defaultPlugins,
+                legend: { display: false },
+                datalabels: {
+                    anchor: 'end', align: 'top',
+                    formatter: v => 'R$ ' + v.toFixed(0),
+                    color: '#ecf0f1', font: { size: 12, weight: 'bold' }
+                }
+            },
+            scales: {
+                ...defaultScales('R$/ha'),
+                y: { ...defaultScales('R$/ha').y, beginAtZero: true, max: 1200 }
+            }
+        }
+    });
+
+    // 2. Área vs Resultado (Stacked %)
+    new Chart(document.getElementById('chartAreaVsResultado'), {
+        type: 'bar',
+        data: {
+            labels: ['% Área', '% Resultado'],
+            datasets: [
+                { label: 'T-01', data: [12.4, 8.4], backgroundColor: COLORS.orange },
+                { label: 'T-02 🏆', data: [30.3, 66.0], backgroundColor: COLORS.green },
+                { label: 'T-03 ⚠️', data: [39.8, 13.5], backgroundColor: COLORS.red },
+                { label: 'T-04', data: [10.3, 7.2], backgroundColor: COLORS.blue },
+                { label: 'T-05', data: [7.3, 4.9], backgroundColor: COLORS.purple }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                ...defaultPlugins,
+                datalabels: {
+                    formatter: v => v >= 8 ? v.toFixed(1) + '%' : '',
+                    color: '#fff', font: { size: 11, weight: 'bold' }
+                }
+            },
+            scales: {
+                x: { stacked: true, ticks: { color: '#95a5a6' }, grid: { color: 'rgba(44,62,80,0.5)' } },
+                y: { stacked: true, max: 100, ticks: { color: '#95a5a6', callback: v => v + '%' }, grid: { color: 'rgba(44,62,80,0.5)' } }
+            }
+        }
+    });
+
+    // 3. Estrutura Custo Total (Doughnut)
+    new Chart(document.getElementById('chartCustoEstrutura'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Insumos (45,3%)', 'Arrendo (11,9%)', 'ADM (18,1%)', 'Op. Mecanizadas (4,7%)', 'Financeiro (5,0%)', 'Manutenção (4,3%)', 'Depreciação (4,4%)'],
+            datasets: [{
+                data: [3495.39, 921.59, 1399.34, 365.42, 383.25, 334.90, 337.48],
+                backgroundColor: [COLORS.red, COLORS.gold, COLORS.blue, COLORS.teal, COLORS.orange, COLORS.purple, COLORS.gray],
+                borderColor: '#1a2634', borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            cutout: '55%',
+            plugins: {
+                ...defaultPlugins,
+                datalabels: {
+                    formatter: (v, ctx) => {
+                        let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                        let pct = (v / sum * 100).toFixed(1);
+                        return pct > 6 ? pct + '%' : '';
+                    },
+                    color: '#fff', font: { size: 11, weight: 'bold' }
+                }
+            }
+        }
+    });
+
+    // 4. Composição Insumos (Horizontal Bar)
+    new Chart(document.getElementById('chartInsumos'), {
+        type: 'bar',
+        data: {
+            labels: ['Adubo', 'Semente', 'Fungicida', 'Inseticida', 'Biológico', 'Herbicida', 'Foliar', 'Adjuvante', 'Protetor'],
+            datasets: [{
+                label: 'R$/ha',
+                data: [1872.47, 652.46, 370.55, 197.97, 196.24, 104.49, 67.27, 22.87, 11.07],
+                backgroundColor: [COLORS.gold, COLORS.green, COLORS.red, COLORS.redDark, COLORS.teal, COLORS.blue, COLORS.orange, COLORS.gray, COLORS.purple],
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                datalabels: {
+                    anchor: 'end', align: 'right',
+                    formatter: v => 'R$ ' + v.toFixed(0),
+                    color: '#ecf0f1', font: { size: 10, weight: 'bold' }
+                }
+            },
+            scales: {
+                x: { ticks: { color: '#95a5a6', callback: v => 'R$ ' + v }, grid: { color: 'rgba(44,62,80,0.5)' } },
+                y: { ticks: { color: '#95a5a6', font: { size: 11 } }, grid: { display: false } }
+            }
+        }
+    });
+
+    // 5. Benchmark Produtividade
+    new Chart(document.getElementById('chartBenchProd'), {
+        type: 'bar',
+        data: {
+            labels: ['Média Brasil', 'Leandro Martins', 'Média Goiás', 'Média Comigo', 'Safra Ant. Comigo'],
+            datasets: [{
+                label: 'sc/ha',
+                data: [60, 66.47, 67.5, 76, 81],
+                backgroundColor: [COLORS.gray, COLORS.gold, COLORS.blue, COLORS.green, COLORS.greenDark],
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                datalabels: {
+                    anchor: 'end', align: 'top',
+                    formatter: v => v.toFixed(1),
+                    color: '#ecf0f1', font: { size: 12, weight: 'bold' }
+                }
+            },
+            scales: {
+                ...defaultScales('sc/ha'),
+                y: { ...defaultScales('sc/ha').y, beginAtZero: false, min: 50, max: 90 }
+            }
+        }
+    });
+
+    // 6. Benchmark Preço
+    new Chart(document.getElementById('chartBenchPreco'), {
+        type: 'bar',
+        data: {
+            labels: ['P.E. Imea/MT', 'Spot Montividiu', 'Rondonópolis', 'Leandro (PMV)', 'Cepea Paranaguá'],
+            datasets: [{
+                label: 'R$/sc',
+                data: [97.25, 106.39, 109.00, 116.07, 127.91],
+                backgroundColor: [COLORS.gray, COLORS.orange, COLORS.blue, COLORS.gold, COLORS.green],
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                datalabels: {
+                    anchor: 'end', align: 'top',
+                    formatter: v => 'R$' + v.toFixed(0),
+                    color: '#ecf0f1', font: { size: 12, weight: 'bold' }
+                }
+            },
+            scales: {
+                ...defaultScales('R$/sc'),
+                y: { ...defaultScales('R$/sc').y, beginAtZero: false, min: 85, max: 140 }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

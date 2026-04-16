@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fazenda Monte Alegre — Portal de Análises</title>
+    <style>
+        :root{--primary:#1a5632;--primary-light:#2d8a4e;--primary-dark:#0e3b20;--accent:#d4a017;--accent-light:#f0c940;--danger:#c0392b;--danger-light:#e74c3c;--warning:#e67e22;--warning-light:#f39c12;--success:#27ae60;--success-light:#2ecc71;--info:#2980b9;--info-light:#3498db;--bg-dark:#0f1923;--bg-card:#1a2634;--bg-card-hover:#223344;--bg-section:#15202d;--text-primary:#ecf0f1;--text-secondary:#95a5a6;--text-muted:#7f8c8d;--border:#2c3e50;}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg-dark);color:var(--text-primary);line-height:1.6;min-height:100vh;}
+
+        /* ==================== LOGIN ==================== */
+        .login-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg-dark);z-index:10000;display:flex;align-items:center;justify-content:center;transition:opacity 0.5s,visibility 0.5s;}
+        .login-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+        .login-bg{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;}
+        .login-bg .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.12;animation:orbFloat 20s infinite ease-in-out;}
+        .login-bg .orb:nth-child(1){width:500px;height:500px;background:var(--primary);top:-100px;left:-100px;animation-delay:0s;}
+        .login-bg .orb:nth-child(2){width:400px;height:400px;background:var(--accent);bottom:-80px;right:-80px;animation-delay:-7s;}
+        .login-bg .orb:nth-child(3){width:300px;height:300px;background:var(--info);top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:-14s;}
+        @keyframes orbFloat{0%,100%{transform:translate(0,0);}25%{transform:translate(30px,-40px);}50%{transform:translate(-20px,30px);}75%{transform:translate(40px,20px);}}
+        
+        .login-card{position:relative;z-index:2;background:rgba(26,38,52,0.85);backdrop-filter:blur(20px);border:1px solid rgba(44,62,80,0.6);border-radius:20px;padding:2.5rem;width:420px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+        .login-card .logo-area{text-align:center;margin-bottom:2rem;}
+        .login-card .logo-area .icon{font-size:3.5rem;margin-bottom:0.5rem;display:block;}
+        .login-card .logo-area h1{font-size:1.4rem;font-weight:800;color:#fff;}
+        .login-card .logo-area h1 span{color:var(--accent-light);}
+        .login-card .logo-area p{font-size:0.78rem;color:var(--text-muted);margin-top:0.25rem;}
+        
+        .form-group{margin-bottom:1.25rem;}
+        .form-group label{display:block;font-size:0.75rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.4rem;}
+        .form-group .input-wrap{position:relative;}
+        .form-group .input-wrap .input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1rem;color:var(--text-muted);pointer-events:none;}
+        .form-group input{width:100%;padding:0.85rem 0.85rem 0.85rem 2.75rem;background:var(--bg-dark);border:2px solid var(--border);border-radius:12px;color:var(--text-primary);font-size:0.92rem;font-family:inherit;transition:all 0.25s;outline:none;}
+        .form-group input:focus{border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(45,138,78,0.15);}
+        .form-group input::placeholder{color:var(--text-muted);}
+        .form-group .toggle-pass{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;padding:0.2rem;}
+        .form-group .toggle-pass:hover{color:var(--text-secondary);}
+        
+        .login-btn{width:100%;padding:0.95rem;background:linear-gradient(135deg,var(--primary),var(--primary-light));border:none;border-radius:12px;color:#fff;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.3s;letter-spacing:0.3px;margin-top:0.5rem;}
+        .login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(45,138,78,0.3);}
+        .login-btn:active{transform:translateY(0);}
+        .login-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+        
+        .login-error{background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:10px;padding:0.7rem 1rem;margin-bottom:1rem;display:none;align-items:center;gap:0.5rem;font-size:0.82rem;color:var(--danger-light);}
+        .login-error.show{display:flex;}
+        
+        .login-footer{text-align:center;margin-top:1.5rem;font-size:0.72rem;color:var(--text-muted);}
+        .login-footer a{color:var(--info-light);text-decoration:none;}
+
+        /* ==================== PORTAL ==================== */
+        .portal{display:none;min-height:100vh;}
+        .portal.active{display:block;}
+
+        /* TOPBAR */
+        .topbar{background:linear-gradient(135deg,var(--primary-dark),var(--primary));padding:0;position:sticky;top:0;z-index:1000;box-shadow:0 2px 20px rgba(0,0,0,0.3);}
+        .topbar-main{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1.5rem;}
+        .topbar-brand{display:flex;align-items:center;gap:0.75rem;}
+        .topbar-brand .brand-icon{font-size:1.5rem;}
+        .topbar-brand h1{font-size:1rem;font-weight:800;color:#fff;}
+        .topbar-brand h1 span{color:var(--accent-light);font-weight:400;font-size:0.8rem;}
+        .topbar-user{display:flex;align-items:center;gap:1rem;}
+        .topbar-user .user-info{text-align:right;}
+        .topbar-user .user-info .name{font-size:0.82rem;font-weight:600;color:#fff;}
+        .topbar-user .user-info .role{font-size:0.68rem;color:rgba(255,255,255,0.5);}
+        .topbar-user .avatar{width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:800;color:var(--primary-dark);}
+        .logout-btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:0.4rem 0.8rem;color:rgba(255,255,255,0.7);font-size:0.72rem;cursor:pointer;transition:all 0.2s;font-family:inherit;}
+        .logout-btn:hover{background:rgba(231,76,60,0.2);border-color:rgba(231,76,60,0.4);color:var(--danger-light);}
+
+        /* NAV TABS */
+        .nav-tabs{display:flex;overflow-x:auto;background:rgba(0,0,0,0.15);padding:0 1rem;gap:2px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+        .nav-tabs::-webkit-scrollbar{height:3px;}
+        .nav-tabs::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+        .nav-tab{padding:0.65rem 1rem;font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.5);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:all 0.25s;flex-shrink:0;user-select:none;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none;}
+        .nav-tab:hover{color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.03);}
+        .nav-tab.active{color:#fff;border-bottom-color:var(--accent-light);background:rgba(255,255,255,0.05);}
+        .nav-tab .tab-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:5px;background:rgba(255,255,255,0.1);font-size:0.6rem;margin-right:0.35rem;font-weight:800;}
+        .nav-tab.active .tab-num{background:var(--accent);color:var(--primary-dark);}
+
+        /* CONTENT AREA */
+        .content-area{position:relative;min-height:calc(100vh - 120px);}
+        .page-frame{position:absolute;top:0;left:0;width:100%;height:100%;border:none;display:none;}
+        .page-frame.active{display:block;position:relative;min-height:calc(100vh - 120px);}
+        
+        /* LOADING */
+        .frame-loading{position:absolute;top:0;left:0;width:100%;height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;z-index:5;}
+        .frame-loading.hidden{display:none;}
+        .spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--accent-light);border-radius:50%;animation:spin 0.8s linear infinite;}
+        @keyframes spin{to{transform:rotate(360deg);}}
+        .frame-loading p{font-size:0.85rem;color:var(--text-muted);}
+
+        /* DASHBOARD HOME */
+        .dashboard{padding:2rem;max-width:1400px;margin:0 auto;}
+        .dash-hero{background:linear-gradient(135deg,rgba(26,86,50,0.15),rgba(45,138,78,0.08));border:1px solid rgba(45,138,78,0.2);border-radius:20px;padding:2.5rem;margin-bottom:2rem;position:relative;overflow:hidden;}
+        .dash-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(212,160,23,0.08),transparent 70%);border-radius:50%;}
+        .dash-hero h2{font-size:1.6rem;font-weight:900;margin-bottom:0.5rem;position:relative;z-index:2;}
+        .dash-hero h2 span{color:var(--accent-light);}
+        .dash-hero p{color:var(--text-secondary);font-size:0.9rem;max-width:600px;position:relative;z-index:2;line-height:1.7;}
+        .dash-hero .hero-stats{display:flex;gap:1.5rem;margin-top:1.5rem;flex-wrap:wrap;position:relative;z-index:2;}
+        .dash-hero .hs{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:0.7rem 1.2rem;}
+        .dash-hero .hs .v{font-size:1.3rem;font-weight:800;color:var(--accent-light);}
+        .dash-hero .hs .l{font-size:0.68rem;color:var(--text-muted);margin-top:0.15rem;}
+
+        .parts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;margin-bottom:2rem;}
+        .part-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.4rem;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden;}
+        .part-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:4px 4px 0 0;transition:height 0.3s;}
+        .part-card:hover{transform:translateY(-4px);box-shadow:0 12px 35px rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.1);}
+        .part-card:hover::before{height:6px;}
+        .part-card .pc-header{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;}
+        .part-card .pc-num{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;color:#fff;flex-shrink:0;}
+        .part-card .pc-title{font-size:0.95rem;font-weight:700;}
+        .part-card .pc-title small{display:block;font-size:0.7rem;font-weight:400;color:var(--text-muted);margin-top:0.1rem;}
+        .part-card .pc-desc{font-size:0.78rem;color:var(--text-secondary);line-height:1.6;margin-bottom:0.75rem;}
+        .part-card .pc-tags{display:flex;flex-wrap:wrap;gap:0.35rem;}
+        .part-card .pc-tag{padding:0.15rem 0.5rem;border-radius:6px;font-size:0.62rem;font-weight:600;background:rgba(255,255,255,0.05);color:var(--text-muted);}
+        .part-card .pc-arrow{position:absolute;bottom:1.2rem;right:1.2rem;font-size:1.2rem;color:var(--text-muted);transition:all 0.3s;}
+        .part-card:hover .pc-arrow{color:var(--accent-light);transform:translateX(4px);}
+
+        /* COLOR VARIANTS */
+        .part-card[data-color="blue"]::before{background:linear-gradient(90deg,#2980b9,#3498db);}
+        .part-card[data-color="blue"] .pc-num{background:linear-gradient(135deg,#2980b9,#3498db);}
+        .part-card[data-color="red"]::before{background:linear-gradient(90deg,#c0392b,#e74c3c);}
+        .part-card[data-color="red"] .pc-num{background:linear-gradient(135deg,#c0392b,#e74c3c);}
+        .part-card[data-color="green"]::before{background:linear-gradient(90deg,#27ae60,#2ecc71);}
+        .part-card[data-color="green"] .pc-num{background:linear-gradient(135deg,#27ae60,#2ecc71);}
+        .part-card[data-color="purple"]::before{background:linear-gradient(90deg,#8e44ad,#9b59b6);}
+        .part-card[data-color="purple"] .pc-num{background:linear-gradient(135deg,#8e44ad,#9b59b6);}
+        .part-card[data-color="orange"]::before{background:linear-gradient(90deg,#d35400,#e67e22);}
+        .part-card[data-color="orange"] .pc-num{background:linear-gradient(135deg,#d35400,#e67e22);}
+        .part-card[data-color="teal"]::before{background:linear-gradient(90deg,#16a085,#1abc9c);}
+        .part-card[data-color="teal"] .pc-num{background:linear-gradient(135deg,#16a085,#1abc9c);}
+        .part-card[data-color="gold"]::before{background:linear-gradient(90deg,#d4a017,#f0c940);}
+        .part-card[data-color="gold"] .pc-num{background:linear-gradient(135deg,#d4a017,#f0c940);color:var(--primary-dark);}
+        .part-card[data-color="navy"]::before{background:linear-gradient(90deg,#1a2634,#2c3e50);}
+        .part-card[data-color="navy"] .pc-num{background:linear-gradient(135deg,#2c3e50,#34495e);}
+        .part-card[data-color="emerald"]::before{background:linear-gradient(90deg,#0e3b20,#1a5632);}
+        .part-card[data-color="emerald"] .pc-num{background:linear-gradient(135deg,#0e3b20,#1a5632);}
+
+        .portal-footer{text-align:center;padding:2rem;border-top:1px solid var(--border);color:var(--text-muted);font-size:0.72rem;}
+        
+        @media(max-width:768px){
+            .topbar-main{padding:0.6rem 1rem;}
+            .topbar-user .user-info{display:none;}
+            .dashboard{padding:1rem;}
+            .parts-grid{grid-template-columns:1fr;}
+            .dash-hero{padding:1.5rem;}
+            .dash-hero h2{font-size:1.2rem;}
+            .nav-tab{padding:0.55rem 0.7rem;font-size:0.68rem;}
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== LOGIN SCREEN ==================== -->
+<div class="login-overlay" id="loginOverlay">
+    <div class="login-bg">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+    <div class="login-card">
+        <div class="logo-area">
+            <span class="icon">🌱</span>
+            <h1>Fazenda <span>Monte Alegre</span></h1>
+            <p>Portal de Análises Técnico-Econômicas · Safra 2025/2026</p>
+        </div>
+
+        <div class="login-error" id="loginError">
+            <span>⚠️</span>
+            <span id="loginErrorMsg">Usuário ou senha incorretos.</span>
+        </div>
+
+        <form id="loginForm" onsubmit="return handleLogin(event)">
+            <div class="form-group">
+                <label>Usuário</label>
+                <div class="input-wrap">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="inputUser" placeholder="Digite seu usuário" autocomplete="username" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Senha</label>
+                <div class="input-wrap">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="inputPass" placeholder="Digite sua senha" autocomplete="current-password" required>
+                    <button type="button" class="toggle-pass" onclick="togglePassword()">👁️</button>
+                </div>
+            </div>
+            <button type="submit" class="login-btn" id="loginBtn">
+                Entrar no Portal
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <p>🔐 Acesso restrito · Dados confidenciais</p>
+            <p style="margin-top:0.35rem;">Leandro Martins · Montividiu-GO · © 2026</p>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== PORTAL ==================== -->
+<div class="portal" id="portal">
+    
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div class="topbar-main">
+            <div class="topbar-brand">
+                <span class="brand-icon">🌱</span>
+                <h1>Monte Alegre <span>· Portal</span></h1>
+            </div>
+            <div class="topbar-user">
+                <div class="user-info">
+                    <div class="name" id="portalUserName">Leandro Martins</div>
+                    <div class="role">Proprietário · Safra 25/26</div>
+                </div>
+                <div class="avatar" id="portalAvatar">LM</div>
+                <button class="logout-btn" onclick="handleLogout()">🚪 Sair</button>
+            </div>
+        </div>
+        <div class="nav-tabs" id="navTabs">
+            <button class="nav-tab active" data-page="home" onclick="navigateTo('home')">
+                <span class="tab-num">🏠</span> Início
+            </button>
+            <button class="nav-tab" data-page="p1" onclick="navigateTo('p1')">
+                <span class="tab-num">1</span> Diagnóstico
+            </button>
+            <button class="nav-tab" data-page="p2" onclick="navigateTo('p2')">
+                <span class="tab-num">2</span> Financeiro
+            </button>
+            <button class="nav-tab" data-page="p3" onclick="navigateTo('p3')">
+                <span class="tab-num">3</span> Talhões
+            </button>
+            <button class="nav-tab" data-page="p4" onclick="navigateTo('p4')">
+                <span class="tab-num">4</span> Avançado
+            </button>
+            <button class="nav-tab" data-page="p5" onclick="navigateTo('p5')">
+                <span class="tab-num">5</span> Risco
+            </button>
+            <button class="nav-tab" data-page="p6" onclick="navigateTo('p6')">
+                <span class="tab-num">6</span> BSC
+            </button>
+            <button class="nav-tab" data-page="p7" onclick="navigateTo('p7')">
+                <span class="tab-num">7</span> Relatório Final
+            </button>
+            <button class="nav-tab" data-page="p8" onclick="navigateTo('p8')">
+                <span class="tab-num">Ex</span> Soja vs Milho
+            </button>
+            <button class="nav-tab" data-page="p9" onclick="navigateTo('p9')">
+                <span class="tab-num">+</span> Complementar
+            </button>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-area" id="contentArea">
+        
+        <!-- HOME / DASHBOARD -->
+        <div class="page-frame active" id="page-home">
+            <div class="dashboard">
+                <div class="dash-hero">
+                    <h2>Bem-vindo, <span id="dashUserName">Leandro</span> 👋</h2>
+                    <p>Este portal consolida todas as análises técnico-econômicas da <strong>safra 2025/2026</strong> da Fazenda Monte Alegre. Navegue pelas partes abaixo ou use as abas na barra superior.</p>
+                    <div class="hero-stats">
+                        <div class="hs"><div class="v">9</div><div class="l">Relatórios</div></div>
+                        <div class="hs"><div class="v">50+</div><div class="l">Indicadores</div></div>
+                        <div class="hs"><div class="v">40+</div><div class="l">Gráficos</div></div>
+                        <div class="hs"><div class="v">548 ha</div><div class="l">Área Analisada</div></div>
+                        <div class="hs"><div class="v">20k</div><div class="l">Simulações MC</div></div>
+                    </div>
+                </div>
+
+                <div class="parts-grid">
+                    <!-- P1 -->
+                    <div class="part-card" data-color="blue" onclick="navigateTo('p1')">
+                        <div class="pc-header">
+                            <div class="pc-num">1</div>
+                            <div class="pc-title">Diagnóstico Geral<small>Parte 1 · p1.html</small></div>
+                        </div>
+                        <div class="pc-desc">Visão geral da safra, produtividade por talhão, composição de custos, receita bruta e primeiros indicadores de eficiência operacional.</div>
+                        <div class="pc-tags">
+                            <span class="pc-tag">📊 Produtividade</span>
+                            <span class="pc-tag">💰 Custos</span>
+                            <span class="pc-tag">🌾 5 Talhões</span>
+                            <span class="pc-tag">📈 IEO</span>
+                        </div>
+                        <div class="pc-arrow">→</div>
+                    </div>
+
+                    <!-- P2 -->
+                    <div class="part-card" data-color="red" onclick="navigateTo('p2')">
+                        <div class="pc-header">
+                            <div class="pc-num">2</div>
+                            <div class="pc-title">Análise Financeira<small>Parte 2 · p2.html</small></div>
+                        </div>
+                        <div class="pc-desc">Margem de contribuição, ponto de equilíbrio, resultado por talhão, custo unitário da saca, análise de rentabilidade e break-even.</div>
+                        <div class="pc-tags">
+                            <span class="pc-tag">📉 Margem</span>
+                            <span class="pc-tag">⚖️ Break-Even</span>
+                            <span class="pc-tag">💵 R$/sc</span>
+                            <span class="pc-tag">🔴 BER 93,8%</span>
+                        </div>
+                        <div class="pc-arrow">→</div>
+                    </div>
+
+                    <!-- P3 -->
+                    <div class="part-card" data-color="green" onclick="navigateTo('p3')">
+                        <div class="pc-header">
+                            <div class="pc-num">3</div>
+                            <div class="pc-title">Análise por Talhão<small>Parte 3 · p3.html</small></div>
+                        </div>
+                        <div class="pc-desc">Ranking completo dos 5 talhões, ICPT 0-100, cultivares, relação fitossanitário/semente, diagnóstico T-02 vs T-03 e recomendações.</div>
+                        <div class="pc-tags">
+                            <span class="pc-tag">🏆 T-02 (100pts)</span>
+                            <span class="pc-tag">⚠️ T-03 (0pts)</span>
+                            <span class="pc-tag">🧬 6 Cultivares</span>
+                            <span class="pc-tag">📐 ICPT</span>
+                        </div>
+                        <div class="pc-arrow">→</div>
+                    </div>
+
+                    <!-- P4 -->
+                    <div class="part-card" data-color="purple" onclick="navigateTo('p4')">
+                        <div class="pc-header">
+                            <div class="pc-num">4</div>
+                            <div class="pc-title">Indicadores Avançados<small>Parte 4 · p4.html</small></div>
+                        </div>
+                        <div class="pc-desc">GAO, elasticidade, EVA, TIR anualizada, ROIC, RBC, ICCF, regressão econométrica (R²=0,947) e heatmaps de sensibilidade.</div>
+                        <div class="pc-tags">
+                            <span class="pc-tag">📐 GAO 8,83</span>
+                            <span class="pc-tag">📉 EVA -R$30k</span>
+                            <span class="pc-tag">🔬 Regressão</span>
+                            <span class="pc-tag">🔥 Heatmaps</span>
+                        </div>
+                        <div class="pc-arrow">→</div>
+                    </div>
+
+                    <!-- P5 -->
+                    <div class="part-card" data-color="orange" onclick="navigateTo('p5')">
+                        <div class="pc-header">
+                            <div class="pc-num">5</div>
+                            <div class="pc-title">Gestão de Risco<small>Parte 5 · p5.html</small></div>
+                        </div>
+                        <div class="pc-desc">Simulação Monte Carlo (10k cenários), VaR 95%, CVaR, Sharpe agrícola, distribuição de probabilidade, stress-test e probabilidade de prejuízo.</div>
+                        <div class="pc-tags">
+                            <span class="pc-tag">🎲 Monte Carlo</span>
+                            <span class="pc-tag">📊 VaR/CVaR</span>
+                            <span class="pc-tag">⚠️ 28,4% prejuízo</span>
+                            <span class="pc-tag">📉 Sharpe -0,28</span>
+                        </div>
+                        <div class="pc-arrow">→</div>
+                    </div>
+
+                    <!-- P6 -->
+                    <div class="part-card" data-color="teal" onclick="navigateTo('p6')">
+                        <div class="pc-header">
+                            <div class="pc-num">6</div>
+                            <div class="pc-title">Balanced Scorecard<small>Parte 6 · p6.html</small></div>
+                        </div>
+                        <div class="pc-desc">BSC completo em 4 perspectivas (Financeira, Operacional, Genética, Gestão), nota global 52/100, metas 26/27 e plano estratégico.</div>
+                        <div class="pc-tags">
+                            <span class="pc-tag">🎯 BSC 52/100</span>
+                            <span class="pc-tag">💰 Financeira</span>
+                            <span class="pc-tag">🧬 Genética</span>
+                            <span class="pc-tag">📊 Meta 75</span>
+                        </div>
+                        <div class="pc-arrow">→</div>
+                    </div>
+
+                    <!-- P7 -->
+                    <div class="part-card" data-color="gold" onclick="navigateTo('p7')">
+                        <div class="pc-header">
+                            <div class="pc-num">7</div>
+                            <div class="pc-title">Relatório Executivo Final<small>Parte 7 · p7.html</small></div>
+                        </div>
+                        <div class="pc-desc">Consolidação final: 5 descobertas-chave, top 10 ações, projeção 3 safras, veredicto 52/100, mensagem ao produtor e glossário completo.</div>
+                        <div class="pc-tags">
+                            <span class="pc-tag">📋 5 Descobertas</span>
+                            <span class="pc-tag">🚀 10 Ações</span>
+                            <span class="pc-tag">📈 Projeção 28/29</span>
+                            <span class="pc-tag">⚖️ Veredicto</span>
+                        </div>
+                        <div class="pc-arrow">→</div>
+                    </div>
+
+                    <!-- P8 -->
+                    <div class="part-card" data-color="navy" onclick="navigateTo('p8')">
+                        <div class="pc-header">
+                            <div class="pc-num" style="font-size:0.7rem;">EX</div>
+                            <div class="pc-title">Soja vs. Milho Verão<small>Extra · p8.html</small></div>
+                        </div>
+                        <div class="pc-desc">Benchmarking completo com 9 cenários cruzados, Monte Carlo comparativo, heatmaps de sensibilidade e recomendação de portfólio.</div>
+                        <div class="pc-tags">
+                            <span class="pc-tag">🌱 Soja</span>
+                            <span class="pc-tag">🌽 Milho Verão</span>
+                            <span class="pc-tag">9 Cenários</span>
+                            <span class="pc-tag">🏆 Milho vence 9/9</span>
+                        </div>
+                        <div class="pc-arrow">→</div>
+                    </div>
+
+                    <!-- P9 -->
+                    <div class="part-card" data-color="emerald" onclick="navigateTo('p9')">
+                        <div class="pc-header">
+                            <div class="pc-num" style="font-size:0.75rem;">+</div>
+                            <div class="pc-title">Análises Complementares<small>Parte 8 · p9.html</small></div>
+                        </div>
+                        <div class="pc-desc">Custo arrendamento, sistema soja+milho 2ª safra, formação preço CBOT+câmbio+prêmio, risco sem seguro, Lorenz/Gini e Markowitz.</div>
+                        <div class="pc-tags">
+                            <span class="pc-tag">🏠 Arrendamento</span>
+                            <span class="pc-tag">💵 CBOT+Câmbio</span>
+                            <span class="pc-tag">📐 Gini 0,547</span>
+                            <span class="pc-tag">📈 Markowitz</span>
+                        </div>
+                        <div class="pc-arrow">→</div>
+                    </div>
+                </div>
+
+                <div class="portal-footer">
+                    <p><strong>Fazenda Monte Alegre</strong> · Leandro Martins · Montividiu-GO · Safra 2025/2026</p>
+                    <p>9 Relatórios · 50+ Indicadores · 40+ Gráficos · 30+ Tabelas · 20.000 Simulações Monte Carlo</p>
+                    <p style="margin-top:0.5rem;">Análise por Sidney · Assistido por Claude Opus 4.6 (Anthropic) · Abril 2026</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- IFRAME PAGES -->
+        <div class="page-frame" id="page-p1">
+            <div class="frame-loading" id="loading-p1"><div class="spinner"></div><p>Carregando Diagnóstico Geral...</p></div>
+            <iframe src="" data-src="p1.html" style="width:100%;border:none;min-height:calc(100vh - 120px);" onload="frameLoaded('p1')"></iframe>
+        </div>
+        <div class="page-frame" id="page-p2">
+            <div class="frame-loading" id="loading-p2"><div class="spinner"></div><p>Carregando Análise Financeira...</p></div>
+            <iframe src="" data-src="p2.html" style="width:100%;border:none;min-height:calc(100vh - 120px);" onload="frameLoaded('p2')"></iframe>
+        </div>
+        <div class="page-frame" id="page-p3">
+            <div class="frame-loading" id="loading-p3"><div class="spinner"></div><p>Carregando Análise por Talhão...</p></div>
+            <iframe src="" data-src="p3.html" style="width:100%;border:none;min-height:calc(100vh - 120px);" onload="frameLoaded('p3')"></iframe>
+        </div>
+        <div class="page-frame" id="page-p4">
+            <div class="frame-loading" id="loading-p4"><div class="spinner"></div><p>Carregando Indicadores Avançados...</p></div>
+            <iframe src="" data-src="p4.html" style="width:100%;border:none;min-height:calc(100vh - 120px);" onload="frameLoaded('p4')"></iframe>
+        </div>
+        <div class="page-frame" id="page-p5">
+            <div class="frame-loading" id="loading-p5"><div class="spinner"></div><p>Carregando Gestão de Risco...</p></div>
+            <iframe src="" data-src="p5.html" style="width:100%;border:none;min-height:calc(100vh - 120px);" onload="frameLoaded('p5')"></iframe>
+        </div>
+        <div class="page-frame" id="page-p6">
+            <div class="frame-loading" id="loading-p6"><div class="spinner"></div><p>Carregando Balanced Scorecard...</p></div>
+            <iframe src="" data-src="p6.html" style="width:100%;border:none;min-height:calc(100vh - 120px);" onload="frameLoaded('p6')"></iframe>
+        </div>
+        <div class="page-frame" id="page-p7">
+            <div class="frame-loading" id="loading-p7"><div class="spinner"></div><p>Carregando Relatório Final...</p></div>
+            <iframe src="" data-src="p7.html" style="width:100%;border:none;min-height:calc(100vh - 120px);" onload="frameLoaded('p7')"></iframe>
+        </div>
+        <div class="page-frame" id="page-p8">
+            <div class="frame-loading" id="loading-p8"><div class="spinner"></div><p>Carregando Soja vs. Milho Verão...</p></div>
+            <iframe src="" data-src="p8.html" style="width:100%;border:none;min-height:calc(100vh - 120px);" onload="frameLoaded('p8')"></iframe>
+        </div>
+        <div class="page-frame" id="page-p9">
+            <div class="frame-loading" id="loading-p9"><div class="spinner"></div><p>Carregando Análises Complementares...</p></div>
+            <iframe src="" data-src="p9.html" style="width:100%;border:none;min-height:calc(100vh - 120px);" onload="frameLoaded('p9')"></iframe>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== CREDENCIAIS ====================
+// Para adicionar/alterar usuários, edite este objeto:
+const USERS = {
+    'leandro': { password: 'monte2026', name: 'Leandro Martins', role: 'Proprietário', initials: 'LM' },
+    'sidney':  { password: 'analista2026', name: 'Sidney', role: 'Analista', initials: 'SD' },
+    'admin':   { password: 'fma@2026!', name: 'Administrador', role: 'Admin', initials: 'AD' }
+};
+
+// ==================== SESSION ====================
+let currentUser = null;
+const SESSION_KEY = 'fma_session';
+
+function checkSession() {
+    const session = sessionStorage.getItem(SESSION_KEY);
+    if (session) {
+        try {
+            const data = JSON.parse(session);
+            if (data.user && USERS[data.user]) {
+                currentUser = { username: data.user, ...USERS[data.user] };
+                showPortal();
+                return;
+            }
+        } catch(e) {}
+    }
+    showLogin();
+}
+
+// ==================== LOGIN ====================
+function showLogin() {
+    document.getElementById('loginOverlay').classList.remove('hidden');
+    document.getElementById('portal').classList.remove('active');
+}
+
+function showPortal() {
+    document.getElementById('loginOverlay').classList.add('hidden');
+    document.getElementById('portal').classList.add('active');
+    document.getElementById('portalUserName').textContent = currentUser.name;
+    document.getElementById('portalAvatar').textContent = currentUser.initials;
+    document.getElementById('dashUserName').textContent = currentUser.name.split(' ')[0];
+}
+
+function handleLogin(e) {
+    e.preventDefault();
+    const user = document.getElementById('inputUser').value.trim().toLowerCase();
+    const pass = document.getElementById('inputPass').value;
+    const errorEl = document.getElementById('loginError');
+    const errorMsg = document.getElementById('loginErrorMsg');
+    const btn = document.getElementById('loginBtn');
+
+    btn.disabled = true;
+    btn.textContent = 'Verificando...';
+
+    setTimeout(() => {
+        if (USERS[user] && USERS[user].password === pass) {
+            currentUser = { username: user, ...USERS[user] };
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify({ user }));
+            errorEl.classList.remove('show');
+            showPortal();
+        } else {
+            errorMsg.textContent = USERS[user] ? 'Senha incorreta. Tente novamente.' : 'Usuário não encontrado.';
+            errorEl.classList.add('show');
+            document.getElementById('inputPass').value = '';
+            document.getElementById('inputPass').focus();
+        }
+        btn.disabled = false;
+        btn.textContent = 'Entrar no Portal';
+    }, 600);
+
+    return false;
+}
+
+function handleLogout() {
+    sessionStorage.removeItem(SESSION_KEY);
+    currentUser = null;
+    // Reset pages
+    document.querySelectorAll('.page-frame').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-home').classList.add('active');
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.nav-tab[data-page="home"]').classList.add('active');
+    showLogin();
+}
+
+function togglePassword() {
+    const input = document.getElementById('inputPass');
+    const btn = input.parentElement.querySelector('.toggle-pass');
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🔒';
+    } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+    }
+}
+
+// ==================== NAVIGATION ====================
+const loadedPages = new Set();
+
+function navigateTo(page) {
+    // Update tabs
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.nav-tab[data-page="${page}"]`).classList.add('active');
+
+    // Update pages
+    document.querySelectorAll('.page-frame').forEach(p => p.classList.remove('active'));
+    const pageEl = document.getElementById('page-' + page);
+    pageEl.classList.add('active');
+
+    // Lazy load iframe
+    if (page !== 'home' && !loadedPages.has(page)) {
+        const iframe = pageEl.querySelector('iframe');
+        if (iframe && iframe.dataset.src) {
+            const loadingEl = document.getElementById('loading-' + page);
+            if (loadingEl) loadingEl.classList.remove('hidden');
+            iframe.src = iframe.dataset.src;
+            loadedPages.add(page);
+        }
+    }
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function frameLoaded(page) {
+    const loadingEl = document.getElementById('loading-' + page);
+    if (loadingEl) loadingEl.classList.add('hidden');
+
+    // Auto-resize iframe
+    const pageEl = document.getElementById('page-' + page);
+    const iframe = pageEl.querySelector('iframe');
+    if (iframe) {
+        try {
+            const h = iframe.contentDocument.body.scrollHeight;
+            iframe.style.height = (h + 50) + 'px';
+        } catch(e) {
+            iframe.style.height = '3000px';
+        }
+    }
+}
+
+// ==================== KEYBOARD SHORTCUTS ====================
+document.addEventListener('keydown', function(e) {
+    // Enter on login
+    if (e.key === 'Enter' && !document.getElementById('loginOverlay').classList.contains('hidden')) {
+        return; // form handles it
+    }
+    // Ctrl+1-9 for navigation
+    if (e.ctrlKey && e.key >= '1' && e.key <= '9') {
+        e.preventDefault();
+        const pages = ['p1','p2','p3','p4','p5','p6','p7','p8','p9'];
+        const idx = parseInt(e.key) - 1;
+        if (idx < pages.length) navigateTo(pages[idx]);
+    }
+    // Ctrl+0 for home
+    if (e.ctrlKey && e.key === '0') {
+        e.preventDefault();
+        navigateTo('home');
+    }
+});
+
+// ==================== INIT ====================
+checkSession();
+</script>
+
+</body>
+</html>
