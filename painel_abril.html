@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Painel Financeiro | Fazenda Monte Alegre</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    color: #2c3e50;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '🌾';
+    position: absolute;
+    font-size: 200px;
+    opacity: 0.08;
+    top: -40px;
+    right: -20px;
+  }
+  header h1 { font-size: 2.5em; margin-bottom: 10px; }
+  header .subtitle { font-size: 1.2em; opacity: 0.9; }
+  header .meta {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    font-size: 0.95em;
+  }
+  header .meta span {
+    background: rgba(255,255,255,0.15);
+    padding: 6px 16px;
+    border-radius: 20px;
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .nav-tabs a {
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    text-decoration: none;
+    border-radius: 25px;
+    font-size: 0.95em;
+    transition: all 0.3s;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+  .nav-tabs a:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
+
+  .section {
+    background: white;
+    border-radius: 16px;
+    padding: 35px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  }
+  .section-header {
+    border-left: 6px solid #2a5298;
+    padding-left: 20px;
+    margin-bottom: 30px;
+  }
+  .section-header h2 {
+    color: #1e3c72;
+    font-size: 2em;
+    margin-bottom: 5px;
+  }
+  .section-header p { color: #7f8c8d; font-size: 1.05em; }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-left: 10px;
+  }
+  .badge-red { background: #e74c3c; color: white; }
+  .badge-green { background: #27ae60; color: white; }
+  .badge-yellow { background: #f39c12; color: white; }
+  .badge-blue { background: #3498db; color: white; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  .kpi-card {
+    padding: 25px;
+    border-radius: 12px;
+    color: white;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    transition: transform 0.3s;
+  }
+  .kpi-card:hover { transform: translateY(-5px); }
+  .kpi-card .label { font-size: 0.9em; opacity: 0.9; margin-bottom: 8px; }
+  .kpi-card .value { font-size: 1.7em; font-weight: bold; margin-bottom: 5px; }
+  .kpi-card .desc { font-size: 0.85em; opacity: 0.85; }
+  .kpi-red { background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%); }
+  .kpi-green { background: linear-gradient(135deg, #16a085 0%, #27ae60 100%); }
+  .kpi-blue { background: linear-gradient(135deg, #2980b9 0%, #3498db 100%); }
+  .kpi-orange { background: linear-gradient(135deg, #d35400 0%, #e67e22 100%); }
+  .kpi-purple { background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%); }
+  .kpi-dark { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); }
+
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 25px;
+    margin-bottom: 25px;
+  }
+  .chart-box {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #e1e8ed;
+  }
+  .chart-box h3 {
+    color: #1e3c72;
+    margin-bottom: 15px;
+    font-size: 1.15em;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 10px;
+  }
+  .chart-container { position: relative; height: 320px; }
+  .chart-container-tall { position: relative; height: 450px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 0.92em;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  thead {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+  }
+  th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ecf0f1; }
+  th { font-weight: 600; }
+  tbody tr:hover { background: #f8f9fa; }
+  td.num { text-align: right; font-family: 'Courier New', monospace; }
+  td.pos { color: #27ae60; font-weight: 600; }
+  td.neg { color: #c0392b; font-weight: 600; }
+  tr.total { background: #ecf0f1 !important; font-weight: bold; border-top: 3px solid #2a5298; }
+  tr.subtotal { background: #f8f9fa; font-weight: 600; }
+
+  .insight-box {
+    background: linear-gradient(135deg, #fff5e6 0%, #ffe4b8 100%);
+    border-left: 5px solid #e67e22;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+  }
+  .insight-box.danger { background: linear-gradient(135deg, #fde8e8 0%, #fbb5b5 100%); border-left-color: #c0392b; }
+  .insight-box.success { background: linear-gradient(135deg, #e8f8f5 0%, #b5e7d9 100%); border-left-color: #16a085; }
+  .insight-box.info { background: linear-gradient(135deg, #e8f4fd 0%, #b8dcf7 100%); border-left-color: #2980b9; }
+  .insight-box h4 { color: #2c3e50; margin-bottom: 10px; }
+  .insight-box ul { margin-left: 20px; margin-top: 8px; }
+  .insight-box li { margin-bottom: 5px; }
+
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+  }
+  .scenario-card {
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid;
+    background: white;
+  }
+  .scenario-card.optimistic { border-color: #27ae60; }
+  .scenario-card.base { border-color: #3498db; }
+  .scenario-card.pessimistic { border-color: #e67e22; }
+  .scenario-card.catastrophic { border-color: #c0392b; }
+  .scenario-card h4 { font-size: 1.1em; margin-bottom: 12px; }
+  .scenario-card .metric {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed #ecf0f1;
+    font-size: 0.9em;
+  }
+  .scenario-card .metric:last-child { border: none; }
+
+  /* ===== RODAPÉ PROFISSIONAL ===== */
+  .footer-pro {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: #ecf0f1;
+    border-radius: 16px;
+    padding: 35px 40px;
+    margin-top: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 30px;
+    align-items: start;
+  }
+  .footer-pro .brand h3 {
+    font-size: 1.4em;
+    margin-bottom: 8px;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .footer-pro .brand p {
+    font-size: 0.92em;
+    opacity: 0.85;
+    line-height: 1.5;
+  }
+  .footer-pro .col h4 {
+    font-size: 0.95em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    color: #f1c40f;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding-bottom: 6px;
+  }
+  .footer-pro .col p,
+  .footer-pro .col a {
+    font-size: 0.9em;
+    color: #ecf0f1;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 6px;
+    opacity: 0.9;
+    transition: opacity 0.2s;
+  }
+  .footer-pro .col a:hover { opacity: 1; color: #f1c40f; }
+  .footer-bottom {
+    grid-column: 1 / -1;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    padding-top: 18px;
+    margin-top: 10px;
+    text-align: center;
+    font-size: 0.82em;
+    opacity: 0.75;
+  }
+  .footer-bottom strong { color: #f1c40f; }
+
+  @media (max-width: 768px) {
+    .chart-grid { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.8em; }
+    .section { padding: 20px; }
+    .footer-pro { grid-template-columns: 1fr; padding: 25px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ============= CABEÇALHO ============= -->
+  <header>
+    <h1>🌾 Fazenda Monte Alegre</h1>
+    <div class="subtitle">Relatório Financeiro Gerencial — Análise de Desempenho e Cenários</div>
+    <div class="meta">
+      <span>👤 Cliente: <strong>Leandro Martins</strong></span>
+      <span>📍 Montividiu — GO</span>
+      <span>📅 Período: Fev a Abr/2026</span>
+    </div>
+    <div class="nav-tabs">
+      <a href="#abril">📊 Abril/2026</a>
+      <a href="#trimestre">📈 Trimestre Fev-Abr</a>
+      <a href="#dre">📋 DRE Gerencial</a>
+      <a href="#stress">⚠️ Stress Test</a>
+    </div>
+  </header>
+
+  <!-- ============= SEÇÃO 1: ABRIL/2026 ============= -->
+  <section class="section" id="abril">
+    <div class="section-header">
+      <h2>📊 Parte 1 — Análise do Mês de Abril/2026 <span class="badge badge-red">CRÍTICO</span></h2>
+      <p>Mês de maior pressão de caixa do trimestre — concentração de amortizações e despesas operacionais.</p>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-blue">
+        <div class="label">Receita Total</div>
+        <div class="value">R$ 775.553</div>
+        <div class="desc">Soja + Pecuária + Aluguéis</div>
+      </div>
+      <div class="kpi-card kpi-red">
+        <div class="label">Despesas Totais</div>
+        <div class="value">R$ 2.901.555</div>
+        <div class="desc">Maior gasto do trimestre</div>
+      </div>
+      <div class="kpi-card kpi-dark">
+        <div class="label">Resultado Líquido</div>
+        <div class="value">-R$ 2.126.002</div>
+        <div class="desc">Déficit recorde</div>
+      </div>
+      <div class="kpi-card kpi-orange">
+        <div class="label">Cobertura Receita/Despesa</div>
+        <div class="value">26,7%</div>
+        <div class="desc">Cada R$ 1 cobre só R$ 0,27</div>
+      </div>
+      <div class="kpi-card kpi-purple">
+        <div class="label">Amortização de Dívida</div>
+        <div class="value">R$ 1.359.971</div>
+        <div class="desc">46,9% das despesas</div>
+      </div>
+      <div class="kpi-card kpi-green">
+        <div class="label">EBITDA Operacional</div>
+        <div class="value">-R$ 367.870</div>
+        <div class="desc">Antes do financeiro</div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>💰 Composição das Receitas — Abril</h3>
+        <div class="chart-container"><canvas id="chartReceitasAbril"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>💸 Top 10 Maiores Despesas — Abril</h3>
+        <div class="chart-container"><canvas id="chartDespesasAbril"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>🎯 Distribuição das Despesas por Categoria — Abril</h3>
+        <div class="chart-container-tall"><canvas id="chartCategoriasAbril"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>⚖️ Receitas vs Despesas — Abril</h3>
+        <div class="chart-container-tall"><canvas id="chartBalancoAbril"></canvas></div>
+      </div>
+    </div>
+
+    <h3 style="color:#1e3c72; margin: 25px 0 15px;">📋 Detalhamento das Principais Saídas em Abril</h3>
+    <table>
+      <thead>
+        <tr><th>Categoria</th><th class="num">Valor (R$)</th><th class="num">% do Total</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Pgto. Capital de Giro (Empréstimo)</td><td class="num neg">-1.359.970,92</td><td class="num">46,9%</td></tr>
+        <tr><td>Insumos de Produção (Defensivos)</td><td class="num neg">-390.944,28</td><td class="num">13,5%</td></tr>
+        <tr><td>Serviços de Terceiros (Honorários Adv. + Outros)</td><td class="num neg">-176.277,12</td><td class="num">6,1%</td></tr>
+        <tr><td>Compra de Equinos</td><td class="num neg">-150.733,47</td><td class="num">5,2%</td></tr>
+        <tr><td>Juros sobre Investimento Financeiro</td><td class="num neg">-135.998,28</td><td class="num">4,7%</td></tr>
+        <tr><td>Manutenção do Rebanho</td><td class="num neg">-111.877,25</td><td class="num">3,9%</td></tr>
+        <tr><td>Compra de Animais Plantel</td><td class="num neg">-109.893,46</td><td class="num">3,8%</td></tr>
+        <tr><td>Investimentos Imobilizados</td><td class="num neg">-101.774,16</td><td class="num">3,5%</td></tr>
+        <tr><td>Despesas Operacionais Equinos</td><td class="num neg">-69.773,14</td><td class="num">2,4%</td></tr>
+        <tr><td>Demais Despesas</td><td class="num neg">-294.313,14</td><td class="num">10,0%</td></tr>
+        <tr class="total"><td>TOTAL DE DESPESAS</td><td class="num neg">-2.901.555,22</td><td class="num">100,0%</td></tr>
+      </tbody>
+    </table>
+
+    <div class="insight-box danger">
+      <h4>🚨 Diagnóstico de Abril/2026</h4>
+      <ul>
+        <li><strong>Concentração de amortização:</strong> 46,9% das despesas foram para quitar capital de giro — saída não-recorrente que mascara a operação.</li>
+        <li><strong>Honorários advocatícios atípicos:</strong> R$ 153 mil em honorários sugere litígio relevante em andamento.</li>
+        <li><strong>Insumos de safra:</strong> R$ 390 mil em defensivos = preparação para próximo ciclo da soja (custo antecipado).</li>
+        <li><strong>EBITDA Ajustado:</strong> Excluindo amortização e CAPEX, o resultado seria de -R$ 664 mil — ainda negativo, mas administrável.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============= SEÇÃO 2: TRIMESTRE FEV-ABR ============= -->
+  <section class="section" id="trimestre">
+    <div class="section-header">
+      <h2>📈 Parte 2 — Análise Trimestral (Fev-Abr/2026) <span class="badge badge-yellow">CONSOLIDADO</span></h2>
+      <p>Visão consolidada do trimestre — sazonalidade da safra, evolução de receitas, despesas e geração de caixa.</p>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-blue">
+        <div class="label">Receita Bruta Total</div>
+        <div class="value">R$ 3,35 mi</div>
+        <div class="desc">85% concentrada em Soja</div>
+      </div>
+      <div class="kpi-card kpi-red">
+        <div class="label">Despesas Totais</div>
+        <div class="value">R$ 6,24 mi</div>
+        <div class="desc">86% acima da receita</div>
+      </div>
+      <div class="kpi-card kpi-dark">
+        <div class="label">Resultado Líquido</div>
+        <div class="value">-R$ 2,88 mi</div>
+        <div class="desc">Déficit consolidado</div>
+      </div>
+      <div class="kpi-card kpi-orange">
+        <div class="label">Burn Rate Mensal</div>
+        <div class="value">R$ 961k</div>
+        <div class="desc">Queima média de caixa</div>
+      </div>
+      <div class="kpi-card kpi-purple">
+        <div class="label">Margem EBITDA</div>
+        <div class="value">10,6%</div>
+        <div class="desc">Benchmark: 25-35%</div>
+      </div>
+      <div class="kpi-card kpi-green">
+        <div class="label">HHI (Concentração)</div>
+        <div class="value">0,734</div>
+        <div class="desc">Alta dependência da soja</div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>📊 Evolução Mensal: Receitas vs Despesas vs Resultado</h3>
+        <div class="chart-container"><canvas id="chartEvolucaoTrim"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>🌾 Composição das Receitas no Trimestre</h3>
+        <div class="chart-container"><canvas id="chartReceitasTrim"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>💸 Top 10 Grupos de Despesas — Trimestre</h3>
+        <div class="chart-container-tall"><canvas id="chartDespesasTrim"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>🎯 EBITDA por Centro de Resultado</h3>
+        <div class="chart-container-tall"><canvas id="chartCRTrim"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>📈 Fluxo de Caixa Acumulado</h3>
+        <div class="chart-container"><canvas id="chartFluxoAcumulado"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>🔍 Indicadores de Performance</h3>
+        <div class="chart-container"><canvas id="chartRadar"></canvas></div>
+      </div>
+    </div>
+
+    <h3 style="color:#1e3c72; margin: 25px 0 15px;">📋 Resumo Mensal Consolidado</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Indicador</th>
+          <th class="num">Fev/2026</th>
+          <th class="num">Mar/2026</th>
+          <th class="num">Abr/2026</th>
+          <th class="num">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Receita Total</td><td class="num pos">134.486</td><td class="num pos">2.443.719</td><td class="num pos">775.554</td><td class="num pos">3.353.759</td></tr>
+        <tr><td>Despesa Total</td><td class="num neg">-1.061.421</td><td class="num neg">-2.257.295</td><td class="num neg">-2.901.555</td><td class="num neg">-6.237.330</td></tr>
+        <tr class="subtotal"><td>Resultado Líquido</td><td class="num neg">-926.934</td><td class="num pos">186.423</td><td class="num neg">-2.126.002</td><td class="num neg">-2.883.571</td></tr>
+        <tr><td>Margem Líquida (%)</td><td class="num neg">-689,2%</td><td class="num pos">+7,6%</td><td class="num neg">-274,1%</td><td class="num neg">-86,0%</td></tr>
+        <tr><td>EBITDA Operacional</td><td class="num neg">-404.510</td><td class="num pos">1.129.478</td><td class="num neg">-367.870</td><td class="num pos">357.099</td></tr>
+        <tr class="total"><td>Cobertura Rec/Desp</td><td class="num">12,7%</td><td class="num">108,3%</td><td class="num">26,7%</td><td class="num">53,8%</td></tr>
+      </tbody>
+    </table>
+
+    <div class="insight-box info">
+      <h4>📌 Observações do Trimestre</h4>
+      <ul>
+        <li><strong>Sazonalidade típica:</strong> Março concentra 73% da receita anual (colheita/comercialização da soja).</li>
+        <li><strong>Único mês superavitário:</strong> Apenas março apresentou resultado positivo (+R$ 186 mil).</li>
+        <li><strong>Concentração de receita perigosa:</strong> 85% provém de uma única cultura (soja) — risco de mercado e climático elevado.</li>
+        <li><strong>Estrutura desbalanceada:</strong> A lavoura sustenta integralmente as atividades deficitárias (pecuária e equinos).</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============= SEÇÃO 3: DRE GERENCIAL ============= -->
+  <section class="section" id="dre">
+    <div class="section-header">
+      <h2>📋 Parte 3 — DRE Gerencial Detalhada <span class="badge badge-blue">ANALÍTICO</span></h2>
+      <p>Demonstração de Resultado por Centro de Resultado e análise vertical completa.</p>
+    </div>
+
+    <h3 style="color:#1e3c72; margin-bottom: 15px;">DRE Consolidada por Natureza Contábil</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Conta</th>
+          <th class="num">Fev/2026</th>
+          <th class="num">Mar/2026</th>
+          <th class="num">Abr/2026</th>
+          <th class="num">Total</th>
+          <th class="num">AV%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="subtotal"><td>(=) Receita Operacional Bruta</td><td class="num pos">134.486</td><td class="num pos">2.443.719</td><td class="num pos">775.554</td><td class="num pos">3.353.759</td><td class="num">100,0%</td></tr>
+        <tr><td>&nbsp;&nbsp;Receita Lavoura (Soja)</td><td class="num">0</td><td class="num pos">2.438.719</td><td class="num pos">414.949</td><td class="num pos">2.853.668</td><td class="num">85,1%</td></tr>
+        <tr><td>&nbsp;&nbsp;Receita Pecuária</td><td class="num pos">108.650</td><td class="num pos">5.000</td><td class="num pos">192.607</td><td class="num pos">306.257</td><td class="num">9,1%</td></tr>
+        <tr><td>&nbsp;&nbsp;Receita Equinos</td><td class="num pos">25.837</td><td class="num">0</td><td class="num pos">28.750</td><td class="num pos">54.586</td><td class="num">1,6%</td></tr>
+        <tr><td>&nbsp;&nbsp;Aluguéis e Serviços</td><td class="num">0</td><td class="num">0</td><td class="num pos">139.248</td><td class="num pos">139.248</td><td class="num">4,2%</td></tr>
+        <tr class="subtotal"><td>(-) Custos Diretos de Produção</td><td class="num neg">-228.978</td><td class="num neg">-686.176</td><td class="num neg">-748.740</td><td class="num neg">-1.663.894</td><td class="num">-49,6%</td></tr>
+        <tr class="subtotal" style="background:#d4edda;"><td>(=) Lucro Bruto</td><td class="num neg">-94.492</td><td class="num pos">1.757.542</td><td class="num pos">26.814</td><td class="num pos">1.689.865</td><td class="num">50,4%</td></tr>
+        <tr class="subtotal"><td>(-) Despesas Operacionais</td><td class="num neg">-310.018</td><td class="num neg">-628.064</td><td class="num neg">-394.684</td><td class="num neg">-1.332.766</td><td class="num">-39,7%</td></tr>
+        <tr class="subtotal" style="background:#fff3cd;"><td>(=) EBITDA Operacional</td><td class="num neg">-404.510</td><td class="num pos">1.129.478</td><td class="num neg">-367.870</td><td class="num pos">357.099</td><td class="num">10,6%</td></tr>
+        <tr><td>(-) Pró-labore e Retiradas</td><td class="num neg">-284.376</td><td class="num neg">-145.633</td><td class="num neg">-61.434</td><td class="num neg">-491.442</td><td class="num">-14,7%</td></tr>
+        <tr class="subtotal"><td>(=) EBITDA Ajustado</td><td class="num neg">-688.885</td><td class="num pos">983.846</td><td class="num neg">-429.303</td><td class="num neg">-134.343</td><td class="num">-4,0%</td></tr>
+        <tr><td>(-) Resultado Financeiro</td><td class="num neg">-2.101</td><td class="num neg">-43.768</td><td class="num neg">-136.521</td><td class="num neg">-182.390</td><td class="num">-5,4%</td></tr>
+        <tr class="subtotal"><td>(=) LAJIR (EBIT)</td><td class="num neg">-690.987</td><td class="num pos">940.077</td><td class="num neg">-565.824</td><td class="num neg">-316.734</td><td class="num">-9,4%</td></tr>
+        <tr><td>(-) CAPEX (Investimentos)</td><td class="num neg">-238.745</td><td class="num neg">-661.866</td><td class="num neg">-133.058</td><td class="num neg">-1.033.669</td><td class="num">-30,8%</td></tr>
+        <tr><td>(-) Amortização de Dívidas</td><td class="num">0</td><td class="num">0</td><td class="num neg">-1.359.971</td><td class="num neg">-1.359.971</td><td class="num">-40,5%</td></tr>
+        <tr class="total"><td>(=) FLUXO DE CAIXA LÍQUIDO</td><td class="num neg">-926.934</td><td class="num pos">186.423</td><td class="num neg">-2.126.002</td><td class="num neg">-2.883.571</td><td class="num">-86,0%</td></tr>
+      </tbody>
+    </table>
+
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>🎯 Cascata DRE — Da Receita ao Fluxo Líquido</h3>
+        <div class="chart-container-tall"><canvas id="chartCascata"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>🏷️ Margem por Centro de Resultado</h3>
+        <div class="chart-container-tall"><canvas id="chartMargemCR"></canvas></div>
+      </div>
+    </div>
+
+    <h3 style="color:#1e3c72; margin: 25px 0 15px;">DRE por Centro de Resultado</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Centro de Resultado</th>
+          <th class="num">Receita</th>
+          <th class="num">Custo</th>
+          <th class="num">EBITDA</th>
+          <th class="num">Margem</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>🌱 Lavoura (Soja)</td><td class="num pos">2.853.668</td><td class="num neg">-1.527.546</td><td class="num pos">1.326.122</td><td class="num pos">+46,5%</td><td><span class="badge badge-green">Lucrativo</span></td></tr>
+        <tr><td>🏠 Aluguéis/Serviços</td><td class="num pos">139.248</td><td class="num">0</td><td class="num pos">139.248</td><td class="num pos">+100,0%</td><td><span class="badge badge-green">Excelente</span></td></tr>
+        <tr><td>🐂 Pecuária</td><td class="num pos">306.257</td><td class="num neg">-1.140.199</td><td class="num neg">-833.943</td><td class="num neg">-272,3%</td><td><span class="badge badge-red">Deficitário</span></td></tr>
+        <tr><td>🐎 Equinocultura</td><td class="num pos">54.586</td><td class="num neg">-571.484</td><td class="num neg">-516.898</td><td class="num neg">-946,9%</td><td><span class="badge badge-red">Crítico</span></td></tr>
+        <tr class="total"><td>TOTAL</td><td class="num pos">3.353.759</td><td class="num neg">-3.239.230</td><td class="num pos">114.529</td><td class="num pos">+3,4%</td><td><span class="badge badge-yellow">Marginal</span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="insight-box danger">
+      <h4>⚠️ Diagnóstico Estrutural</h4>
+      <p><strong>A lavoura subsidia integralmente as demais atividades.</strong> Pecuária e equinocultura, juntas, drenam <strong>R$ 1,35 milhão por trimestre</strong>. Sem reestruturação dessas duas frentes, o resultado consolidado nunca atingirá patamares saudáveis.</p>
+    </div>
+  </section>
+
+  <!-- ============= SEÇÃO 4: STRESS TEST ============= -->
+  <section class="section" id="stress">
+    <div class="section-header">
+      <h2>⚠️ Parte 4 — Stress Test (Simulação de Cenários) <span class="badge badge-yellow">PROJEÇÕES</span></h2>
+      <p>Análise de sensibilidade e simulação de 4 cenários para os próximos 12 meses.</p>
+    </div>
+
+    <div class="scenario-grid">
+      <div class="scenario-card optimistic">
+        <h4>🟢 OTIMISTA (20%)</h4>
+        <div class="metric"><span>Preço Soja</span><strong>+15%</strong></div>
+        <div class="metric"><span>Produtividade</span><strong>+10%</strong></div>
+        <div class="metric"><span>Custos</span><strong>-5%</strong></div>
+        <div class="metric"><span>EBITDA</span><strong style="color:#27ae60">+R$ 1.227k</strong></div>
+        <div class="metric"><span>FCL</span><strong style="color:#27ae60">-R$ 1.794k</strong></div>
+      </div>
+      <div class="scenario-card base">
+        <h4>🔵 BASE (40%)</h4>
+        <div class="metric"><span>Preço Soja</span><strong>0%</strong></div>
+        <div class="metric"><span>Produtividade</span><strong>0%</strong></div>
+        <div class="metric"><span>Custos</span><strong>0%</strong></div>
+        <div class="metric"><span>EBITDA</span><strong style="color:#3498db">+R$ 357k</strong></div>
+        <div class="metric"><span>FCL</span><strong style="color:#e67e22">-R$ 2.710k</strong></div>
+      </div>
+      <div class="scenario-card pessimistic">
+        <h4>🟠 PESSIMISTA (30%)</h4>
+        <div class="metric"><span>Preço Soja</span><strong>-20%</strong></div>
+        <div class="metric"><span>Produtividade</span><strong>-15%</strong></div>
+        <div class="metric"><span>Custos</span><strong>+20%</strong></div>
+        <div class="metric"><span>EBITDA</span><strong style="color:#c0392b">-R$ 1.068k</strong></div>
+        <div class="metric"><span>FCL</span><strong style="color:#c0392b">-R$ 4.190k</strong></div>
+      </div>
+      <div class="scenario-card catastrophic">
+        <h4>🔴 CATASTRÓFICO (10%)</h4>
+        <div class="metric"><span>Preço Soja</span><strong>-35%</strong></div>
+        <div class="metric"><span>Produtividade</span><strong>-40%</strong></div>
+        <div class="metric"><span>Custos</span><strong>+35%</strong></div>
+        <div class="metric"><span>EBITDA</span><strong style="color:#c0392b">-R$ 2.242k</strong></div>
+        <div class="metric"><span>FCL</span><strong style="color:#c0392b">-R$ 5.173k</strong></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>📊 Comparativo de Cenários — EBITDA e FCL</h3>
+        <div class="chart-container"><canvas id="chartCenarios"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>🌪️ Análise de Sensibilidade (Tornado)</h3>
+        <div class="chart-container"><canvas id="chartTornado"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============= RODAPÉ PROFISSIONAL ============= -->
+  <footer class="footer-pro">
+    <div class="brand">
+      <h3>📊 Análise Financeira Estratégica</h3>
+      <p><strong>Dr. Sidney Souza</strong><br>
+      Economista e Adm. Agrícola — Estrategista Econômico do Produtor<br>
+      Especialista em economia da fazenda e gestão de risco no agro.</p>
+      <p style="margin-top:10px; font-style: italic; opacity: 0.95;">
+        "Transformamos dados da fazenda em decisões econômicas — ajudamos produtores a entender se o mercado sustenta seu negócio."
+      </p>
+    </div>
+    <div class="col">
+      <h4>Documento</h4>
+      <p><strong>Cliente:</strong> Leandro Martins</p>
+      <p><strong>Propriedade:</strong> Fazenda Monte Alegre</p>
+      <p><strong>Local:</strong> Montividiu — GO</p>
+      <p><strong>Período:</strong> Fev a Abr/2026</p>
+    </div>
+    <div class="col">
+      <h4>Contato</h4>
+      <p>📧 <a href="mailto:sidneyagro@gmail.com">sidneyagro@gmail.com</a></p>
+      <p>📱 <a href="https://wa.me/5564992266886" target="_blank">(64) 9 9226-6886</a></p>
+      <p>🌐 <a href="https://bit.ly/ruralin" target="_blank">bit.ly/ruralin</a></p>
+      <p>📷 <a href="https://instagram.com/ruralin.ai" target="_blank">@ruralin.ai</a></p>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 — <strong>Dr. Sidney Souza</strong> — Análise e Construção. Todos os direitos reservados.</p>
+      <p>Este documento é <strong>confidencial</strong> e destinado exclusivamente ao Sr. Leandro Martins. Os dados aqui apresentados refletem a análise técnica do período informado e não constituem aconselhamento de investimento.</p>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  Chart.defaults.font.family = "'Segoe UI', sans-serif";
+  Chart.defaults.color = '#2c3e50';
+
+  const fmt = (v) => 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+
+  // ===== ABRIL =====
+  new Chart(document.getElementById('chartReceitasAbril'), {
+    type: 'doughnut',
+    data: { labels: ['Soja (Lavoura)', 'Pecuária (Gado+Bezerro)', 'Aluguéis/Serviços', 'Equinos'],
+      datasets: [{ data: [414949, 192607, 139248, 28750], backgroundColor: ['#27ae60', '#e67e22', '#3498db', '#9b59b6'], borderWidth: 2, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (c) => c.label + ': ' + fmt(c.parsed) } } } }
+  });
+
+  new Chart(document.getElementById('chartDespesasAbril'), {
+    type: 'bar',
+    data: { labels: ['Pgto. Cap. Giro', 'Defensivos', 'Honorários Adv.', 'Compra Equinos', 'Juros Inv. Fin.', 'Manut. Rebanho', 'Compra Plantel', 'Inv. Imobil.', 'Despesas Equinos', 'Manut. Frota Pec'],
+      datasets: [{ label: 'Despesa (R$)', data: [1359971, 375024, 153000, 150733, 135998, 111877, 109893, 101774, 69773, 47223], backgroundColor: '#c0392b', borderRadius: 5 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => fmt(c.parsed.x) } } },
+      scales: { x: { ticks: { callback: (v) => 'R$ ' + (v/1000).toFixed(0) + 'k' } } } }
+  });
+
+  new Chart(document.getElementById('chartCategoriasAbril'), {
+    type: 'pie',
+    data: { labels: ['Amortização Dívida', 'Insumos Produção', 'Equinos (compra+op)', 'Pecuária (compra+manut)', 'Serviços Terceiros', 'Investimentos', 'Despesas Financeiras', 'RH e Admin', 'Demais'],
+      datasets: [{ data: [1359971, 390944, 220507, 278062, 176277, 133058, 136521, 103211, 103004], backgroundColor: ['#c0392b', '#e67e22', '#9b59b6', '#f39c12', '#16a085', '#2980b9', '#7f8c8d', '#27ae60', '#34495e'], borderWidth: 2, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right' }, tooltip: { callbacks: { label: (c) => c.label + ': ' + fmt(c.parsed) } } } }
+  });
+
+  new Chart(document.getElementById('chartBalancoAbril'), {
+    type: 'bar',
+    data: { labels: ['Receitas', 'Despesas', 'Resultado'],
+      datasets: [{ label: 'Valor (R$)', data: [775554, -2901555, -2126002], backgroundColor: ['#27ae60', '#c0392b', '#34495e'], borderRadius: 8 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => fmt(c.parsed.y) } } },
+      scales: { y: { ticks: { callback: (v) => 'R$ ' + (v/1000000).toFixed(1) + 'M' } } } }
+  });
+
+  // ===== TRIMESTRE =====
+  new Chart(document.getElementById('chartEvolucaoTrim'), {
+    type: 'bar',
+    data: { labels: ['Fev/2026', 'Mar/2026', 'Abr/2026'],
+      datasets: [
+        { label: 'Receitas', data: [134486, 2443719, 775554], backgroundColor: '#27ae60', borderRadius: 5 },
+        { label: 'Despesas', data: [-1061421, -2257295, -2901555], backgroundColor: '#c0392b', borderRadius: 5 },
+        { label: 'Resultado', type: 'line', data: [-926934, 186423, -2126002], borderColor: '#2c3e50', backgroundColor: '#2c3e50', borderWidth: 3, pointRadius: 6, tension: 0.3 }
+      ] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + fmt(c.parsed.y) } } },
+      scales: { y: { ticks: { callback: (v) => 'R$ ' + (v/1000000).toFixed(1) + 'M' } } } }
+  });
+
+  new Chart(document.getElementById('chartReceitasTrim'), {
+    type: 'doughnut',
+    data: { labels: ['Soja (85,1%)', 'Pecuária (9,1%)', 'Aluguéis (4,2%)', 'Equinos (1,6%)'],
+      datasets: [{ data: [2853668, 306257, 139248, 54586], backgroundColor: ['#27ae60', '#e67e22', '#3498db', '#9b59b6'], borderWidth: 2, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (c) => c.label + ': ' + fmt(c.parsed) } } } }
+  });
+
+  new Chart(document.getElementById('chartDespesasTrim'), {
+    type: 'bar',
+    data: { labels: ['Amortização Dívida', 'Inv. Imobilizados', 'Insumos Produção', 'Serv. Terceiros', 'Manut. Rebanho', 'Compra Equinos', 'Inv. Pecuário', 'Pró-labore', 'Retiradas Soc.', 'Desp. Financeiras'],
+      datasets: [{ label: 'Total Trimestre (R$)', data: [1359971, 723761, 668361, 520031, 464608, 438168, 309908, 291564, 200000, 182390], backgroundColor: ['#c0392b', '#e67e22', '#d35400', '#16a085', '#f39c12', '#9b59b6', '#27ae60', '#2980b9', '#34495e', '#7f8c8d'], borderRadius: 5 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => fmt(c.parsed.x) } } },
+      scales: { x: { ticks: { callback: (v) => 'R$ ' + (v/1000).toFixed(0) + 'k' } } } }
+  });
+
+  new Chart(document.getElementById('chartCRTrim'), {
+    type: 'bar',
+    data: { labels: ['Lavoura (Soja)', 'Aluguéis/Serv.', 'Equinocultura', 'Pecuária'],
+      datasets: [{ label: 'EBITDA por CR (R$)', data: [1326122, 139248, -516898, -833943], backgroundColor: (ctx) => ctx.parsed.y >= 0 ? '#27ae60' : '#c0392b', borderRadius: 8 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => fmt(c.parsed.y) } } },
+      scales: { y: { ticks: { callback: (v) => 'R$ ' + (v/1000).toFixed(0) + 'k' } } } }
+  });
+
+  new Chart(document.getElementById('chartFluxoAcumulado'), {
+    type: 'line',
+    data: { labels: ['Início', 'Fev/2026', 'Mar/2026', 'Abr/2026'],
+      datasets: [{ label: 'Fluxo Acumulado', data: [0, -926934, -740511, -2866513], borderColor: '#c0392b', backgroundColor: 'rgba(192, 57, 43, 0.15)', fill: true, tension: 0.3, borderWidth: 3, pointRadius: 6, pointBackgroundColor: '#c0392b' }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { tooltip: { callbacks: { label: (c) => fmt(c.parsed.y) } } },
+      scales: { y: { ticks: { callback: (v) => 'R$ ' + (v/1000000).toFixed(1) + 'M' } } } }
+  });
+
+  new Chart(document.getElementById('chartRadar'), {
+    type: 'radar',
+    data: { labels: ['Margem Bruta', 'Margem EBITDA', 'Cobertura Juros', 'Eficiência Caixa', 'Diversificação', 'Liquidez'],
+      datasets: [
+        { label: 'Fazenda Monte Alegre', data: [50, 11, 39, 54, 27, 20], backgroundColor: 'rgba(192, 57, 43, 0.3)', borderColor: '#c0392b', borderWidth: 2, pointBackgroundColor: '#c0392b' },
+        { label: 'Benchmark Agro', data: [40, 30, 100, 90, 70, 80], backgroundColor: 'rgba(39, 174, 96, 0.2)', borderColor: '#27ae60', borderWidth: 2, pointBackgroundColor: '#27ae60' }
+      ] },
+    options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100 } } }
+  });
+
+  // ===== DRE =====
+  new Chart(document.getElementById('chartCascata'), {
+    type: 'bar',
+    data: { labels: ['Receita Bruta', 'Custos Diretos', 'Lucro Bruto', 'Desp. Operacionais', 'EBITDA Op.', 'Pró-labore', 'Result. Financeiro', 'CAPEX', 'Amortização', 'FCL'],
+      datasets: [{ label: 'Valor (R$)', data: [3353759, -1663894, 1689865, -1332766, 357099, -491442, -182390, -1033669, -1359971, -2710373],
+        backgroundColor: (ctx) => { const v = ctx.parsed.y; if ([0, 2, 4, 9].includes(ctx.dataIndex)) return v >= 0 ? '#27ae60' : '#c0392b'; return v >= 0 ? '#3498db' : '#e67e22'; },
+        borderRadius: 5 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => fmt(c.parsed.y) } } },
+      scales: { y: { ticks: { callback: (v) => 'R$ ' + (v/1000000).toFixed(1) + 'M' } }, x: { ticks: { font: { size: 10 } } } } }
+  });
+
+  new Chart(document.getElementById('chartMargemCR'), {
+    type: 'bar',
+    data: { labels: ['Aluguéis/Serv.', 'Lavoura (Soja)', 'Pecuária', 'Equinos'],
+      datasets: [{ label: 'Margem EBITDA (%)', data: [100, 46.5, -272.3, -946.9], backgroundColor: (ctx) => ctx.parsed.x >= 0 ? '#27ae60' : '#c0392b', borderRadius: 8 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => c.parsed.x.toFixed(1) + '%' } } },
+      scales: { x: { ticks: { callback: (v) => v + '%' } } } }
+  });
+
+  // ===== STRESS TEST =====
+  new Chart(document.getElementById('chartCenarios'), {
+    type: 'bar',
+    data: { labels: ['Otimista', 'Base', 'Pessimista', 'Catastrófico'],
+      datasets: [
+        { label: 'EBITDA (R$)', data: [1227642, 357099, -1068070, -2242230], backgroundColor: ['#27ae60', '#3498db', '#e67e22', '#c0392b'], borderRadius: 5 },
+        { label: 'Fluxo de Caixa Líquido (R$)', data: [-1794232, -2710373, -4190260, -5173415], backgroundColor: ['#a3d9b1', '#aed6f1', '#f5cba7', '#f1948a'], borderRadius: 5 }
+      ] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + fmt(c.parsed.y) } } },
+      scales: { y: { ticks: { callback: (v) => 'R$ ' + (v/1000000).toFixed(1) + 'M' } } } }
+  });
+
+  new Chart(document.getElementById('chartTornado'), {
+    type: 'bar',
+    data: { labels: ['Preço da Soja (±10%)', 'Produtividade Soja (±10%)', 'Custo Insumos (±10%)', 'Defensivos (±10%)', 'Taxa de Juros (±10%)', 'Custo RH (±10%)'],
+      datasets: [
+        { label: 'Impacto Negativo', data: [-855700, -855700, -66836, -42705, -18239, -22909], backgroundColor: '#c0392b' },
+        { label: 'Impacto Positivo', data: [855700, 855700, 66836, 42705, 18239, 22909], backgroundColor: '#27ae60' }
+      ] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { tooltip: { callbacks: { label: (c) => fmt(c.parsed.x) } } },
+      scales: { x: { stacked: true, ticks: { callback: (v) => 'R$ ' + (v/1000).toFixed(0) + 'k' } }, y: { stacked: true } } }
+  });
+</script>
+</body>
+</html>
