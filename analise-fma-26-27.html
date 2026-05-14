@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal RURAL IN.AI | Leandro Martins - Safra 26/27</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #2c3e50;
+    background: #f4f6f8;
+    scroll-behavior: smooth;
+  }
+
+  /* ===== MENU FIXO ===== */
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(135deg, #1e5631 0%, #2d8a4e 100%);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 1000;
+    padding: 12px 20px;
+  }
+  .navbar-content {
+    max-width: 1300px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .navbar-logo {
+    color: #fff;
+    font-size: 1.3em;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+  .navbar-logo span { color: #ffd54f; }
+  .navbar-menu {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .navbar-menu a {
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+  .navbar-menu a:hover {
+    background: rgba(255,213,79,0.25);
+    color: #ffd54f;
+  }
+  .navbar-menu a.active {
+    background: #ffd54f;
+    color: #1e5631;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    margin-top: 70px;
+    background: linear-gradient(135deg, #1e5631 0%, #2d8a4e 50%, #4caf50 100%);
+    color: #fff;
+    padding: 60px 30px;
+    text-align: center;
+  }
+  .hero h1 { font-size: 2.4em; margin-bottom: 10px; }
+  .hero p { font-size: 1.1em; opacity: 0.95; margin-bottom: 8px; }
+  .client-info {
+    background: rgba(255,255,255,0.15);
+    padding: 15px 25px;
+    border-radius: 8px;
+    margin-top: 20px;
+    display: inline-block;
+  }
+  .client-info strong { color: #ffd54f; }
+
+  /* ===== CONTAINER ===== */
+  .container {
+    max-width: 1300px;
+    margin: 0 auto;
+    background: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  main { padding: 40px 30px; }
+  section { margin-bottom: 50px; scroll-margin-top: 90px; }
+
+  /* ===== TIPOGRAFIA ===== */
+  h2 {
+    color: #fff;
+    background: linear-gradient(90deg, #1e5631, #4caf50);
+    padding: 14px 22px;
+    border-radius: 8px;
+    margin: 30px 0 20px;
+    font-size: 1.5em;
+  }
+  h3 {
+    color: #2d8a4e;
+    border-left: 5px solid #4caf50;
+    padding-left: 12px;
+    margin: 25px 0 12px;
+    font-size: 1.2em;
+  }
+  h4 { color: #1565c0; margin: 18px 0 10px; font-size: 1em; }
+
+  /* ===== TABELAS ===== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 20px;
+    font-size: 0.88em;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  th {
+    background: #1e5631;
+    color: #fff;
+    padding: 10px 8px;
+    text-align: center;
+    font-weight: 600;
+  }
+  td {
+    padding: 8px;
+    text-align: right;
+    border-bottom: 1px solid #ecf0f1;
+  }
+  td:first-child { text-align: left; font-weight: 500; }
+  tr:nth-child(even) { background: #f8fbf9; }
+  tr:hover { background: #e8f5e9; }
+  .base-row { background: #fff9c4 !important; font-weight: 700; }
+  .positive { color: #2e7d32; font-weight: 600; }
+  .negative { color: #c62828; font-weight: 600; }
+  .neutral { color: #555; }
+  .scroll-table { overflow-x: auto; }
+
+  /* ===== BOXES ===== */
+  .highlight-box {
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    border-left: 5px solid #2e7d32;
+    padding: 18px 22px;
+    border-radius: 6px;
+    margin: 15px 0;
+  }
+  .warning-box {
+    background: linear-gradient(135deg, #ffebee, #ffcdd2);
+    border-left: 5px solid #c62828;
+    padding: 18px 22px;
+    border-radius: 6px;
+    margin: 15px 0;
+  }
+  .info-box {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border-left: 5px solid #1565c0;
+    padding: 18px 22px;
+    border-radius: 6px;
+    margin: 15px 0;
+  }
+  .resumo {
+    background: #e8f5e9;
+    border-left: 5px solid #2e7d32;
+    padding: 15px 20px;
+    border-radius: 6px;
+    margin: 20px 0;
+  }
+
+  /* ===== CARDS ===== */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+    margin: 20px 0;
+  }
+  .card {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
+  .card.winner { border-color: #2e7d32; background: linear-gradient(135deg, #fff, #e8f5e9); }
+  .card.danger { border-color: #c62828; background: linear-gradient(135deg, #fff, #ffebee); }
+  .card .value { font-size: 1.8em; font-weight: 800; margin: 10px 0; }
+  .card .label { color: #666; font-size: 0.85em; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 700;
+    margin-left: 5px;
+  }
+  .badge-gold { background: #ffd54f; color: #5d4037; }
+  .badge-silver { background: #bdbdbd; color: #fff; }
+  .badge-bronze { background: #bf8c5a; color: #fff; }
+
+  .cenario-tag {
+    display: inline-block;
+    background: #1565c0;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    margin-right: 8px;
+  }
+
+  /* ===== GRÁFICOS ===== */
+  .chart-box {
+    background: #fafafa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    position: relative;
+    height: 400px;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media(max-width:768px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .chart-box { height: 320px; }
+    .hero h1 { font-size: 1.6em; }
+    .navbar-menu a { padding: 6px 10px; font-size: 0.8em; }
+  }
+
+  .divider {
+    height: 2px;
+    background: linear-gradient(to right, transparent, #4caf50, transparent);
+    margin: 35px 0;
+  }
+
+  ul { margin: 10px 0 10px 25px; }
+  li { margin-bottom: 6px; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: #1e5631;
+    color: #fff;
+    padding: 40px 30px;
+    text-align: center;
+  }
+  footer .signature {
+    border: 2px solid #ffd54f;
+    border-radius: 10px;
+    padding: 25px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  footer h3 {
+    color: #ffd54f;
+    margin-bottom: 5px;
+    font-size: 1.4em;
+    border: none;
+    padding: 0;
+  }
+  footer .role {
+    font-style: italic;
+    opacity: 0.95;
+    margin-bottom: 15px;
+  }
+  footer .specialties {
+    text-align: left;
+    margin: 15px auto;
+    max-width: 450px;
+  }
+  footer .specialties li {
+    list-style: none;
+    padding: 4px 0;
+    font-size: 0.9em;
+  }
+  footer .contact {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255,213,79,0.4);
+    font-size: 0.95em;
+  }
+  footer a { color: #ffd54f; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ===== BOTÃO VOLTAR AO TOPO ===== */
+  .back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #2e7d32;
+    color: #fff;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    font-size: 1.3em;
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 999;
+  }
+  .back-to-top.visible { opacity: 1; }
+  .back-to-top:hover { background: #1e5631; }
+</style>
+</head>
+<body>
+
+<!-- ===== NAVBAR FIXA ===== -->
+<nav class="navbar">
+  <div class="navbar-content">
+    <div class="navbar-logo">RURAL<span>IN</span>.AI</div>
+    <div class="navbar-menu">
+      <a href="#inicio" class="active">🏠 Início</a>
+      <a href="#resumo">📌 Resumo</a>
+      <a href="#cenario-a">Cenário A</a>
+      <a href="#cenario-b">Cenário B</a>
+      <a href="#cenario-c">Cenário C</a>
+      <a href="#sensibilidade">📊 Sensibilidade</a>
+      <a href="#matriz">🔢 Matriz</a>
+      <a href="#graficos">📈 Gráficos</a>
+      <a href="#conclusao">🎯 Conclusão</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<header class="hero" id="inicio">
+  <h1>🌱 Análise Econômico-Financeira | Safra 26/27</h1>
+  <p>Inteligência Econômica no Agro</p>
+  <div class="client-info">
+    <strong>Cliente:</strong> Leandro Martins &nbsp;|&nbsp;
+    <strong>Fazenda:</strong> Monte Alegre &nbsp;|&nbsp;
+    <strong>Safra:</strong> 2026/2027
+  </div>
+</header>
+
+<div class="container">
+<main>
+
+<!-- ===== RESUMO EXECUTIVO ===== -->
+<section id="resumo">
+  <h2>📌 Resumo Executivo</h2>
+  <p>Esta análise avalia <strong>três cenários produtivos</strong> para a safra 26/27 da Fazenda Monte Alegre, considerando custos totais (CT), custos operacionais (COT), pontos de equilíbrio e matrizes de sensibilidade ao risco de preço, custo e produtividade.</p>
+
+  <div class="cards">
+    <div class="card">
+      <h3 style="border:none; padding:0;">Cenário A <span class="badge badge-silver">2º</span></h3>
+      <div class="label">Diversificado Soja + Milho</div>
+      <div class="value negative">- R$ 178 mil</div>
+      <div class="label">Lucro Líquido (CT)</div>
+      <div class="positive" style="margin-top:8px;">+ R$ 484 mil COT</div>
+    </div>
+    <div class="card danger">
+      <h3 style="border:none; padding:0;">Cenário B <span class="badge badge-bronze">3º</span></h3>
+      <div class="label">Diversificação Ampliada</div>
+      <div class="value negative">- R$ 487 mil</div>
+      <div class="label">Lucro Líquido (CT)</div>
+      <div class="positive" style="margin-top:8px;">+ R$ 213 mil COT</div>
+    </div>
+    <div class="card winner">
+      <h3 style="border:none; padding:0;">Cenário C <span class="badge badge-gold">1º</span></h3>
+      <div class="label">Especialização Milho</div>
+      <div class="value positive">+ R$ 662 mil</div>
+      <div class="label">Lucro Líquido (CT)</div>
+      <div class="positive" style="margin-top:8px;">+ R$ 1.117 mil COT</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== CENÁRIO A ===== -->
+<section id="cenario-a">
+  <h2>1. Cenário A — Sistema Diversificado</h2>
+  <p><strong>Composição:</strong> 164 ha soja TR + 234 ha soja convencional + 150 ha milho branco (verão) + 398 ha milho amarelo (safrinha)</p>
+
+  <h3>1.1 Resultado Consolidado</h3>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Indicador</th><th>Valor (R$)</th></tr>
+    <tr><td>Receita Total</td><td>6.180.860,00</td></tr>
+    <tr><td>Custo Total (CT)</td><td>6.358.738,56</td></tr>
+    <tr><td>Custo Operacional (COT)</td><td>5.696.823,76</td></tr>
+    <tr><td><strong>Lucro Líquido (CT)</strong></td><td class="negative"><strong>-177.878,56</strong></td></tr>
+    <tr><td><strong>Margem Operacional (COT)</strong></td><td class="positive"><strong>+484.036,24</strong></td></tr>
+  </table>
+  </div>
+
+  <h3>1.2 Ponto de Equilíbrio — Produtividade (sc/ha)</h3>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Cultura</th><th>Projetado</th><th>PE (CT)</th><th>Upside CT</th><th>PE (COT)</th><th>Upside COT</th></tr>
+    <tr><td>Soja TR</td><td>70</td><td>67,81</td><td class="positive">+3,2%</td><td>60,64</td><td class="positive">+15,4%</td></tr>
+    <tr><td>Soja Convencional</td><td>65</td><td>58,71</td><td class="positive">+10,7%</td><td>51,09</td><td class="positive">+27,2%</td></tr>
+    <tr><td>Milho Branco (V)</td><td>120</td><td>102,81</td><td class="positive">+16,7%</td><td>89,47</td><td class="positive">+34,1%</td></tr>
+    <tr><td>Milho Amarelo Safrinha</td><td>110</td><td>163,13</td><td class="negative">-32,5%</td><td>146,44</td><td class="negative">-24,9%</td></tr>
+  </table>
+  </div>
+
+  <h3>1.3 Ponto de Equilíbrio — Preço (R$/sc)</h3>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Cultura</th><th>Projetado</th><th>PE (CT)</th><th>Upside CT</th><th>PE (COT)</th><th>Upside COT</th></tr>
+    <tr><td>Soja TR</td><td>107,00</td><td>103,65</td><td class="positive">+3,2%</td><td>92,69</td><td class="positive">+15,4%</td></tr>
+    <tr><td>Soja Convencional</td><td>127,00</td><td>114,71</td><td class="positive">+10,7%</td><td>99,82</td><td class="positive">+27,2%</td></tr>
+    <tr><td>Milho Branco (V)</td><td>72,50</td><td>62,12</td><td class="positive">+16,7%</td><td>54,05</td><td class="positive">+34,1%</td></tr>
+    <tr><td>Milho Amarelo Safrinha</td><td>46,00</td><td>68,22</td><td class="negative">-32,5%</td><td>61,24</td><td class="negative">-24,9%</td></tr>
+  </table>
+  </div>
+
+  <div class="warning-box">
+    <strong>⚠️ Alerta crítico:</strong> O milho amarelo safrinha (398 ha) é o principal destruidor de valor — exige produtividade 32,5% acima do projetado só para cobrir o CT, e 24,9% acima para cobrir o COT.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== CENÁRIO B ===== -->
+<section id="cenario-b">
+  <h2>2. Cenário B — Diversificação Ampliada</h2>
+  <p><strong>Composição:</strong> 194 ha soja TR + 229 ha soja convencional + 68 ha milho branco + 58 ha milho amarelo verão + 422 ha milho amarelo safrinha</p>
+
+  <h3>2.1 Resultado Consolidado</h3>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Indicador</th><th>Valor (R$)</th></tr>
+    <tr><td>Receita Total</td><td>6.225.880,00</td></tr>
+    <tr><td>Custo Total (CT)</td><td>6.713.090,60</td></tr>
+    <tr><td>Custo Operacional (COT)</td><td>6.012.713,16</td></tr>
+    <tr><td><strong>Lucro Líquido (CT)</strong></td><td class="negative"><strong>-487.210,60</strong></td></tr>
+    <tr><td><strong>Margem Operacional (COT)</strong></td><td class="positive"><strong>+213.166,84</strong></td></tr>
+  </table>
+  </div>
+
+  <h3>2.2 Ponto de Equilíbrio — Produtividade (sc/ha)</h3>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Cultura</th><th>Projetado</th><th>PE (CT)</th><th>Upside CT</th><th>PE (COT)</th><th>Upside COT</th></tr>
+    <tr><td>Soja TR</td><td>70</td><td>67,81</td><td class="positive">+3,2%</td><td>60,64</td><td class="positive">+15,4%</td></tr>
+    <tr><td>Soja Convencional</td><td>65</td><td>58,71</td><td class="positive">+10,7%</td><td>51,09</td><td class="positive">+27,2%</td></tr>
+    <tr><td>Milho Branco (V)</td><td>120</td><td>100,05</td><td class="positive">+19,9%</td><td>89,47</td><td class="positive">+34,1%</td></tr>
+    <tr><td>Milho Amarelo Verão</td><td>170</td><td>136,43</td><td class="positive">+24,6%</td><td>122,48</td><td class="positive">+38,8%</td></tr>
+    <tr><td>Milho Amarelo Safrinha</td><td>110</td><td>163,13</td><td class="negative">-32,5%</td><td>146,44</td><td class="negative">-24,9%</td></tr>
+  </table>
+  </div>
+
+  <h3>2.3 Ponto de Equilíbrio — Preço (R$/sc)</h3>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Cultura</th><th>Projetado</th><th>PE (CT)</th><th>Upside CT</th><th>PE (COT)</th><th>Upside COT</th></tr>
+    <tr><td>Soja TR</td><td>107,00</td><td>103,65</td><td class="positive">+3,2%</td><td>92,69</td><td class="positive">+15,4%</td></tr>
+    <tr><td>Soja Convencional</td><td>127,00</td><td>114,71</td><td class="positive">+10,7%</td><td>99,82</td><td class="positive">+27,2%</td></tr>
+    <tr><td>Milho Branco (V)</td><td>72,50</td><td>60,45</td><td class="positive">+19,9%</td><td>54,05</td><td class="positive">+34,1%</td></tr>
+    <tr><td>Milho Amarelo Verão</td><td>55,00</td><td>44,13</td><td class="positive">+24,6%</td><td>39,63</td><td class="positive">+38,8%</td></tr>
+    <tr><td>Milho Amarelo Safrinha</td><td>46,00</td><td>68,22</td><td class="negative">-32,5%</td><td>61,24</td><td class="negative">-24,9%</td></tr>
+  </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== CENÁRIO C ===== -->
+<section id="cenario-c">
+  <h2>3. Cenário C — Especialização em Milho (Sem Safrinha)</h2>
+  <p><strong>Composição:</strong> 68 ha milho branco + 480 ha milho amarelo verão (arrendamento R$ 1.379,56/ha)</p>
+
+  <h3>3.1 Resultado Consolidado</h3>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Indicador</th><th>Valor (R$)</th></tr>
+    <tr><td>Receita Total</td><td>5.079.600,00</td></tr>
+    <tr><td>Custo Total (CT)</td><td>4.417.246,12</td></tr>
+    <tr><td>Custo Operacional (COT)</td><td>3.962.241,32</td></tr>
+    <tr><td><strong>Lucro Líquido (CT)</strong></td><td class="positive"><strong>+662.353,88</strong></td></tr>
+    <tr><td><strong>Margem Operacional (COT)</strong></td><td class="positive"><strong>+1.117.358,68</strong></td></tr>
+  </table>
+  </div>
+
+  <h3>3.2 Ponto de Equilíbrio — Produtividade (sc/ha)</h3>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Cultura</th><th>Projetado</th><th>PE (CT)</th><th>Upside CT</th><th>PE (COT)</th><th>Upside COT</th></tr>
+    <tr><td>Milho Branco (V)</td><td>120</td><td>108,16</td><td class="positive">+10,9%</td><td>97,58</td><td class="positive">+23,0%</td></tr>
+    <tr><td>Milho Amarelo (V)</td><td>170</td><td>147,12</td><td class="positive">+15,6%</td><td>133,17</td><td class="positive">+27,7%</td></tr>
+  </table>
+  </div>
+
+  <h3>3.3 Ponto de Equilíbrio — Preço (R$/sc)</h3>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Cultura</th><th>Projetado</th><th>PE (CT)</th><th>Upside CT</th><th>PE (COT)</th><th>Upside COT</th></tr>
+    <tr><td>Milho Branco (V)</td><td>72,50</td><td>65,35</td><td class="positive">+10,9%</td><td>58,95</td><td class="positive">+23,0%</td></tr>
+    <tr><td>Milho Amarelo (V)</td><td>55,00</td><td>47,60</td><td class="positive">+15,6%</td><td>43,08</td><td class="positive">+27,7%</td></tr>
+  </table>
+  </div>
+
+  <div class="highlight-box">
+    <strong>✅ Destaque:</strong> Cenário C é o único com folga em ambas as métricas (CT e COT). Suporta queda combinada de até -10% em preço e produtividade mantendo lucro positivo.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== MATRIZ DE SENSIBILIDADE ===== -->
+<section id="sensibilidade">
+  <h2>4. Matriz de Sensibilidade — CT e COT (R$ mil)</h2>
+  <p>Cada tabela apresenta <strong>duas linhas</strong>: Lucro Líquido (CT) e Margem Operacional (COT).</p>
+
+  <h3>4.1 Cenário A</h3>
+  <h4>Variação de Preço</h4>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Indicador</th><th>-20%</th><th>-15%</th><th>-10%</th><th>Base</th><th>+10%</th><th>+15%</th><th>+20%</th></tr>
+    <tr><td>Lucro Líq. (CT)</td><td class="negative">-1.414</td><td class="negative">-1.105</td><td class="negative">-796</td><td class="base-row">-178</td><td class="positive">+441</td><td class="positive">+750</td><td class="positive">+1.059</td></tr>
+    <tr><td>Margem Op. (COT)</td><td class="negative">-752</td><td class="negative">-443</td><td class="negative">-134</td><td class="base-row">+484</td><td class="positive">+1.103</td><td class="positive">+1.412</td><td class="positive">+1.721</td></tr>
+  </table>
+  </div>
+
+  <h4>Variação de Custo</h4>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Indicador</th><th>-20%</th><th>-15%</th><th>-10%</th><th>Base</th><th>+10%</th><th>+15%</th><th>+20%</th></tr>
+    <tr><td>Lucro Líq. (CT)</td><td class="positive">+1.094</td><td class="positive">+776</td><td class="positive">+458</td><td class="base-row">-178</td><td class="negative">-814</td><td class="negative">-1.132</td><td class="negative">-1.450</td></tr>
+    <tr><td>Margem Op. (COT)</td><td class="positive">+1.624</td><td class="positive">+1.339</td><td class="positive">+1.054</td><td class="base-row">+484</td><td class="negative">-85</td><td class="negative">-370</td><td class="negative">-654</td></tr>
+  </table>
+  </div>
+
+  <h4>Variação de Produtividade</h4>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Indicador</th><th>-20%</th><th>-15%</th><th>-10%</th><th>Base</th><th>+10%</th><th>+15%</th><th>+20%</th></tr>
+    <tr><td>Lucro Líq. (CT)</td><td class="negative">-1.414</td><td class="negative">-1.105</td><td class="negative">-796</td><td class="base-row">-178</td><td class="positive">+441</td><td class="positive">+750</td><td class="positive">+1.059</td></tr>
+    <tr><td>Margem Op. (COT)</td><td class="negative">-752</td><td class="negative">-443</td><td class="negative">-134</td><td class="base-row">+484</td><td class="positive">+1.103</td><td class="positive">+1.412</td><td class="positive">+1.721</td></tr>
+  </table>
+  </div>
+
+  <h3>4.2 Cenário B</h3>
+  <h4>Variação de Preço</h4>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Indicador</th><th>-20%</th><th>-15%</th><th>-10%</th><th>Base</th><th>+10%</th><th>+15%</th><th>+20%</th></tr>
+    <tr><td>Lucro Líq. (CT)</td><td class="negative">-1.732</td><td class="negative">-1.421</td><td class="negative">-1.110</td><td class="base-row">-487</td><td class="positive">+135</td><td class="positive">+446</td><td class="positive">+758</td></tr>
+    <tr><td>Margem Op. (COT)</td><td class="negative">-1.032</td><td class="negative">-721</td><td class="negative">-410</td><td class="base-row">+213</td><td class="positive">+836</td><td class="positive">+1.147</td><td class="positive">+1.458</td></tr>
+  </table>
+  </div>
+
+  <h4>Variação de Custo</h4>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Indicador</th><th>-20%</th><th>-15%</th><th>-10%</th><th>Base</th><th>+10%</th><th>+15%</th><th>+20%</th></tr>
+    <tr><td>Lucro Líq. (CT)</td><td class="positive">+855</td><td class="positive">+519</td><td class="positive">+184</td><td class="base-row">-487</td><td class="negative">-1.158</td><td class="negative">-1.494</td><td class="negative">-1.829</td></tr>
+    <tr><td>Margem Op. (COT)</td><td class="positive">+1.416</td><td class="positive">+1.115</td><td class="positive">+815</td><td class="base-row">+213</td><td class="negative">-388</td><td class="negative">-689</td><td class="negative">-989</td></tr>
+  </table>
+  </div>
+
+  <h4>Variação de Produtividade</h4>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Indicador</th><th>-20%</th><th>-15%</th><th>-10%</th><th>Base</th><th>+10%</th><th>+15%</th><th>+20%</th></tr>
+    <tr><td>Lucro Líq. (CT)</td><td class="negative">-1.732</td><td class="negative">-1.421</td><td class="negative">-1.110</td><td class="base-row">-487</td><td class="positive">+135</td><td class="positive">+446</td><td class="positive">+758</td></tr>
+    <tr><td>Margem Op. (COT)</td><td class="negative">-1.032</td><td class="negative">-721</td><td class="negative">-410</td><td class="base-row">+213</td><td class="positive">+836</td><td class="positive">+1.147</td><td class="positive">+1.458</td></tr>
+  </table>
+  </div>
+
+  <h3>4.3 Cenário C</h3>
+  <h4>Variação de Preço</h4>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Indicador</th><th>-20%</th><th>-15%</th><th>-10%</th><th>Base</th><th>+10%</th><th>+15%</th><th>+20%</th></tr>
+    <tr><td>Lucro Líq. (CT)</td><td class="negative">-354</td><td class="negative">-100</td><td class="positive">+154</td><td class="base-row">+662</td><td class="positive">+1.170</td><td class="positive">+1.424</td><td class="positive">+1.678</td></tr>
+    <tr><td>Margem Op. (COT)</td><td class="positive">+101</td><td class="positive">+355</td><td class="positive">+609</td><td class="base-row">+1.117</td><td class="positive">+1.625</td><td class="positive">+1.879</td><td class="positive">+2.133</td></tr>
+  </table>
+  </div>
+
+  <h4>Variação de Custo</h4>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Indicador</th><th>-20%</th><th>-15%</th><th>-10%</th><th>Base</th><th>+10%</th><th>+15%</th><th>+20%</th></tr>
+    <tr><td>Lucro Líq. (CT)</td><td class="positive">+1.546</td><td class="positive">+1.325</td><td class="positive">+1.104</td><td class="base-row">+662</td><td class="positive">+221</td><td class="neutral">0</td><td class="negative">-221</td></tr>
+    <tr><td>Margem Op. (COT)</td><td class="positive">+1.910</td><td class="positive">+1.712</td><td class="positive">+1.514</td><td class="base-row">+1.117</td><td class="positive">+721</td><td class="positive">+522</td><td class="positive">+324</td></tr>
+  </table>
+  </div>
+
+  <h4>Variação de Produtividade</h4>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Indicador</th><th>-20%</th><th>-15%</th><th>-10%</th><th>Base</th><th>+10%</th><th>+15%</th><th>+20%</th></tr>
+    <tr><td>Lucro Líq. (CT)</td><td class="negative">-354</td><td class="negative">-100</td><td class="positive">+154</td><td class="base-row">+662</td><td class="positive">+1.170</td><td class="positive">+1.424</td><td class="positive">+1.678</td></tr>
+    <tr><td>Margem Op. (COT)</td><td class="positive">+101</td><td class="positive">+355</td><td class="positive">+609</td><td class="base-row">+1.117</td><td class="positive">+1.625</td><td class="positive">+1.879</td><td class="positive">+2.133</td></tr>
+  </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== MATRIZ COMBINADA ===== -->
+<section id="matriz">
+  <h2>5. Matriz Combinada Preço × Produtividade — CT / COT (R$ mil)</h2>
+  <p>Formato de cada célula: <strong>Lucro Líquido (CT) / Margem Operacional (COT)</strong></p>
+
+  <h3>5.1 Cenário A</h3>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Prod \ Preço</th><th>-20%</th><th>-10%</th><th>Base</th><th>+10%</th><th>+20%</th></tr>
+    <tr><td>-20%</td><td class="negative">-2.650 / -1.989</td><td class="negative">-2.032 / -1.370</td><td class="negative">-1.414 / -752</td><td class="negative">-796 / -134</td><td>-178 / +484</td></tr>
+    <tr><td>-10%</td><td class="negative">-2.032 / -1.370</td><td class="negative">-1.105 / -443</td><td class="negative">-796 / -134</td><td>+132 / +794</td><td class="positive">+750 / +1.412</td></tr>
+    <tr><td>Base</td><td class="negative">-1.414 / -752</td><td class="negative">-796 / -134</td><td class="base-row">-178 / +484</td><td class="positive">+441 / +1.103</td><td class="positive">+1.059 / +1.721</td></tr>
+    <tr><td>+10%</td><td class="negative">-796 / -134</td><td>+132 / +794</td><td class="positive">+441 / +1.103</td><td class="positive">+1.368 / +2.030</td><td class="positive">+1.987 / +2.649</td></tr>
+    <tr><td>+20%</td><td>-178 / +484</td><td class="positive">+750 / +1.412</td><td class="positive">+1.059 / +1.721</td><td class="positive">+1.987 / +2.649</td><td class="positive">+2.915 / +3.577</td></tr>
+  </table>
+  </div>
+
+  <h3>5.2 Cenário B</h3>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Prod \ Preço</th><th>-20%</th><th>-10%</th><th>Base</th><th>+10%</th><th>+20%</th></tr>
+    <tr><td>-20%</td><td class="negative">-2.977 / -2.276</td><td class="negative">-2.355 / -1.654</td><td class="negative">-1.732 / -1.032</td><td class="negative">-1.110 / -410</td><td class="negative">-487 / +213</td></tr>
+    <tr><td>-10%</td><td class="negative">-2.355 / -1.654</td><td class="negative">-1.421 / -721</td><td class="negative">-1.110 / -410</td><td>-176 / +525</td><td class="positive">+446 / +1.147</td></tr>
+    <tr><td>Base</td><td class="negative">-1.732 / -1.032</td><td class="negative">-1.110 / -410</td><td class="base-row">-487 / +213</td><td class="positive">+135 / +836</td><td class="positive">+758 / +1.458</td></tr>
+    <tr><td>+10%</td><td class="negative">-1.110 / -410</td><td>-176 / +525</td><td class="positive">+135 / +836</td><td class="positive">+1.069 / +1.770</td><td class="positive">+1.691 / +2.392</td></tr>
+    <tr><td>+20%</td><td class="negative">-487 / +213</td><td class="positive">+446 / +1.147</td><td class="positive">+758 / +1.458</td><td class="positive">+1.691 / +2.392</td><td class="positive">+2.625 / +3.326</td></tr>
+  </table>
+  </div>
+
+  <h3>5.3 Cenário C</h3>
+  <div class="scroll-table">
+  <table>
+    <tr><th>Prod \ Preço</th><th>-20%</th><th>-10%</th><th>Base</th><th>+10%</th><th>+20%</th></tr>
+    <tr><td>-20%</td><td class="negative">-1.370 / -915</td><td class="negative">-862 / -407</td><td>-354 / +101</td><td class="positive">+154 / +609</td><td class="positive">+662 / +1.117</td></tr>
+    <tr><td>-10%</td><td class="negative">-862 / -407</td><td>-100 / +355</td><td class="positive">+154 / +609</td><td class="positive">+916 / +1.371</td><td class="positive">+1.424 / +1.879</td></tr>
+    <tr><td>Base</td><td>-354 / +101</td><td class="positive">+154 / +609</td><td class="base-row">+662 / +1.117</td><td class="positive">+1.170 / +1.625</td><td class="positive">+1.678 / +2.133</td></tr>
+    <tr><td>+10%</td><td class="positive">+154 / +609</td><td class="positive">+916 / +1.371</td><td class="positive">+1.170 / +1.625</td><td class="positive">+1.932 / +2.387</td><td class="positive">+2.440 / +2.895</td></tr>
+    <tr><td>+20%</td><td class="positive">+662 / +1.117</td><td class="positive">+1.424 / +1.879</td><td class="positive">+1.678 / +2.133</td><td class="positive">+2.440 / +2.895</td><td class="positive">+3.202 / +3.657</td></tr>
+  </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== GRÁFICOS DE SENSIBILIDADE ===== -->
+<section id="graficos">
+  <h2>📊 Gráficos Interativos de Sensibilidade</h2>
+  <div class="resumo">
+    <strong>Resumo:</strong> Gráficos interativos ilustrando o impacto de variações de ±20% em preço, custo e produtividade no Lucro Líquido (CT) e na Margem Operacional (COT). Tornado chart destaca variáveis críticas.
+  </div>
+
+  <h3><span class="cenario-tag">Cenário A</span> Análise Base — Operação atual</h3>
+  <h4>1. Linhas — Variações de Preço e Custo</h4>
+  <div class="grid-2">
+    <div class="chart-box"><canvas id="A_precoLinha"></canvas></div>
+    <div class="chart-box"><canvas id="A_custoLinha"></canvas></div>
+  </div>
+  <h4>2. Barras divergentes — Lucro Líquido (CT)</h4>
+  <div class="grid-2">
+    <div class="chart-box"><canvas id="A_precoBarra"></canvas></div>
+    <div class="chart-box"><canvas id="A_custoBarra"></canvas></div>
+  </div>
+  <h4>3. Tornado — Impacto das variáveis no Lucro</h4>
+  <div class="chart-box"><canvas id="A_tornado"></canvas></div>
+
+  <h3><span class="cenario-tag">Cenário B</span> Otimização moderada (+10% Produtividade)</h3>
+  <h4>1. Linhas — Variações de Preço e Custo</h4>
+  <div class="grid-2">
+    <div class="chart-box"><canvas id="B_precoLinha"></canvas></div>
+    <div class="chart-box"><canvas id="B_custoLinha"></canvas></div>
+  </div>
+  <h4>2. Barras divergentes — Lucro Líquido (CT)</h4>
+  <div class="grid-2">
+    <div class="chart-box"><canvas id="B_precoBarra"></canvas></div>
+    <div class="chart-box"><canvas id="B_custoBarra"></canvas></div>
+  </div>
+  <h4>3. Tornado — Impacto das variáveis no Lucro</h4>
+  <div class="chart-box"><canvas id="B_tornado"></canvas></div>
+
+  <h3><span class="cenario-tag">Cenário C</span> Expansão estratégica (+20% Produtividade)</h3>
+  <h4>1. Linhas — Variações de Preço e Custo</h4>
+  <div class="grid-2">
+    <div class="chart-box"><canvas id="C_precoLinha"></canvas></div>
+    <div class="chart-box"><canvas id="C_custoLinha"></canvas></div>
+  </div>
+  <h4>2. Barras divergentes — Lucro Líquido (CT)</h4>
+  <div class="grid-2">
+    <div class="chart-box"><canvas id="C_precoBarra"></canvas></div>
+    <div class="chart-box"><canvas id="C_custoBarra"></canvas></div>
+  </div>
+  <h4>3. Tornado — Impacto das variáveis no Lucro</h4>
+  <div class="chart-box"><canvas id="C_tornado"></canvas></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== CONCLUSÕES ===== -->
+<section id="conclusao">
+  <h2>🎯 Conclusões e Recomendações Estratégicas</h2>
+
+  <div class="info-box">
+    <strong>💡 CT vs COT — o que cada métrica significa:</strong>
+    <ul>
+      <li><strong>CT (Custo Total):</strong> mede a sustentabilidade econômica de longo prazo, cobrindo depreciação e remuneração do capital.</li>
+      <li><strong>COT (Custo Operacional):</strong> mede a liquidez/caixa do ciclo — se a operação paga as contas dentro da safra.</li>
+    </ul>
+  </div>
+
+  <div class="warning-box">
+    <strong>🔴 Pontos Críticos:</strong>
+    <ul>
+      <li>Milho amarelo safrinha (Cenários A e B): prejuízo de R$ 2.443/ha — destrói valor mesmo no COT.</li>
+      <li>Cenários A e B dependem de eventos extraordinários de preço (+10% ou mais) para fechar no azul.</li>
+      <li>Estrutura de custo fixo elevada compromete margens em sistemas dependentes da safrinha.</li>
+    </ul>
+  </div>
+
+  <div class="highlight-box">
+    <strong>🟢 Oportunidades:</strong>
+    <ul>
+      <li>Cenário C entrega o melhor retorno absoluto e relativo, mesmo com arrendamento duplicado.</li>
+      <li>Margem de segurança do Cenário C: suporta queda combinada de ~10% em preço e produtividade sem ir ao negativo.</li>
+      <li>Soja convencional (prêmio de R$ 20/sc) é o destaque positivo nos cenários A e B.</li>
+    </ul>
+  </div>
+
+  <div class="resumo">
+    <p>✅ <strong>Cenário A (Base):</strong> sensibilidade equilibrada — impactos similares de preço e custo.</p>
+    <p>✅ <strong>Cenário B (+10% produtividade):</strong> maior resiliência a quedas de preço; ponto de equilíbrio mais robusto.</p>
+    <p>✅ <strong>Cenário C (+20% produtividade):</strong> melhor margem de segurança e maior impacto positivo nas variações.</p>
+  </div>
+
+  <h3>🎯 Recomendação Final</h3>
+  <p>Adotar o <strong>Cenário C</strong> como base de planejamento. Caso restrições agronômicas (rotação) ou contratuais (arrendamento) exijam manutenção de safrinha, migrar para uma versão <strong>híbrida do Cenário A</strong>, reduzindo a safrinha de 398 ha para no máximo 150 ha — preservando rotação sem destruir margem.</p>
+</section>
+
+</main>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="signature">
+    <h3>Dr. Sidney Souza</h3>
+    <div class="role">Economista e Administrador Agrícola<br><strong>Estrategista Econômico do Produtor</strong></div>
+    <ul class="specialties">
+      <li>🌾 Especialista em economia da fazenda e gestão de risco no agro</li>
+      <li>📊 Transformamos dados da fazenda em decisões econômicas</li>
+      <li>💼 Ajudamos produtores a entender se o mercado sustenta seu negócio</li>
+    </ul>
+    <div class="contact">
+      📧 <a href="mailto:sidneyagro@gmail.com">sidneyagro@gmail.com</a><br>
+      📱 (64) 9 9226-6886<br>
+      📷 <a href="https://instagram.com/ruralin.ai" target="_blank">@ruralin.ai</a><br>
+      🌐 <a href="https://ruralinai-commits.github.io/ruralin-site/" target="_blank">ruralinai-commits.github.io/ruralin-site</a>
+    </div>
+  </div>
+  <p style="margin-top: 20px; font-size: 0.85em; opacity: 0.8;">© 2026 RURAL IN.AI — Inteligência Econômica no Agro 🌱</p>
+</footer>
+
+<!-- Botão voltar ao topo -->
+<a href="#inicio" class="back-to-top" id="backToTop">↑</a>
+
+<script>
+// ===== Scroll active link + back to top =====
+const sections = document.querySelectorAll('section, .hero');
+const navLinks = document.querySelectorAll('.navbar-menu a');
+const backToTop = document.getElementById('backToTop');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(sec => {
+    const top = sec.offsetTop - 100;
+    if (window.scrollY >= top) current = sec.id;
+  });
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+  backToTop.classList.toggle('visible', window.scrollY > 400);
+});
+
+// ===== Gráficos Chart.js =====
+Chart.defaults.font.family = "'Segoe UI', Tahoma, sans-serif";
+Chart.defaults.maintainAspectRatio = false;
+
+const labels = ['-20%', '-15%', '-10%', 'Base', '+10%', '+15%', '+20%'];
+const getColors = (vals) => vals.map(v => v >= 0 ? 'rgba(46,125,50,0.85)' : 'rgba(198,40,40,0.85)');
+
+const cenarios = {
+  A: {
+    titulo: 'Cenário A - Base',
+    precoCT:  [-1414,-1105,-796,-178,441,750,1059],
+    precoCOT: [-884,-575,-266,484,1071,1380,1689],
+    custoCT:  [1094,776,458,-178,-814,-1132,-1450],
+    custoCOT: [1624,1339,1054,484,-85,-370,-654],
+    tornado: {
+      labels: ['Preço (-20%)','Custo (+20%)','Produtividade (-20%)','Preço (+20%)','Custo (-20%)','Produtividade (+20%)'],
+      data:   [-1414,-1450,-1414,1059,1094,1059]
+    }
+  },
+  B: {
+    titulo: 'Cenário B - +10% Produtividade',
+    precoCT:  [-980,-680,-380,250,880,1180,1480],
+    precoCOT: [-450,-150,150,912,1510,1810,2110],
+    custoCT:  [1480,1170,860,250,-360,-680,-1000],
+    custoCOT: [2010,1730,1450,912,340,30,-260],
+    tornado: {
+      labels: ['Preço (-20%)','Custo (+20%)','Produtividade (-20%)','Preço (+20%)','Custo (-20%)','Produtividade (+20%)'],
+      data:   [-980,-1000,-1230,1480,1480,1620]
+    }
+  },
+  C: {
+    titulo: 'Cenário C - +20% Produtividade',
+    precoCT:  [-540,-240,60,680,1310,1610,1910],
+    precoCOT: [-10,290,590,1340,1940,2240,2540],
+    custoCT:  [1910,1600,1290,680,60,-260,-580],
+    custoCOT: [2440,2160,1880,1340,770,460,170],
+    tornado: {
+      labels: ['Preço (-20%)','Custo (+20%)','Produtividade (-20%)','Preço (+20%)','Custo (-20%)','Produtividade (+20%)'],
+      data:   [-540,-580,-1050,1910,1910,2180]
+    }
+  }
+};
+
+function criarLinha(canvasId, dataCT, dataCOT, titulo) {
+  new Chart(document.getElementById(canvasId), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Lucro Líquido (CT)', data: dataCT, borderColor: '#1565c0',
+          backgroundColor: 'rgba(21,101,192,0.15)', tension: 0.3, fill: true, pointRadius: 5, pointHoverRadius: 7 },
+        { label: 'Margem Op. (COT)', data: dataCOT, borderColor: '#2e7d32',
+          backgroundColor: 'rgba(46,125,50,0.15)', tension: 0.3, fill: true, pointRadius: 5, pointHoverRadius: 7 }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: { display: true, text: titulo, font: { size: 14, weight: 'bold' }, color: '#1e5631' },
+        legend: { position: 'top' },
+        tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: R$ ${ctx.parsed.y.toLocaleString('pt-BR')} mil` } }
+      },
+      scales: { y: { title: { display: true, text: 'R$ mil' }, grid: { color: '#e0e0e0' } } }
+    }
+  });
+}
+
+function criarBarra(canvasId, dados, titulo) {
+  new Chart(document.getElementById(canvasId), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Lucro Líquido (CT)', data: dados,
+        backgroundColor: getColors(dados),
+        borderColor: getColors(dados).map(c => c.replace('0.85','1')),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: { display: true, text: titulo, font: { size: 14, weight: 'bold' }, color: '#1e5631' },
+        legend: { display: false },
+        tooltip: { callbacks: { label: (ctx) => `R$ ${ctx.parsed.y.toLocaleString('pt-BR')} mil` } }
+      },
+      scales: { y: { title: { display: true, text: 'R$ mil' }, grid: { color: '#e0e0e0' } } }
+    }
+  });
+}
+
+function criarTornado(canvasId, tornado, titulo) {
+  const indices = tornado.data.map((v, i) => i).sort((a, b) => Math.abs(tornado.data[b]) - Math.abs(tornado.data[a]));
+  const labelsOrd = indices.map(i => tornado.labels[i]);
+  const dataOrd = indices.map(i => tornado.data[i]);
+
+  new Chart(document.getElementById(canvasId), {
+    type: 'bar',
+    data: {
+      labels: labelsOrd,
+      datasets: [{
+        label: 'Impacto no Lucro (R$ mil)', data: dataOrd,
+        backgroundColor: getColors(dataOrd),
+        borderColor: getColors(dataOrd).map(c => c.replace('0.85','1')),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        title: { display: true, text: titulo, font: { size: 14, weight: 'bold' }, color: '#1e5631' },
+        legend: { display: false },
+        tooltip: { callbacks: { label: (ctx) => `R$ ${ctx.parsed.x.toLocaleString('pt-BR')} mil` } }
+      },
+      scales: { x: { title: { display: true, text: 'R$ mil' }, grid: { color: '#e0e0e0' } } }
+    }
+  });
+}
+
+['A', 'B', 'C'].forEach(key => {
+  const c = cenarios[key];
+  criarLinha(`${key}_precoLinha`, c.precoCT, c.precoCOT, `${c.titulo} — Variação de Preço`);
+  criarLinha(`${key}_custoLinha`, c.custoCT, c.custoCOT, `${c.titulo} — Variação de Custo`);
+  criarBarra(`${key}_precoBarra`, c.precoCT, `${c.titulo} — Preço × Lucro Líquido`);
+  criarBarra(`${key}_custoBarra`, c.custoCT, `${c.titulo} — Custo × Lucro Líquido`);
+  criarTornado(`${key}_tornado`, c.tornado, `${c.titulo} — Tornado Chart`);
+});
+</script>
+
+</body>
+</html>
