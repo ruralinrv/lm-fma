@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Milho Verão 26/27 — Fazenda Monte Alegre | RuralIN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --green-900:#102C1D; --green-800:#163C29; --green-700:#1F6E43; --green-600:#2E8256;
+  --green-100:#E4EEE2; --green-050:#F0F5EC;
+  --gold:#C99621; --gold-2:#E3B84A; --gold-soft:#F3E4B4;
+  --clay:#B0432B; --clay-soft:#EAC8BC;
+  --paper:#F5F2E8; --card:#FFFFFF; --ink:#182219; --muted:#5C6A5D; --line:#E0DACB;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--paper); color:var(--ink); line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.serif{font-family:'Spectral',Georgia,serif}
+h1,h2,h3{font-family:'Spectral',Georgia,serif;font-weight:600;line-height:1.12;letter-spacing:-.01em}
+
+/* ---------- HERO ---------- */
+.hero{
+  background:radial-gradient(120% 140% at 88% -10%, #1c4a30 0%, var(--green-900) 55%);
+  color:#EAF3E7;position:relative;overflow:hidden;
+  border-bottom:3px solid var(--gold);
+}
+.hero::after{
+  content:"";position:absolute;right:-60px;top:-40px;width:360px;height:360px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 12px, rgba(227,184,74,.10) 12px 13px),
+    radial-gradient(circle at 50% 50%, rgba(227,184,74,.18), transparent 62%);
+  border-radius:50%;filter:blur(.3px);pointer-events:none;
+}
+.hero-inner{padding:56px 0 44px;position:relative;z-index:2}
+.eyebrow{
+  font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--gold-2);display:flex;align-items:center;gap:12px;margin-bottom:22px;
+}
+.eyebrow::before{content:"";width:34px;height:1px;background:var(--gold-2);display:inline-block}
+.hero h1{font-size:clamp(34px,6vw,58px);color:#fff;font-weight:700}
+.hero h1 em{font-style:italic;color:var(--gold-2);font-weight:600}
+.hero .lede{margin-top:16px;font-size:17px;color:#C9DBC8;max-width:640px}
+.hero .lede b{color:#fff;font-weight:600}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:40px;
+  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.10);border-radius:14px;overflow:hidden}
+.metric{background:rgba(11,32,21,.35);padding:20px 22px}
+.metric .k{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:#9DB9A0}
+.metric .v{font-size:30px;margin-top:8px;color:#fff}
+.metric .v small{font-size:14px;color:#B9CDBA;font-weight:500;font-family:'Inter'}
+.metric .s{font-size:12.5px;color:var(--gold-2);margin-top:4px;font-weight:500}
+.verdict{
+  display:inline-flex;align-items:center;gap:10px;margin-top:30px;
+  background:rgba(227,184,74,.14);border:1px solid rgba(227,184,74,.4);
+  color:var(--gold-soft);padding:9px 16px;border-radius:999px;font-size:13.5px;font-weight:500}
+.verdict b{color:#fff}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--gold-2);box-shadow:0 0 0 4px rgba(227,184,74,.18)}
+
+/* ---------- SECTIONS ---------- */
+section{padding:52px 0}
+.sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:8px}
+.sec-num{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--gold);font-weight:600;padding-top:6px}
+.sec-head h2{font-size:clamp(24px,3.4vw,34px);color:var(--green-900)}
+.sec-sub{color:var(--muted);font-size:15.5px;max-width:720px;margin:0 0 28px 40px}
+@media(max-width:640px){.sec-sub{margin-left:0}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;
+  box-shadow:0 1px 0 rgba(16,44,29,.03),0 14px 34px -26px rgba(16,44,29,.25)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:820px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+.kfig{border-left:3px solid var(--green-700);padding:2px 0 2px 16px}
+.kfig .lab{font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.kfig .num{font-size:26px;margin-top:4px;color:var(--green-900)}
+.kfig .sub{font-size:13px;color:var(--muted);margin-top:2px}
+.kfig.clay{border-color:var(--clay)} .kfig.clay .num{color:var(--clay)}
+.kfig.gold{border-color:var(--gold)}
+
+/* saca tag */
+.saca{display:inline-flex;align-items:center;gap:5px;background:var(--green-050);
+  border:1px solid var(--green-100);color:var(--green-700);border-radius:6px;
+  padding:1px 7px;font-size:12px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;padding:10px 12px;border-bottom:2px solid var(--line)}
+td{padding:11px 12px;border-bottom:1px solid var(--line)}
+tr td:not(:first-child),tr th:not(:first-child){text-align:right;font-family:'IBM Plex Mono',monospace}
+.trow-total td{font-weight:700;background:var(--green-050);border-top:2px solid var(--green-700);border-bottom:none}
+.trow-total td:first-child{color:var(--green-900)}
+.trow-coe td{background:#FBEEE6}
+.trow-coe td:first-child{font-weight:600;color:var(--clay)}
+.trow-ct td{background:var(--gold-soft)}
+.trow-ct td:first-child{font-weight:700;color:var(--green-900)}
+.plus{color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:12px;padding-right:4px}
+
+.chartbox{position:relative;height:290px}
+.chartbox.tall{height:330px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.chip{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+.callout{background:linear-gradient(180deg,var(--green-050),#fff);border:1px solid var(--green-100);
+  border-radius:14px;padding:22px 24px}
+.callout h4{font-family:'Spectral';font-size:18px;color:var(--green-900);margin-bottom:6px}
+.scenario{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+@media(max-width:640px){.scenario{grid-template-columns:1fr}}
+.sbox{border-radius:12px;padding:16px 18px;border:1px solid var(--line);background:#fff}
+.sbox.good{border-color:var(--green-600);background:var(--green-050)}
+.sbox.bad{border-color:var(--clay);background:#FBEEE6}
+.sbox .st{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.sbox .sv{font-size:22px;margin-top:5px}
+.sbox.good .sv{color:var(--green-700)} .sbox.bad .sv{color:var(--clay)}
+.sbox .sd{font-size:13px;color:var(--muted);margin-top:3px}
+
+/* heatmap */
+.heat{overflow-x:auto;margin-top:6px}
+.heat table{font-size:13px;min-width:560px}
+.heat th{text-align:center;font-family:'IBM Plex Mono',monospace}
+.heat td{text-align:center;font-family:'IBM Plex Mono',monospace;font-weight:600;color:#fff;
+  border:2px solid #fff;border-radius:6px;padding:12px 6px}
+.heat .rowh{background:var(--green-900);color:#fff;font-weight:600}
+.heat .colh{background:var(--green-800);color:#fff}
+.heat .corner{background:var(--green-900);color:var(--gold-2);font-size:11px;font-weight:600}
+.heat .hi{outline:2px solid var(--ink);outline-offset:-2px}
+
+/* benchmark note */
+.bnote{display:flex;gap:12px;align-items:flex-start;margin-top:14px;font-size:13.5px;color:var(--muted)}
+.bnote .b{min-width:6px;height:6px;border-radius:50%;background:var(--gold);margin-top:8px}
+
+/* risks */
+.risk{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+.risk:last-child{border-bottom:none}
+.risk .ico{flex:0 0 42px;height:42px;border-radius:11px;display:grid;place-items:center;
+  background:#FBEEE6;color:var(--clay);font-size:19px}
+.risk h4{font-family:'Spectral';font-size:16.5px;color:var(--green-900)}
+.risk p{font-size:14px;color:var(--muted);margin-top:2px}
+
+/* recommendation */
+.rec{counter-reset:r;list-style:none}
+.rec li{display:flex;gap:18px;padding:16px 0;border-bottom:1px dashed var(--line)}
+.rec li:last-child{border-bottom:none}
+.rec li::before{counter-increment:r;content:counter(r,decimal-leading-zero);
+  font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--gold);font-size:15px;
+  flex:0 0 auto;padding-top:2px}
+.rec b{color:var(--green-900)}
+.rec p{font-size:14.5px;color:var(--muted)}
+.rec strong{color:var(--ink)}
+
+/* footer */
+.foot{background:var(--green-900);color:#CBDDC9;margin-top:20px;border-top:3px solid var(--gold)}
+.foot-inner{padding:46px 0 40px}
+.foot .cols{display:grid;grid-template-columns:1.2fr 1fr;gap:34px}
+@media(max-width:760px){.foot .cols{grid-template-columns:1fr}}
+.foot h5{font-family:'Spectral';color:#fff;font-size:14px;letter-spacing:.04em;margin-bottom:10px;
+  text-transform:uppercase}
+.foot p,.foot li{font-size:13px;color:#A9C2A9;line-height:1.7}
+.foot ul{list-style:none}
+.sig{margin-top:30px;padding-top:26px;border-top:1px solid rgba(255,255,255,.14);
+  display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:20px}
+.sig .name{font-family:'Spectral';font-size:26px;color:#fff;font-weight:600}
+.sig .role{color:var(--gold-2);font-size:13.5px;margin-top:2px;letter-spacing:.02em}
+.sig .brand{font-size:12.5px;color:#8FAB90;margin-top:8px}
+.sig .stamp{text-align:right;font-size:11.5px;color:#8FAB90;line-height:1.6}
+.sig .stamp b{color:#CBDDC9;font-weight:600}
+.disc{font-size:11px;color:#7C977E;margin-top:22px;line-height:1.6;max-width:760px}
+
+@media print{
+  body{background:#fff}
+  .hero,.foot{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  section{padding:26px 0;break-inside:avoid}
+  .card,.callout,.heat{break-inside:avoid}
+  .hero::after{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="eyebrow">Análise de Custo de Produção · Safra 2026/27</div>
+    <h1>Milho <em>Verão</em><br>Fazenda Monte Alegre</h1>
+    <p class="lede">Estudo de custo e viabilidade da lavoura de milho verão em <b>126 hectares</b>, com duas visões — <b>custo de insumos</b> e <b>custo total</b> — e teste de sensibilidade preço × produtividade. Preparado para <b>Leandro Moraes</b>.</p>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="k">Custo total</div>
+        <div class="v mono">R$ 9.869<small>/ha</small></div>
+        <div class="s mono">≈ 141,8 sc de milho/ha</div>
+      </div>
+      <div class="metric">
+        <div class="k">Ponto de equilíbrio · R$ 69,60</div>
+        <div class="v mono">142<small> sc/ha</small></div>
+        <div class="s mono">190 sc/ha ao spot de R$ 52</div>
+      </div>
+      <div class="metric">
+        <div class="k">Produtividade esperada</div>
+        <div class="v mono">160<small> sc/ha</small></div>
+        <div class="s mono">margem só se o preço for travado</div>
+      </div>
+    </div>
+
+    <div class="verdict"><span class="dot"></span><span><b>Viável com condição:</b>&nbsp;travar o preço perto de R$ 69,60 e proteger a produtividade do veranico de El Niño.</span></div>
+  </div>
+</header>
+
+<!-- 1. SUMÁRIO -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">01</span><h2>Sumário executivo</h2></div>
+    <p class="sec-sub">A planilha original media apenas insumos e sugeria equilíbrio em 74 sc/ha. Ao completar a conta com arrendo, operações e capital, o equilíbrio real quase dobra — e passa a depender diretamente do preço de venda.</p>
+
+    <div class="callout">
+      <h4>O mesmo custo, dois preços de milho</h4>
+      <p style="color:var(--muted);font-size:14.5px">O preço da proposta (R$ 69,60/sc) reflete a curva de futuros da B3 para a colheita de 2027. O spot de Goiás hoje está deprimido pela safrinha. A decisão de plantar muda conforme qual preço você garante.</p>
+      <div class="scenario">
+        <div class="sbox good">
+          <div class="st">Preço travado · R$ 69,60/sc</div>
+          <div class="sv mono">+R$ 1.267/ha</div>
+          <div class="sd">Margem sobre o custo total a 160 sc/ha. Equilíbrio em <b>142 sc/ha</b>.</div>
+        </div>
+        <div class="sbox bad">
+          <div class="st">Exposto ao spot · R$ 52,00/sc</div>
+          <div class="sv mono">−R$ 1.549/ha</div>
+          <div class="sd">Prejuízo a 160 sc/ha. Precisaria de <b>190 sc/ha</b> só para empatar.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. VISÃO 1 -->
+<section style="background:linear-gradient(180deg,#fff,var(--paper))">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">02</span><h2>Visão 1 — Custo de insumos</h2></div>
+    <p class="sec-sub">O escopo pedido para análise: adubo, semente e defensivos. É o custo direto de lavoura — não inclui operações, terra nem capital.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="chartbox"><canvas id="cInsumos"></canvas></div>
+        <div class="legend">
+          <span><i class="chip" style="background:var(--green-700)"></i>Fertilizantes</span>
+          <span><i class="chip" style="background:var(--gold)"></i>Defensivos e biológicos</span>
+          <span><i class="chip" style="background:var(--clay)"></i>Sementes</span>
+        </div>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Componente</th><th>R$/ha</th><th>sc/ha</th><th>%</th></tr></thead>
+          <tbody>
+            <tr><td>Fertilizantes</td><td>2.704,58</td><td>38,9</td><td>52,5%</td></tr>
+            <tr><td>Sementes</td><td>1.085,71</td><td>15,6</td><td>21,1%</td></tr>
+            <tr><td>Defensivos e biológicos</td><td>1.360,85</td><td>19,6</td><td>26,4%</td></tr>
+            <tr class="trow-total"><td>Total de insumos</td><td>5.151,15</td><td>74,0</td><td>100%</td></tr>
+          </tbody>
+        </table>
+        <div class="bnote" style="margin-top:16px;color:var(--clay)"><span class="b" style="background:var(--clay)"></span>
+        <span><b>Conferir antes de fechar:</b> na planilha original só 3 talhões (Milhão) têm preço de semente lançado. Talhões com Caramuru, S. Francisco e BASF estão sem valor — o custo de semente tende a subir.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. VISÃO 2 -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">03</span><h2>Visão 2 — Custo total</h2></div>
+    <p class="sec-sub">A escada de custos: parte dos insumos e sobe até o custo econômico completo. Cada degrau é um compromisso real de caixa ou de capital.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="chartbox tall"><canvas id="cEscada"></canvas></div>
+        <div class="legend">
+          <span><i class="chip" style="background:var(--green-700)"></i>Custo acumulado</span>
+          <span><i class="chip" style="background:var(--clay)"></i>Marco (COE)</span>
+          <span><i class="chip" style="background:var(--gold)"></i>Custo total</span>
+        </div>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Item</th><th>R$/ha</th><th>sc/ha</th></tr></thead>
+          <tbody>
+            <tr><td>Custo de insumos</td><td>5.151,15</td><td>74,0</td></tr>
+            <tr><td><span class="plus">+</span>Custo operacional</td><td>2.250,00</td><td>32,3</td></tr>
+            <tr><td><span class="plus">+</span>Arrendo (13 sc soja/ha)</td><td>1.950,00</td><td>28,0</td></tr>
+            <tr class="trow-coe"><td>= Custo Operacional Efetivo</td><td>9.351,15</td><td>134,4</td></tr>
+            <tr><td><span class="plus">+</span>Custo financeiro do giro</td><td>518,08</td><td>7,4</td></tr>
+            <tr class="trow-ct"><td>= Custo Total (econômico)</td><td>9.869,23</td><td>141,8</td></tr>
+          </tbody>
+        </table>
+        <div class="bnote" style="margin-top:14px"><span class="b"></span>
+        <span>Depreciação e remuneração do capital fixo ficam em zero: com <b>arrendo já pago</b> e operações contratadas, incluí-los contaria a terra e as máquinas em dobro. O custo financeiro (12% a.a. sobre o giro, ~7 meses) é o único acréscimo de capital.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. BENCHMARK -->
+<section style="background:var(--green-050)">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">04</span><h2>Benchmark de mercado</h2></div>
+    <p class="sec-sub">Referências públicas para calibrar o pacote. O IMEA/CPA-MT é milho safrinha em Mato Grosso — verão usa mais insumo, então custo maior é esperado; ainda assim o pacote aqui é intensivo.</p>
+
+    <div class="card">
+      <table>
+        <thead><tr><th>Referência</th><th>Custeio/Insumos</th><th>COE</th><th>Custo total</th><th>Preço equil.</th></tr></thead>
+        <tbody>
+          <tr><td><b>Fazenda Monte Alegre</b> · milho verão GO</td><td>5.151 <span style="color:var(--muted)">(só insumos)</span></td><td>9.351</td><td>9.869</td><td>R$ 69,60*</td></tr>
+          <tr><td>IMEA · milho 26/27 · safrinha MT</td><td>3.799</td><td>5.528</td><td>7.395</td><td>R$ 45,96</td></tr>
+        </tbody>
+      </table>
+      <div class="bnote"><span class="b"></span><span>Valores em R$/ha. *Preço da proposta; ao spot de Goiás (~R$ 52) o equilíbrio do custo total sobe para R$ 69,6/sc de milho colhido a 142 sc/ha, ou 190 sc/ha necessárias.</span></div>
+      <div class="bnote"><span class="b"></span><span><b>Cotação hoje (jul/26):</b> Sul Goiano R$ 51,58/sc, Rio Verde ~R$ 55, faixa GO R$ 49–55. Spot deprimido pela colheita da safrinha.</span></div>
+      <div class="bnote"><span class="b"></span><span><b>Curva de futuros B3 (colheita 2027):</b> ~R$ 69–73/sc — é o que sustenta a premissa de R$ 69,60 e reforça: só vale se travado.</span></div>
+      <div class="bnote"><span class="b"></span><span><b>Preços unitários</b> (fertilizante, glifosato, atrazina, fungicidas) estão dentro da faixa 26/27. O que chama atenção é a <b>intensidade do pacote</b>, não outliers de preço.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. SENSIBILIDADE -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">05</span><h2>Ponto de equilíbrio &amp; sensibilidade</h2></div>
+    <p class="sec-sub">A margem por hectare (sobre o custo total de R$ 9.869) em cada combinação de produtividade e preço. Verde é lucro; vermelho é prejuízo. A coluna R$ 69,60 é a proposta; a R$ 52 é o spot atual.</p>
+
+    <div class="card" style="margin-bottom:22px">
+      <div class="chartbox"><canvas id="cBreak"></canvas></div>
+      <div class="legend">
+        <span><i class="chip" style="background:var(--green-700)"></i>Equilíbrio a R$ 69,60/sc</span>
+        <span><i class="chip" style="background:var(--clay)"></i>Equilíbrio ao spot R$ 52/sc</span>
+        <span><i class="chip" style="background:var(--gold)"></i>Produtividade esperada (160 sc/ha)</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="heat"><table id="heat"></table></div>
+      <div class="bnote" style="margin-top:16px"><span class="b"></span><span>Célula destacada = cenário-base (160 sc/ha × R$ 69,60). A qualquer preço abaixo de ~R$ 62, mesmo 160 sc/ha não cobrem o custo total.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. RISCOS -->
+<section style="background:linear-gradient(180deg,var(--paper),#fff)">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">06</span><h2>Riscos a monitorar</h2></div>
+    <div class="card">
+      <div class="risk"><div class="ico">☀️</div><div><h4>El Niño forte no enchimento de grão</h4><p>Confirmado pela NOAA (jun/26) com alta probabilidade de intensidade forte entre nov/26 e jan/27 — justamente a fase crítica do milho verão. Tende a abrir veranicos no Centro-Oeste. É o principal risco de quebra de produtividade.</p></div></div>
+      <div class="risk"><div class="ico">R$</div><div><h4>Exposição ao preço</h4><p>Sem travar preço, o resultado migra do +R$ 1.267/ha para −R$ 1.549/ha a 160 sc/ha. A trava (termo, futuro B3 ou barter) é o item mais decisivo da viabilidade.</p></div></div>
+      <div class="risk"><div class="ico">$</div><div><h4>Câmbio</h4><p>Parte dos defensivos é dolarizada (PTAX R$ 5,15). Alta do dólar até o plantio encarece o pacote de insumos.</p></div></div>
+      <div class="risk"><div class="ico">↔</div><div><h4>Custo de oportunidade</h4><p>Plantar milho verão significa abrir mão da soja no verão + milho safrinha na mesma área. A comparação correta é milho verão × sucessão soja/safrinha.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. RECOMENDAÇÃO -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Recomendação</h2></div>
+    <p class="sec-sub">A viabilidade existe, mas é condicional. Cinco passos antes de bater o martelo:</p>
+    <div class="card">
+      <ol class="rec">
+        <li><div><b>Fechar o custo real.</b> <p>Lançar as sementes faltantes e validar operações, secagem/frete e capital. O equilíbrio verdadeiro é ~142 sc/ha, não 74.</p></div></li>
+        <li><div><b>Travar o preço antes de plantar.</b> <p>Os R$ 69,60 só valem garantidos por termo, futuro B3 ou barter. Sem trava, a conta vira prejuízo ao spot de R$ 52.</p></div></li>
+        <li><div><b>Renegociar o fertilizante.</b> <p>52% do custo. Duas a três cotações e revisão de dose podem devolver várias sacas por hectare sem perder produtividade.</p></div></li>
+        <li><div><b>Comparar com soja + safrinha.</b> <p>Confirmar que o milho verão rende mais que a sucessão-padrão na mesma área.</p></div></li>
+        <li><div><b>Blindar contra o clima.</b> <p>Com El Niño no radar, seguro agrícola e híbrido de estabilidade deixam de ser opcionais.</p></div></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER / CREDENCIAIS -->
+<footer class="foot">
+  <div class="wrap foot-inner">
+    <div class="cols">
+      <div>
+        <h5>Metodologia</h5>
+        <p>Custos consolidados a partir da planilha de campo da Fazenda Monte Alegre (safra 2026/27), reorganizados em escala de custos (insumos → COE → custo total) conforme a norma de custos de produção. Arrendo (13 sc soja/ha) e operacional (15 sc soja/ha) convertidos a milho pela relação de troca soja/milho vigente. Custo financeiro do capital de giro a 12% a.a. por ~7 meses. Sensibilidade calculada sobre o custo total.</p>
+      </div>
+      <div>
+        <h5>Referências técnicas</h5>
+        <ul>
+          <li>CONAB — Custos de Produção e Preços Agropecuários</li>
+          <li>IMEA / CPA-MT (Senar-MT) — custo do milho 26/27</li>
+          <li>Projeto Campo Futuro (CNA/Senar/Cepea) — Rio Verde-GO</li>
+          <li>CEPEA-Esalq/USP e B3 — cotações e futuros do milho</li>
+          <li>NOAA / Inmet — monitoramento de El Niño</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sig">
+      <div>
+        <div class="name">Dr. Sidney Souza</div>
+        <div class="role">Estrategista Econômico do Produtor Rural</div>
+        <div class="brand">RuralIN — Consultoria Técnica Multidisciplinar</div>
+      </div>
+      <div class="stamp">
+        <div><b>Documento técnico</b></div>
+        <div>Emitido em julho de 2026</div>
+        <div>Base de dados: jul/2026</div>
+      </div>
+    </div>
+
+    <p class="disc">Este material tem caráter técnico-consultivo e de apoio à decisão. As projeções de custo, preço e produtividade dependem de premissas que podem variar com mercado, câmbio e clima; recomenda-se revisão com os números reais de operação, terra e comercialização antes de qualquer decisão de plantio. Não constitui recomendação de investimento.</p>
+  </div>
+</footer>
+
+<script>
+const G={green:'#1F6E43',greenD:'#102C1D',gold:'#C99621',gold2:'#E3B84A',clay:'#B0432B',line:'#E0DACB',muted:'#5C6A5D'};
+const money=v=>'R$ '+v.toLocaleString('pt-BR',{maximumFractionDigits:0});
+Chart.defaults.font.family="Inter";
+Chart.defaults.color=G.muted;
+
+/* Doughnut insumos */
+new Chart(document.getElementById('cInsumos'),{
+  type:'doughnut',
+  data:{labels:['Fertilizantes','Defensivos e biológicos','Sementes'],
+    datasets:[{data:[2704.58,1360.85,1085.71],backgroundColor:[G.green,G.gold,G.clay],
+      borderColor:'#fff',borderWidth:3,hoverOffset:6}]},
+  options:{cutout:'62%',plugins:{legend:{display:false},
+    tooltip:{callbacks:{label:c=>' '+money(c.parsed)+'/ha ('+(c.parsed/5151.15*100).toFixed(1)+'%)'}}}}
+});
+
+/* Escada de custos (waterfall) */
+const steps=[
+  {l:'Insumos',base:0,val:5151.15,c:G.green},
+  {l:'+ Operacional',base:5151.15,val:2250,c:G.green},
+  {l:'+ Arrendo',base:7401.15,val:1950,c:G.clay},
+  {l:'+ Financeiro',base:9351.15,val:518.08,c:G.gold2},
+];
+new Chart(document.getElementById('cEscada'),{
+  type:'bar',
+  data:{labels:steps.map(s=>s.l),
+    datasets:[{data:steps.map(s=>[s.base,s.base+s.val]),
+      backgroundColor:steps.map(s=>s.c),borderRadius:5,borderSkipped:false,barPercentage:.72}]},
+  options:{plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>{const s=steps[c.dataIndex];return ' +'+money(s.val)+' → acum. '+money(s.base+s.val)}}}},
+    scales:{y:{beginAtZero:true,grid:{color:G.line},ticks:{callback:v=>money(v)}},
+      x:{grid:{display:false}}}}
+});
+
+/* gold reference line for expected yield — scoped to break chart only */
+const yLine={id:'yLine',afterDraw(ch){
+  if(!ch.scales||!ch.scales.y)return;
+  const y=ch.scales.y.getPixelForValue(160);const{left,right}=ch.chartArea;
+  const x=ch.ctx;x.save();x.strokeStyle=G.gold;x.lineWidth=2;x.setLineDash([6,4]);
+  x.beginPath();x.moveTo(left,y);x.lineTo(right,y);x.stroke();
+  x.setLineDash([]);x.fillStyle=G.gold;x.font='600 11px Inter';x.fillText('160 sc/ha esperado',left+6,y-6);x.restore();}};
+
+/* Break-even bars */
+new Chart(document.getElementById('cBreak'),{
+  type:'bar',
+  plugins:[yLine],
+  data:{labels:['Só insumos','C.O.E.','Custo total'],
+    datasets:[
+      {label:'Equilíbrio @ R$ 69,60',data:[74,134.4,141.8],backgroundColor:G.green,borderRadius:5,barPercentage:.66,categoryPercentage:.7},
+      {label:'Equilíbrio @ spot R$ 52',data:[99.1,179.8,189.8],backgroundColor:G.clay,borderRadius:5,barPercentage:.66,categoryPercentage:.7}
+    ]},
+  options:{plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>' '+c.parsed.y.toFixed(0)+' sc/ha'}}},
+    scales:{y:{grid:{color:G.line},title:{display:true,text:'sacas de milho / ha'},
+      ticks:{callback:v=>v+' sc'}},x:{grid:{display:false}}}}
+});
+
+/* Heatmap */
+const CT=9869.23;
+const yls=[100,120,140,160,180,200,220];
+const prs=[45,52,60,69.60,75,80];
+function col(m){
+  if(m>=0){const t=Math.min(m/4500,1);
+    return `rgb(${Math.round(150-110*t)},${Math.round(180-40*t)},${Math.round(120-50*t)})`;}
+  const t=Math.min(-m/4500,1);
+  return `rgb(${Math.round(176+40*t)},${Math.round(90-40*t)},${Math.round(60-20*t)})`;
+}
+let html='<thead><tr><th class="corner">sc/ha \\ R$/sc</th>';
+prs.forEach(p=>{const hl=Math.abs(p-69.6)<.1?' style="background:'+G.gold+';color:#102C1D"':'';
+  html+=`<th class="colh"${hl}>R$ ${p.toFixed(2).replace('.',',')}</th>`;});
+html+='</tr></thead><tbody>';
+yls.forEach(y=>{html+=`<tr><td class="rowh">${y}</td>`;
+  prs.forEach(p=>{const m=y*p-CT;const hi=(y===160&&Math.abs(p-69.6)<.1)?' hi':'';
+    html+=`<td class="${hi}" style="background:${col(m)}">${m>=0?'+':'−'}${Math.abs(Math.round(m)).toLocaleString('pt-BR')}</td>`;});
+  html+='</tr>';});
+html+='</tbody>';
+document.getElementById('heat').innerHTML=html;
+</script>
+</body>
+</html>
